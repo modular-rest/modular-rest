@@ -1,0 +1,29 @@
+{
+  "name": "modular-rest",
+  "version": "0.0.1",
+  "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navidshad/modular-rest.git"
+  },
+  "keywords": [
+    "app",
+    "rest",
+    "api",
+    "koa"
+  ],
+  "author": "Navid Shad <navidshad72@gmail.com> (http://navid-shad.ir)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/navidshad/modular-rest/issues"
+  },
+  "homepage": "https://github.com/navidshad/modular-rest#readme",
+  "dependencies": {
+    "koa": "^2.5.3",
+    "koa-router": "^7.4.0"
+  }
+}
