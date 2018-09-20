@@ -20,7 +20,7 @@ module.exports = function(option={})
     if(onInit) onInit(app);
 
     app.listen(port);
-    console.log('\x1b[35m', `KOAS has been launch on: localhost:${port}`);
+    console.log('\x1b[35m', `KOAS has been launched on: localhost:${port}`);
     
 
     // on affter init
