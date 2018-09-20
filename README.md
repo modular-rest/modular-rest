@@ -61,3 +61,9 @@ search.post('/', (ctx) => {
 module.exports.name = name;
 module.exports.main = search;
 ```
+
+### Requesting
+your search web service is:
+```
+http://localhost:80/search
+```
