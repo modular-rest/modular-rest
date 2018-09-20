@@ -4,7 +4,7 @@ let walker = require('./lib/directory_walker.js');
 module.exports.combinRoutes = async (root, app) => 
 {
     // find route pathes
-    let option = {name: 'route', filter: ['.js']}
+    let option = {name: 'router', filter: ['.js']}
     let routerPaths = await walker.find(root, option).then()
         .catch(e => {console.log(e)});
 
