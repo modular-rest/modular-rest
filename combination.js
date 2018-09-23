@@ -1,42 +1,52 @@
 let Router = require('koa-router');
 let walker = require('./lib/directory_walker.js');
 
-module.exports.combinRoutes = async (rootDirectory, app) => 
+module.exports.combinRoutes = (rootDirectory, app) => 
 {
-    // find route pathes
-    let option = {name: 'router', filter: ['.js']}
-    let routerPaths = await walker.find(root, option).then()
-        .catch(e => {console.log(e)});
-
-    // create and combine routes into the app
-    for (let i = 0; i < routerPaths.length; i++) 
+    return new Promise( async (done, reject) => 
     {
-        let service = require(routerPaths[i]);
-        let name = service.name;
+        // find route pathes
+        let option = {name: 'router', filter: ['.js']}
+        let routerPaths = await walker.find(rootDirectory, option).then()
+            .catch(e => { reject(e); });
 
-        
-        var serviceRouter = new Router();
-        serviceRouter.use(`/${name}`, service.main.routes());
+        // create and combine routes into the app
+        for (let i = 0; i < routerPaths.length; i++) 
+        {
+            let service = require(routerPaths[i]);
+            let name = service.name;
 
-        app.use(serviceRouter.routes());
-    }
+            
+            var serviceRouter = new Router();
+            serviceRouter.use(`/${name}`, service.main.routes());
+
+            app.use(serviceRouter.routes());
+        }
+
+        done();
+    });
 }
 
 
 // custom combination
-module.exports.Custom = async (rootDirectory, rootObject, filename) => 
+module.exports.Custom = (rootDirectory, rootObject, filename) => 
 {
-    // find route pathes
-    let option = {name: filename.name, filter: [filename.extension]}
-    let modulesPath = await walker.find(rootDirectory, option).then()
-        .catch(e => {console.log(e)});
-
-    // create and combine routes into the app
-    for (let i = 0; i < modulesPath.length; i++) 
+    return new Promise( async (done, reject) => 
     {
-        let moduleObject = require(modulesPath[i]);
-        let name = moduleObject.name;
+        // find route pathes
+        let option = {name: filename.name, filter: [filename.extension]}
+        let modulesPath = await walker.find(rootDirectory, option).then()
+            .catch(e => { reject(e); });
 
-        rootObject[name] = moduleObject;
-    }
+        // create and combine routes into the app
+        for (let i = 0; i < modulesPath.length; i++) 
+        {
+            let moduleObject = require(modulesPath[i]);
+            let name = moduleObject.name;
+
+            rootObject[name] = moduleObject;
+        }
+
+        done();
+    });
 }

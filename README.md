@@ -28,6 +28,15 @@ let option = {
     onInit: Init,
     onAfterInit: AfterInit,
     port: 80,
+
+    // collecting other services from subfolders
+    otherSrvice: [
+        {
+            filename: {name: 'fn', extension:'.js'},
+            rootDirectory: require('path').join(__dirname, 'routers'),
+            rootObject: services
+        }
+    ],
 };
 
 function Init(app){

@@ -1,5 +1,6 @@
 routers
 app.js
+.vscode
 
 # Logs
 logs
