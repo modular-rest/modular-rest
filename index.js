@@ -11,12 +11,35 @@ module.exports = function(option={})
     var onInit = (option.onInit) ? option.onInit : null;
     var onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
     var port = (option.port) ? option.port : 3000;
+    var serviceCombination = (option.serviceCombination) ? option.serviceCombination : [];
 
-    // var option = {
-    //     'root': path.join( __dirname, 'routes'),
-    // }
+    let option = {
+        root: require('path').join(__dirname, 'routers'),
+        onInit: Init,
+        onAfterInit: AfterInit,
+        port: 80,
+        serviceCombination: [
+            {
+                rootDirectory: '',
+                rootObject: {}
+            }
+        ]
+    };
 
+    // combine routes
     if(root) combination.combinRoutes(option.root, app);
+
+    // do service combination
+    if(serviceCombination.length)
+    {
+        for (let index = 0; index < serviceCombination.length; index++) 
+        {
+            const service = serviceCombination[index];
+            combination.Custom(service.rootDirectory, service.rootObject);
+        }
+    }
+
+    // 
     if(onInit) onInit(app);
 
     app.listen(port);
