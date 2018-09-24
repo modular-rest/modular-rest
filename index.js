@@ -27,7 +27,7 @@ module.exports = async function(option={})
     // };
 
     // combine routes
-    if(root) await combination.combinRoutes(option.root, app).then();
+    if(root) combination.combinRoutes(option.root, app);
 
     // do service combination
     if(otherSrvice.length)
@@ -35,11 +35,11 @@ module.exports = async function(option={})
         for (let index = 0; index < otherSrvice.length; index++) 
         {
             const service = otherSrvice[index];
-            await combination.Custom(
+            combination.Custom(
                 service.rootDirectory, 
                 service.rootObject,
                 service.filename
-                ).then();
+                );
         }
     }
 
