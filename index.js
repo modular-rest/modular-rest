@@ -8,6 +8,7 @@ module.exports = async function(option={})
     var app = new koa();
 
     var root = (option.root) ? option.root : null;
+    var onBeforInit = (option.onBeforInit) ? option.onBeforInit : null;
     var onInit = (option.onInit) ? option.onInit : null;
     var onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
     var port = (option.port) ? option.port : 3000;
@@ -25,6 +26,8 @@ module.exports = async function(option={})
     //         }
     //     ]
     // };
+
+    if(onBeforInit) onBeforInit(app);
 
     // combine routes
     if(root) combination.combinRoutes(option.root, app);

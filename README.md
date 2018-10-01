@@ -23,10 +23,13 @@ simple configuration of `app.js` with `koa-router` module.
 const mRest = require('modular-rest');
 let koaBody = require('koa-body');
 
+let services = {}; // an object for collecting all other service
+
 let option = {
     root: require('path').join(__dirname, 'routers'),
-    onInit: Init,
-    onAfterInit: AfterInit,
+    onBeforInit: BeforInit, // befor anything
+    onInit: Init,           // after collecting routers
+    onAfterInit: AfterInit, // affter launch server
     port: 80,
 
     // collecting other services from subfolders
@@ -39,8 +42,18 @@ let option = {
     ],
 };
 
-function Init(app){
+function BeforInit(app)
+{
+    // do something
+}
+
+function Init(app)
+{   
+    // use a body parser
     app.use(koaBody());
+
+    // make services to be global
+    global.services = services;
 }
 
 function AfterInit() {
