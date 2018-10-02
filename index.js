@@ -13,6 +13,7 @@ module.exports = async function(option={})
     var onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
     var port = (option.port) ? option.port : 3000;
     var otherSrvice = (option.otherSrvice) ? option.otherSrvice : [];
+    var dontlisten = (option.dontlisten) ? option.dontlisten : false;
 
     // let option = {
     //     root: require('path').join(__dirname, 'routers'),
@@ -50,15 +51,16 @@ module.exports = async function(option={})
     {
         if(onInit) onInit(app);
 
-        app.listen(port);
-        console.log('\x1b[35m', `KOAS has been launched on: localhost:${port}`);
+        if(!dontlisten) {
+            app.listen(port);
+            console.log('\x1b[35m', `KOAS has been launched on: localhost:${port}`);
+        }
         
     
         // on affter init
-        console.log('\x1b[0m', 'begin to onAfterInit');
         if(onAfterInit) onAfterInit();
 
         //done
-        done();
+        done(app);
     });
 }

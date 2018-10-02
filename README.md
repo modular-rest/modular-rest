@@ -32,6 +32,11 @@ let option = {
     onAfterInit: AfterInit, // affter launch server
     port: 80,
 
+    // if it would be true, app doesn't listen to port,
+    // and a raw app object with all routers will be returned.
+    // this option is for virtual host middlewares
+    dontlisten: false,
+
     // collecting other services from subfolders
     otherSrvice: [
         {
@@ -60,7 +65,9 @@ function AfterInit() {
   // do something
 }
 
-mRest(option);
+mRest(option).then(app => {
+    // do something
+});
 ```
 
 ### configuring a route
