@@ -43,6 +43,12 @@ let option = {
             filename: {name: 'fn', extension:'.js'},
             rootDirectory: require('path').join(__dirname, 'routers'),
             rootObject: services
+            option: {
+                    // if this option woulde be true, the the members of each service will be attached to rootObject
+                    // then the name member of each service will be rejected.
+                    // it would be useful when you want to collect all mongoose models in one root object.
+                    combineWithRoot: false
+                }
         }
     ],
 };

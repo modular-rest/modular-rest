@@ -24,7 +24,7 @@ module.exports.combinRoutes = async (rootDirectory, app) =>
 
 
 // custom combination
-module.exports.Custom = async (rootDirectory, rootObject, filename) => 
+module.exports.Custom = async (rootDirectory, rootObject, filename, otherOption={}) => 
 {
     // find route pathes
     let option = {name: filename.name, filter: [filename.extension]}
@@ -35,8 +35,26 @@ module.exports.Custom = async (rootDirectory, rootObject, filename) =>
     for (let i = 0; i < modulesPath.length; i++) 
     {
         let moduleObject = require(modulesPath[i]);
-        let name = moduleObject.name;
 
-        rootObject[name] = moduleObject;
+        //act by otherOption
+        if(otherOption.combineWithRoot)
+        {
+            delete moduleObject.name;
+            rootObject = extendObj(rootObject, moduleObject);
+        }
+        // default act
+        else {
+            let name = moduleObject.name;
+            rootObject[name] = moduleObject;
+        }
     }
+}
+
+function extendObj(obj, src) 
+{
+    for (var key in src) {
+        if (src.hasOwnProperty(key)) 
+            obj[key] = src[key];
+    }
+    return obj;
 }
