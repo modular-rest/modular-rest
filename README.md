@@ -4,8 +4,8 @@ a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.
 - each route would be a module in this system. you can define your base routes on difrent folders then the Modular-Rest would combine all routes to main app object.
 
 this module has two methods:
-- createRest: is the main functionality of the module.
-- reply Generator: is a handy tool to generate structured json as a reply body.
+- [createRest]: is the main functionality of the module.
+- [reply Generator]: is a handy tool to generate structured json as a reply body.
 
 ## Install 
 
@@ -125,14 +125,15 @@ replyGenerator('s', {'d': ['product1', 'product2']});
     }
 */
 ```
-status options
+
+### status options
 | passing char | result |
 | ------------ | ------ |
 | s | success |
 | f | fail |
 | e | error |
 
-detail options
+### detail options
 | passing char | result |
 | ------------ | ------ |
 | {d: ''} | {data: ''} |
