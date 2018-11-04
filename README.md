@@ -4,8 +4,8 @@ a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.
 - each route would be a module in this system. you can define your base routes on difrent folders then the Modular-Rest would combine all routes to main app object.
 
 this module has two methods:
-- [createRest]: is the main functionality of the module.
-- [reply Generator]: is a handy tool to generate structured json as a reply body.
+- `createRest`: is the main functionality of the module.
+- `reply Generator`: is a handy tool to generate structured json as a reply body.
 
 ## Install 
 
@@ -15,7 +15,7 @@ Install using [npm](https://www.npmjs.com/package/modular-rest):
 npm i modular-rest --save
 ```
 
-## use modular-rest [createRest]
+## use modular-rest `createRest`
 
 to work with modular-rest you need an `app.js` and a `routers` folder. then configuring `app.js` and put your each router as a subfolder into the `routers` folder.
 
@@ -107,10 +107,10 @@ your search web service is:
 http://localhost:80/search
 ```
 
-## generating structured json [replyGenerator]
-this tool will generate a simple structure based on 3 type of reply [data, message, error]. each reply has two property: [status, detail];
+## generating structured json `replyGenerator`
+this tool will generate a simple structure based on 3 type of reply `data, message, error`. each reply has two property: `status, detail`;
 here is how to generate a reply:
-```
+```js
 const replyGenerator = require('modular-rest').replyGenerator;
 
 // base parameters
