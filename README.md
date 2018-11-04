@@ -126,18 +126,19 @@ replyGenerator('s', {'d': ['product1', 'product2']});
 */
 ```
 
-### status options
+#### status options
 | passing char | result |
 | ------------ | ------ |
 | s | success |
 | f | fail |
 | e | error |
 
-### detail options
+#### detail options
 | passing char | result |
 | ------------ | ------ |
 | {d: ''} | {data: ''} |
 | {e: ''} | {error: ''} |
 | {m: ''} | {message: ''} |
 
+#
 thank you for using Modular-Rest :)
