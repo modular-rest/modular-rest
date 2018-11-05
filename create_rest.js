@@ -23,7 +23,10 @@ module.exports = async function(option={})
     //     otherSrvice: [
     //         {
     //             rootDirectory: '',
-    //             rootObject: {}
+    //             rootObject: {
+    //                 combineWithRoot: true,
+    //                 convertToArray: true,
+    //             }
     //         }
     //     ]
     // };
