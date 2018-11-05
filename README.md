@@ -27,8 +27,6 @@ simple configuration of `app.js` with `koa-router` module.
 const modularRest = require('modular-rest');
 let koaBody = require('koa-body');
 
-let services = {}; // an object for collecting all other service
-
 let option = {
     root: require('path').join(__dirname, 'routers'),
     onBeforInit: BeforInit, // befor anything
@@ -46,7 +44,6 @@ let option = {
         {
             filename: {name: 'fn', extension:'.js'},
             rootDirectory: require('path').join(__dirname, 'routers'),
-            rootObject: services,
             option: {
                     // if this option woulde be true, the property of each service will be attached to rootObject
                     // the `name` property will be rejected and only the main property of each service would be recognize.
@@ -66,16 +63,18 @@ function BeforInit(app)
     // do something
 }
 
-function Init(app)
+function Init(app, otherSrvice)
 {   
     // use a body parser
     app.use(koaBody());
 
-    // make services to be global
-    global.services = services;
+    // use otherSrvice
+    // all your other services will injected to `otherSrvice` object.
+    // eahc service would be accessible by its filename
+    global.services = otherSrvice['fn'];
 }
 
-function AfterInit() {
+function AfterInit(app, otherSrvice) {
   // do something
 }
 

@@ -5,15 +5,16 @@ var combination = require('./lib/combination');
 
 module.exports = async function(option={}) 
 {
-    var app = new koa();
+    let app = new koa();
 
-    var root = (option.root) ? option.root : null;
-    var onBeforInit = (option.onBeforInit) ? option.onBeforInit : null;
-    var onInit = (option.onInit) ? option.onInit : null;
-    var onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
-    var port = (option.port) ? option.port : 3000;
-    var otherSrvice = (option.otherSrvice) ? option.otherSrvice : [];
-    var dontlisten = (option.dontlisten) ? option.dontlisten : false;
+    let root = (option.root) ? option.root : null;
+    let onBeforInit = (option.onBeforInit) ? option.onBeforInit : null;
+    let onInit = (option.onInit) ? option.onInit : null;
+    let onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
+    let port = (option.port) ? option.port : 3000;
+    let otherSrvice = (option.otherSrvice) ? option.otherSrvice : [];
+    let dontlisten = (option.dontlisten) ? option.dontlisten : false;
+    let rootObjects = {};
 
     // let option = {
     //     root: require('path').join(__dirname, 'routers'),
@@ -23,7 +24,7 @@ module.exports = async function(option={})
     //     otherSrvice: [
     //         {
     //             rootDirectory: '',
-    //             rootObject: {
+    //             option: {
     //                 combineWithRoot: true,
     //                 convertToArray: true,
     //             }
@@ -42,18 +43,18 @@ module.exports = async function(option={})
         for (let index = 0; index < otherSrvice.length; index++) 
         {
             const service = otherSrvice[index];
-            await combination.Custom(
+            let rootObject = await combination.Custom(
                 service.rootDirectory, 
-                service.rootObject,
                 service.filename,
-                service.option,
-                );
+                service.option);
+            
+            rootObjects[service.filename.name] = rootObject;
         }
     }
 
     return new Promise((done, reject) => 
     {
-        if(onInit) onInit(app);
+        if(onInit) onInit(app, rootObjects);
 
         if(!dontlisten) {
             app.listen(port);
@@ -62,7 +63,7 @@ module.exports = async function(option={})
         
     
         // on affter init
-        if(onAfterInit) onAfterInit();
+        if(onAfterInit) onAfterInit(app, rootObjects);
 
         //done
         done(app);
