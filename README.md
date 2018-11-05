@@ -48,10 +48,14 @@ let option = {
             rootDirectory: require('path').join(__dirname, 'routers'),
             rootObject: services,
             option: {
-                    // if this option woulde be true, the the members of each service will be attached to rootObject
-                    // then the name member of each service will be rejected.
+                    // if this option woulde be true, the property of each service will be attached to rootObject
+                    // the `name` property will be rejected and only the main property of each service would be recognize.
                     // it would be useful when you want to collect all mongoose models in one root object.
-                    combineWithRoot: false
+                    combineWithRoot: false,
+
+                    // convert the rootObject to an array
+                    // the `name` property will be rejected and only the main property of each service would be recognize.
+                    convertToArray: false,
                 }
         }
     ],

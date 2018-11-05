@@ -1,6 +1,6 @@
 {
   "name": "modular-rest",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
   "main": "index.js",
   "scripts": {
