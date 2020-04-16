@@ -3,8 +3,7 @@ var router = require('koa-router');
 var path = require('path');
 var combination = require('./lib/combination');
 
-module.exports = async function(option={}) 
-{
+module.exports = async function (option = {}) {
     let app = new koa();
 
     let root = (option.root) ? option.root : null;
@@ -12,6 +11,7 @@ module.exports = async function(option={})
     let onInit = (option.onInit) ? option.onInit : null;
     let onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
     let port = (option.port) ? option.port : 3000;
+    let plugins = (option.plugins) ? option.plugins : [];
     let otherSrvice = (option.otherSrvice) ? option.otherSrvice : [];
     let dontlisten = (option.dontlisten) ? option.dontlisten : false;
     let rootObjects = {};
@@ -32,38 +32,40 @@ module.exports = async function(option={})
     //     ]
     // };
 
-    if(onBeforInit) onBeforInit(app);
+    if (onBeforInit) onBeforInit(app);
+
+    // combine plugins
+    if (plugins != null || !isNaN(plugins.length)) {
+        
+    }
 
     // combine routes
-    if(root) await combination.combinRoutes(option.root, app);
+    if (root) await combination.combineRoutesByFilePath(option.root, app);
 
     // do service combination
-    if(otherSrvice.length)
-    {
-        for (let index = 0; index < otherSrvice.length; index++) 
-        {
+    if (otherSrvice.length) {
+        for (let index = 0; index < otherSrvice.length; index++) {
             const service = otherSrvice[index];
-            let rootObject = await combination.Custom(
-                service.rootDirectory, 
+            let rootObject = await combination.combineServicesByFilePath(
+                service.rootDirectory,
                 service.filename,
                 service.option);
-            
+
             rootObjects[service.filename.name] = rootObject;
         }
     }
 
-    return new Promise((done, reject) => 
-    {
-        if(onInit) onInit(app, rootObjects);
+    return new Promise((done, reject) => {
+        if (onInit) onInit(app, rootObjects);
 
-        if(!dontlisten) {
+        if (!dontlisten) {
             app.listen(port);
             console.log('\x1b[35m', `KOAS has been launched on: localhost:${port}`);
         }
-        
-    
+
+
         // on affter init
-        if(onAfterInit) onAfterInit(app, rootObjects);
+        if (onAfterInit) onAfterInit(app, rootObjects);
 
         //done
         done(app);

@@ -59,14 +59,13 @@ let option = {
 
 function BeforInit(app)
 {
-    // do something
+    // use a body parser
+    // it must be used befor init
+    app.use(koaBody());
 }
 
 function Init(app, otherSrvice)
 {   
-    // use a body parser
-    app.use(koaBody());
-
     // use otherSrvice
     // all your other services will injected to `otherSrvice` object.
     // eahc service would be accessible by its filename
