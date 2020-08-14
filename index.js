@@ -1,1 +1,0 @@
-module.exports.createRest = require('./create_rest');

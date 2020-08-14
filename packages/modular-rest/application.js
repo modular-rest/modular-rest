@@ -1,7 +1,7 @@
 const koa = require('koa');
-var router = require('koa-router');
-var path = require('path');
-var combination = require('./lib/combination');
+// var router = require('koa-router');
+// var path = require('path');
+var combination = require('./lib/core/combinator');
 
 module.exports = async function (option = {}) {
     let app = new koa();
