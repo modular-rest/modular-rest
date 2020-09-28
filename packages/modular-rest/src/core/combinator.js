@@ -1,4 +1,4 @@
-let Router = require('koa-router');
+import Router from 'koa-router';
 let directory = require('./directory.js');
 
 class Combinator {

@@ -1,6 +1,6 @@
-routers
-app.js
+/lib
 .vscode
+/dist
 
 # Logs
 logs

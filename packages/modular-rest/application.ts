@@ -1,4 +1,4 @@
-const koa = require('koa');
+import * as koa from 'koa';
 // var router = require('koa-router');
 // var path = require('path');
 var combination = require('./lib/core/combinator');
@@ -8,7 +8,6 @@ module.exports = async function (option = {}) {
 
     let root = (option.root) ? option.root : null;
     let onBeforInit = (option.onBeforInit) ? option.onBeforInit : null;
-    let onInit = (option.onInit) ? option.onInit : null;
     let onAfterInit = (option.onAfterInit) ? option.onAfterInit : null;
     let port = (option.port) ? option.port : 3000;
     let plugins = (option.plugins) ? option.plugins : [];
@@ -18,7 +17,7 @@ module.exports = async function (option = {}) {
 
     // let option = {
     //     root: require('path').join(__dirname, 'routers'),
-    //     onInit: Init,
+    //     onBeforInit: onBeforInit,
     //     onAfterInit: AfterInit,
     //     port: 80,
     //     otherSrvice: [
@@ -56,7 +55,6 @@ module.exports = async function (option = {}) {
     }
 
     return new Promise((done, reject) => {
-        if (onInit) onInit(app, rootObjects);
 
         if (!dontlisten) {
             app.listen(port);
