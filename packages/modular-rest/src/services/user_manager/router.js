@@ -1,6 +1,6 @@
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
-let reply = require('../../class/reply');
+let reply = require('../../class/reply').create;
 
 let name = 'user';
 let userManager = new Router();

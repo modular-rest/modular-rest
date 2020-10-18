@@ -1,13 +1,13 @@
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
-let reply = require('../../class/reply');
+let reply = require('../../class/reply').create;
 
-let name = 'varify';
-let varify = new Router();
+let name = 'verify';
+let verify = new Router();
 
 let service = require('./service').main;
 
-varify.post('/token', async (ctx) => 
+verify.post('/token', async (ctx) => 
 {
 	let body = ctx.request.body;
 
@@ -30,7 +30,7 @@ varify.post('/token', async (ctx) =>
     	});
 });
 
-varify.post('/checkAccess', async (ctx) => 
+verify.post('/checkAccess', async (ctx) => 
 {
 	let body = ctx.request.body;
 
@@ -67,4 +67,4 @@ varify.post('/checkAccess', async (ctx) =>
 });
 
 module.exports.name = name;
-module.exports.main = varify;
+module.exports.main = verify;

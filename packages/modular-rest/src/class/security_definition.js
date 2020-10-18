@@ -1,17 +1,13 @@
-class AccessDefinition
-{
-    constructor({database, collection, permissionList})
-    {
+class AccessDefinition {
+    constructor({ database, collection, permissionList }) {
         this.database = database;
         this.collection = collection;
         this.permissionList = permissionList;
     }
 }
 
-class Permission
-{
-    constructor({type, read=true, write=false, onlyOwnData=false})
-    {
+class Permission {
+    constructor({ type, read = true, write = false, onlyOwnData = false }) {
         this.type = type;
         this.read = read;
         this.write = write;
@@ -22,17 +18,19 @@ class Permission
     }
 }
 
-class PermissionTypes
-{
-    static get customer_access    () { return 'customer_access' };
-    static get anonymous_access   () { return 'anonymous_access' };
-    static get advanced_settings  () { return 'advanced_settings' };
-    static get content_producer   () { return 'content_producer' };
-    static get user_manager       () { return 'user_manager' };
+class PermissionTypes {
+    constructor() {
+        this.god_access = 'god_access';
+        this.user_access = 'user_access';
+        this.anonymous_access = 'anonymous_access';
+    }
+
+    static get god_access() { return 'god_access' };
+    static get user_access() { return 'user_access' };
+    static get anonymous_access() { return 'anonymous_access' };
 }
 
-class operationTypes 
-{
+class operationTypes {
     static get read() { return 'read' };
     static get write() { return 'write' };
 }

@@ -4,21 +4,24 @@ var Schema = mongoose.Schema;
 let ComponentCollection = require('../../class/component_collection');
 let { Permission, PermissionTypes } = require('../../class/security_definition');
 
-let ImageSchema = new Schema({
-    type: String,
-    imgStamp: String
-});
-
-let permissionSchema = new Schema({
-    advanced_settings: { type: Boolean, default: false },
-    content_producer: { type: Boolean, default: false },
-    customer_access: { type: Boolean, default: false },
-    anonymous_access: { type: Boolean, default: false },
-    user_manager: { type: Boolean, default: false },
-    isDefault: { type: Boolean, default: false },
-    isAnonymous: { type: Boolean, default: false },
+/**
+ * Permission schema
+ * 
+ * This schema is generated dynamically
+ * by combining default & custom permissions.
+ */
+let permissionSchemaConstructorOption = {
     title: String,
-});
+    isAnonymous: { type: Boolean, default: false },
+    isDefault: { type: Boolean, default: false },
+};
+Object.keys(new PermissionTypes())
+    .forEach(key => {
+        let fieldOption = { type: Boolean, default: false };
+        permissionSchemaConstructorOption[key] = fieldOption;
+    })
+
+let permissionSchema = new Schema(permissionSchemaConstructorOption);
 permissionSchema.index({ title: 1 }, { unique: true });
 
 let authSchema = new Schema({

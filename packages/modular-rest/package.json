@@ -29,7 +29,9 @@
     "file-system": "^2.2.2",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.5.3",
+    "koa-body": "^4.2.0",
     "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
     "mongoose": "^5.10.9",
     "nested-property": "^4.0.0"
   },

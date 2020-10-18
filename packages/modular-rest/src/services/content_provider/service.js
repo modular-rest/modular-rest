@@ -72,11 +72,15 @@ function connectToDatabaseByComponentCollectionList(dbName, ComponentCollectionL
         // add db models from schemas
         ComponentCollectionList.forEach(componentCollection => {
 
+            let collection = componentCollection.collection;
+            let schema = componentCollection.schema;
+
+            if (collections[dbName] == undefined)
+                collections[dbName] = {};
+
             // create model from schema
             // and store in on global collection object
-            collections[dbName] = connection.model(
-                componentCollection.collection,
-                componentCollection.schema)
+            collections[dbName][collection] = connection.model(collection, schema);
 
             // define Access Definition from component permissions
             // and store it on global access definition object

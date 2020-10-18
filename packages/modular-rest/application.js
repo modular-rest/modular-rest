@@ -1,8 +1,11 @@
 let koa = require('koa');
-var router = require('koa-router');
+const koaBody = require('koa-body');
+const koaStatic = require('koa-static');
 var path = require('path');
-var combination = require('./src/class/combinator');
-let dataBaseService = require('./src/services/content_provider/service');
+var Combination = require('./src/class/combinator');
+let ContentProvider = require('./src/services/content_provider/service');
+let DataInsertion = require('./src/helper/data_insertion');
+let JWT = require('./src/services/jwt/service')
 
 /**
  * 
@@ -23,8 +26,11 @@ async function createRest(
         onBeforeInit,
         onAfterInit,
         port,
-        plugins,
         dontListen,
+        adminEmail,
+        adminPass,
+        privateKey,
+        publicKey,
     } = {
             root: null,
             dbPrefix: 'mrest_',
@@ -32,31 +38,33 @@ async function createRest(
             onBeforeInit: null,
             onAfterInit: null,
             port: 3000,
-            plugins: [],
             dontListen: false,
+            adminEmail: 'admin@email,com',
+            adminPass: '@dmin',
         }) {
 
     let app = new koa();
 
+    /**
+     * Body Parser
+     */
+    let options = { multipart: true };
+    app.use(koaBody(options));
+
     if (onBeforeInit) onBeforeInit(app);
-
-    // combine plugins
-    if (plugins != null || !isNaN(plugins.length)) {
-
-    }
 
     let defaultServiceRoot = __dirname + '/src/services';
 
     // Plug in default routes
-    await combination.combineRoutesByFilePath(
+    await Combination.combineRoutesByFilePath(
         path.join(defaultServiceRoot), app);
 
     // Plug in user routes
     if (root)
-        await combination.combineRoutesByFilePath(root, app);
+        await Combination.combineRoutesByFilePath(root, app);
 
     // Default databases
-    let defaultDatabaseDetail = await combination.combineModulesByFilePath({
+    let defaultDatabaseDetail = await Combination.combineModulesByFilePath({
         rootDirectory: defaultServiceRoot,
         filename: { name: 'db', extension: '.js' },
         combineWithRoot: true
@@ -65,21 +73,39 @@ async function createRest(
     let userDatabaseDetail = [];
 
     if (root) {
-        userDatabaseDetail = await combination.combineModulesByFilePath({
+        userDatabaseDetail = await Combination.combineModulesByFilePath({
             rootDirectory: root,
             filename: { name: 'db', extension: '.js' },
             combineWithRoot: true
         });
     }
 
-    dataBaseService.addComponentCollectionByList({
+    await ContentProvider.addComponentCollectionByList({
         list: [...defaultDatabaseDetail, ...(userDatabaseDetail || [])],
         mongoOption: { dbPrefix, mongoBaseAddress }
     })
 
+    /**
+     * Data Insertion
+     * 
+     * Insert permissions and admin user 
+     */
+    await DataInsertion.createPermissions();
+    await DataInsertion.createAdminUser({ adminEmail, adminPass })
 
-    // combine routes
-    if (root) await combination.combineRoutesByFilePath(option.root, app);
+    /**
+     * Json web Token
+     * 
+     * Setup private and public keys for JWT module 
+     */
+    if (!privateKey || !publicKey) {
+        let privateKeyPath = path.join(__dirname, 'sample_private_key.txt');
+        let publicKeyPath = path.join(__dirname, 'sample_public_key.txt');
+        privateKey = require('fs').readFileSync(privateKeyPath);
+        publicKey = require('fs').readFileSync(publicKeyPath);
+    }
+
+    JWT.main.setKies(privateKey, publicKey);
 
     return new Promise((done, reject) => {
 
