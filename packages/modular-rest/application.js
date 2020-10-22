@@ -17,31 +17,27 @@ let JWT = require('./src/services/jwt/service')
  * @param {function} option.onAfterInit a callback being called after server initialization.
  * @param {number} option.port server port
  * @param {boolean} option.dontListen server will not being run if it was true and just return koa app object.
+ * @param {object} option.keypair RSA keypair for authentication module
+ * @param {string} option.keypair.private
+ * @param {string} option.keypair.public
+ * @param {object} option.adminUser supper admin user to being created as the first user of the system.
+ * @param {string} option.adminUser.email
+ * @param {string} option.adminUser.password
  */
-async function createRest(
-    {
-        root,
-        dbPrefix,
-        mongoBaseAddress,
-        onBeforeInit,
-        onAfterInit,
-        port,
-        dontListen,
-        adminEmail,
-        adminPass,
-        privateKey,
-        publicKey,
-    } = {
-            root: null,
-            dbPrefix: 'mrest_',
-            mongoBaseAddress: 'mongodb://localhost:27017',
-            onBeforeInit: null,
-            onAfterInit: null,
-            port: 3000,
-            dontListen: false,
-            adminEmail: 'admin@email,com',
-            adminPass: '@dmin',
-        }) {
+async function createRest({
+    root,
+    keypair,
+    onBeforeInit,
+    onAfterInit,
+    mongoBaseAddress = 'mongodb://localhost:27017',
+    dbPrefix = 'mrest_',
+    port = 3000,
+    dontListen = false,
+    adminUser = {
+        email: 'admin@email,com',
+        password: '@dmin',
+    },
+}) {
 
     let app = new koa();
 
@@ -80,7 +76,7 @@ async function createRest(
         });
     }
 
-    await ContentProvider.addComponentCollectionByList({
+    await ContentProvider.addCollectionDefinitionByList({
         list: [...defaultDatabaseDetail, ...(userDatabaseDetail || [])],
         mongoOption: { dbPrefix, mongoBaseAddress }
     })
@@ -91,22 +87,26 @@ async function createRest(
      * Insert permissions and admin user 
      */
     await DataInsertion.createPermissions();
-    await DataInsertion.createAdminUser({ adminEmail, adminPass })
+    await DataInsertion.createAdminUser(adminUser)
 
     /**
      * Json web Token
      * 
      * Setup private and public keys for JWT module 
      */
-    if (!privateKey || !publicKey) {
-        let privateKeyPath = path.join(__dirname, 'sample_private_key.txt');
-        let publicKeyPath = path.join(__dirname, 'sample_public_key.txt');
-        privateKey = require('fs').readFileSync(privateKeyPath);
-        publicKey = require('fs').readFileSync(publicKeyPath);
+    if (!keypair) {
+        // generate new keypair
+        var generateRSAKeypair = require('generate-rsa-keypair')
+        keypair = generateRSAKeypair()
     }
 
-    JWT.main.setKies(privateKey, publicKey);
+    JWT.main.setKies(keypair.private, keypair.public);
 
+    /**
+     * Run the server
+     * 
+     * return KOA app object 
+     */
     return new Promise((done, reject) => {
 
         if (!dontListen) {
