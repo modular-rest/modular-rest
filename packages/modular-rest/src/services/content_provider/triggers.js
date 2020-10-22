@@ -1,8 +1,8 @@
-let DBTrigger = require('../../class/db_trigger');
+let DatabaseTrigger = require('../../class/database_trigger');
 
 const triggers = [
 
-    new DBTrigger('insertOne', 'cms', 'auth', async (input, output) => 
+    new DatabaseTrigger('insertOne', 'cms', 'auth', async (input, output) => 
     {
         if(output.error) return;
 
@@ -18,7 +18,7 @@ const triggers = [
         await new global.services.contentProvider.getCollection('user', 'subscription')(newSubscription).save().then();
     }),
 
-    new DBTrigger('removeOne', 'cms', 'auth', async (input, output) => 
+    new DatabaseTrigger('removeOne', 'cms', 'auth', async (input, output) => 
     {
         if(output.error) return;
 
@@ -28,7 +28,7 @@ const triggers = [
         global.services.contentProvider.getCollection('user', 'subscription').deleteOne(query).exec();
     }),
   
-    new DBTrigger('removeOne', 'media', 'artist', async (input, output) => 
+    new DatabaseTrigger('removeOne', 'media', 'artist', async (input, output) => 
     {
         if(output.error) return;
 
@@ -43,7 +43,7 @@ const triggers = [
           global.services.ftp.deleteDir(dir));
     }),
   
-    new DBTrigger('removeOne', 'media', 'album', async (input, output) => 
+    new DatabaseTrigger('removeOne', 'media', 'album', async (input, output) => 
     {
         if(output.error) return;
 
@@ -58,7 +58,7 @@ const triggers = [
         global.services.contentProvider.getCollection('media', 'song').deleteMany(query2).exec();
     }),
   
-    new DBTrigger('removeOne', 'media', 'song', async (input, output) => 
+    new DatabaseTrigger('removeOne', 'media', 'song', async (input, output) => 
     {
         if(output.error) return;
 
@@ -69,7 +69,7 @@ const triggers = [
           global.services.ftp.delete(filePath));
     }),
   
-    new DBTrigger('insertOne', 'media', 'album', async (input, output) => 
+    new DatabaseTrigger('insertOne', 'media', 'album', async (input, output) => 
     {
         let album = output;
         let artist = await global.services.contentProvider
@@ -79,7 +79,7 @@ const triggers = [
         await album.save().then();
     }),
   
-    new DBTrigger('updateOne', 'media', 'artist', async (input, output) => 
+    new DatabaseTrigger('updateOne', 'media', 'artist', async (input, output) => 
     {
         if(output.error) return;
 
@@ -94,7 +94,7 @@ const triggers = [
         global.services.contentProvider.getCollection('media', 'song').update(query, update, {multi: true}).exec();
     }),
   
-    new DBTrigger('updateOne', 'media', 'album', async (input, output) => 
+    new DatabaseTrigger('updateOne', 'media', 'album', async (input, output) => 
     {
         if(output.error) return;
 

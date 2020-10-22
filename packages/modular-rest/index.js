@@ -1,8 +1,25 @@
-// application
-module.exports.createRest = require('./application');
+// Application
+const createRest = require('./application');
 
-// utilities
-module.exports.paginator = require('./src/class/paginator');
-module.exports.reply = require('./src/class/reply');
-module.exports.validator = require('./src/class/validator');
+// Utilities
+const paginator = require('./src/class/paginator');
+const reply = require('./src/class/reply');
+const validator = require('./src/class/validator');
+
+// Base class
+const CollectionDefinition = require('./src/class/collection_definition');
+const Schemas = require('./src/class/db_schemas');
+const DatabaseTrigger = require('./src/class/database_trigger');
+
+module.exports = {
+    createRest,
+
+    // Utilities
+    paginator, reply, validator,
+
+    // Base class
+    CollectionDefinition,
+    Schemas,
+    DatabaseTrigger,
+}
 

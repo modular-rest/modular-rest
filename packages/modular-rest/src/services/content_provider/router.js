@@ -1,5 +1,5 @@
 let Mongoose = require('mongoose');
-let { operationTypes } = require('./../../class/security_definition');
+let { operationTypes } = require('./../../class/security');
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
 let reply = require('../../class/reply');

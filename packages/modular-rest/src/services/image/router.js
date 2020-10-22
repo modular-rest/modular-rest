@@ -3,7 +3,7 @@ let validateObject = require('./../../class/validator');
 let reply = require('./../../class/reply');
 let name = 'image';
 
-let {PermissionTypes} = require('./../../class/security_definition');
+let {PermissionTypes} = require('./../../class/security');
 
 let service = require('./service');
 let middleware = require('./../../middlewares');

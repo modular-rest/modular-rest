@@ -1,8 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-let ComponentCollection = require('../../class/component_collection');
-let { Permission, PermissionTypes } = require('../../class/security_definition');
+let CollectionDefinition = require('../../class/component_collection');
+let { Permission, PermissionTypes } = require('../../class/security');
 
 /**
  * Permission schema
@@ -41,7 +41,7 @@ let detailSchema = new Schema({
 detailSchema.index({ refId: 1 }, { unique: true });
 
 module.exports = [
-    new ComponentCollection({
+    new CollectionDefinition({
         db: 'cms',
         collection: 'auth',
         schema: authSchema,
@@ -54,7 +54,7 @@ module.exports = [
         ]
     }),
 
-    new ComponentCollection({
+    new CollectionDefinition({
         db: 'cms',
         collection: 'permission',
         schema: permissionSchema,
@@ -67,7 +67,7 @@ module.exports = [
         ],
     }),
 
-    new ComponentCollection({
+    new CollectionDefinition({
         db: 'cms',
         collection: 'user',
         schema: detailSchema,

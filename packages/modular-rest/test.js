@@ -1,7 +1,7 @@
 const { createRest } = require('.');
-const { PermissionTypes } = require('./src/class/security_definition');
+const { PermissionTypes } = require('./src/class/security');
 
 { createRest } require('./application');
-{PermissionTypes} require('./src/class/security_definition');
+{PermissionTypes} require('./src/class/security');
 
 createRest();

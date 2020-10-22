@@ -1,6 +1,6 @@
 let name = 'contentProvider';
 var colog = require('colog');
-let { operationTypes, AccessDefinition } = require('../../class/security_definition');
+let { operationTypes, AccessDefinition } = require('../../class/security');
 
 const Mongoose = require('mongoose');
 Mongoose.set('useCreateIndex', true);
@@ -18,62 +18,27 @@ let triggers = require('./triggers');
 let TypeCasters = require('./typeCasters');
 
 /**
- * Connect to mongodb by mongoose 
- * and creates databases if they doesn't exists.
- */
-function prepareToConnect() {
-    for (let i = 0; i < list_dbs.length; i++) {
-        const dbmodule = list_dbs[i];
-        let prefix = global.config.db_prefix;
-        let name = dbmodule.name;
-
-        let databaseDetail = require(dbmodule['path']);
-
-        // connecting to database
-        let connectionString = global.config.mongo + `/${prefix + name}`;
-        let connection = Mongoose.createConnection(connectionString, { useUnifiedTopology: true, useNewUrlParser: true, });
-        connection.on('connected', () => colog.info(`- ${prefix + name} database has been connected`));
-
-        // get models
-        collections[name] = databaseDetail.getModels(connection);
-
-        // store connection
-        connections[name] = connection;
-
-        // get Access Definitions
-        AccessDefinitions[name] = databaseDetail.accessDefinitions;
-    }
-}
-
-// function connectByConnectionString({connectionString='', models={}}) {
-//     return new Promise((done, reject) => {
-//         let connection = Mongoose.createConnection(connectionString, { useUnifiedTopology: true, useNewUrlParser: true, });
-//         connection.on('connected', done);
-//     }) 
-// }
-
-/**
  * 
  * @param {string} dbName database name
- * @param {array} ComponentCollectionList an array of ComponentCollection instance
+ * @param {array} CollectionDefinitionList an array of CollectionDefinition instance
  * @param {object} mongoOption
  * @param {string} mongoOption.dbPrefix
  * @param {string} mongoOption.mongoBaseAddress
  */
-function connectToDatabaseByComponentCollectionList(dbName, ComponentCollectionList = [], mongoOption) {
+function connectToDatabaseByCollectionDefinitionList(dbName, CollectionDefinitionList = [], mongoOption) {
 
     return new Promise((done, reject) => {
         // create db connection
-        let connectionString = mongoOption.mongoBaseAddress + `/${mongoOption.dbPrefix + name}`;
+        let connectionString = mongoOption.mongoBaseAddress + `/${mongoOption.dbPrefix + dbName}`;
         let connection = Mongoose.createConnection(connectionString, { useUnifiedTopology: true, useNewUrlParser: true, });
         // store connection
         connections[dbName] = connection;
 
         // add db models from schemas
-        ComponentCollectionList.forEach(componentCollection => {
+        CollectionDefinitionList.forEach(collectionDefinition => {
 
-            let collection = componentCollection.collection;
-            let schema = componentCollection.schema;
+            let collection = collectionDefinition.collection;
+            let schema = collectionDefinition.schema;
 
             if (collections[dbName] == undefined)
                 collections[dbName] = {};
@@ -86,8 +51,8 @@ function connectToDatabaseByComponentCollectionList(dbName, ComponentCollectionL
             // and store it on global access definition object
             AccessDefinitions[dbName] = new AccessDefinition({
                 database: dbName,
-                collection: componentCollection.collection,
-                permissionList: componentCollection.permissions
+                collection: collectionDefinition.collection,
+                permissionList: collectionDefinition.permissions
             });
 
         })
@@ -102,26 +67,26 @@ function connectToDatabaseByComponentCollectionList(dbName, ComponentCollectionL
 /**
  * 
  * @param {object} option
- * @param {array} option.list an array of ComponentCollection instance
+ * @param {array} option.list an array of CollectionDefinition instance
  * @param {object} option.mongoOption
  * @param {string} option.mongoOption.dbPrefix
  * @param {string} option.mongoOption.mongoBaseAddress
  */
-async function addComponentCollectionByList({ list, mongoOption }) {
+async function addCollectionDefinitionByList({ list, mongoOption }) {
     let clusteredByDBName = {};
 
     // cluster list by their database name.
-    list.forEach(componentCollection => {
-        let database = componentCollection.database;
+    list.forEach(collectionDefinition => {
+        let database = collectionDefinition.database;
         if (!clusteredByDBName[database]) clusteredByDBName[database] = [];
-        clusteredByDBName[database].push(componentCollection);
+        clusteredByDBName[database].push(collectionDefinition);
     })
 
     // connect to databases
     for (const dbName in clusteredByDBName) {
         if (clusteredByDBName.hasOwnProperty(dbName)) {
-            const componentCollectionList = clusteredByDBName[dbName];
-            await connectToDatabaseByComponentCollectionList(dbName, componentCollectionList, mongoOption);
+            const collectionDefinitionList = clusteredByDBName[dbName];
+            await connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitionList, mongoOption);
         }
     }
 }
@@ -222,7 +187,7 @@ function getAsID(strId) {
 // connectToAllDatabases();
 
 module.exports = {
-    name, addComponentCollectionByList, getCollection,
+    name, addCollectionDefinitionByList, getCollection,
     checkAccess, getAsID,
     triggers,
     TypeCasters,

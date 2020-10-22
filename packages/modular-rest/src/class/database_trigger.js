@@ -1,4 +1,4 @@
-module.exports = class DBTrigger
+module.exports = class DatabaseTrigger
 {
     constructor(name, db, coll, callback)
     {

@@ -1,4 +1,4 @@
-module.exports = class ComponentCollection
+module.exports = class CollectionDefinition
 {
     /**
      * a constructor for create a mongodb collection.

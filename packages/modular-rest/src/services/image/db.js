@@ -1,11 +1,11 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-let ComponentCollection = require('../../class/component_collection');
-let { Permission, PermissionTypes } = require('../../class/security_definition');
+let CollectionDefinition = require('../../class/component_collection');
+let { Permission, PermissionTypes } = require('../../class/security');
 
 module.exports = [
-    new ComponentCollection({
+    new CollectionDefinition({
         db: 'cms',
         collection: 'slideshow',
         schema: new Schema({
