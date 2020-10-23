@@ -1,7 +1,7 @@
-const ContentProvider = require('../services/content_provider/service');
+const DataProvider = require('../services/data_provider/service');
 
 function createPermissions() {
-  let model = ContentProvider.getCollection('cms', 'permission');
+  let model = DataProvider.getCollection('cms', 'permission');
 
   return new Promise(async (done, reject) => {
 
@@ -42,8 +42,8 @@ function createPermissions() {
 }
 
 function createAdminUser({ email, password }) {
-  let permissionModel = ContentProvider.getCollection('cms', 'permission');
-  let authModel = ContentProvider.getCollection('cms', 'auth');
+  let permissionModel = DataProvider.getCollection('cms', 'permission');
+  let authModel = DataProvider.getCollection('cms', 'auth');
 
   return new Promise(async (done, reject) => {
     let isAnonymousExisted = await authModel.countDocuments({ type: 'anonymous' }).exec().catch(reject);

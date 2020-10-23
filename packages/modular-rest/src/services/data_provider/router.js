@@ -1,20 +1,19 @@
-let Mongoose = require('mongoose');
-let { operationTypes } = require('./../../class/security');
+let { AccessTypes } = require('./../../class/security');
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
-let reply = require('../../class/reply');
+let reply = require('../../class/reply').create;
 var nestedProperty = require("nested-property");
 
 //let Types = require('./types.js');
 
-let name = 'contentProvider';
+let name = 'data-provider';
 
 let service = require('./service');
 let middleware = require('./../../middlewares');
 
-let contentProvider = new Router();
+let dataProvider = new Router();
 
-contentProvider.use('/', middleware.auth, async (ctx, next) => {
+dataProvider.use('/', middleware.auth, async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidated = validateObject(body, 'database collection');
     
@@ -49,7 +48,7 @@ contentProvider.use('/', middleware.auth, async (ctx, next) => {
     await next();
 });
 
-contentProvider.post('/find', async (ctx, next) => {
+dataProvider.post('/find', async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection query');
 
@@ -60,7 +59,7 @@ contentProvider.post('/find', async (ctx, next) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.read, body.query, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, body.query, ctx.state.user);
     if (!hasAccess) {
       console.log(body);
       console.log(ctx.state.user.permission);
@@ -86,7 +85,7 @@ contentProvider.post('/find', async (ctx, next) => {
         });
 });
 
-contentProvider.post('/findOne', async (ctx, next) => {
+dataProvider.post('/find-one', async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'collection query');
 
@@ -97,7 +96,7 @@ contentProvider.post('/findOne', async (ctx, next) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.read, body.query, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, body.query, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -119,7 +118,7 @@ contentProvider.post('/findOne', async (ctx, next) => {
         });
 });
 
-contentProvider.post('/count', async (ctx) => {
+dataProvider.post('/count', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection query');
 
@@ -130,7 +129,7 @@ contentProvider.post('/count', async (ctx) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.read, body.query, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, body.query, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -149,7 +148,7 @@ contentProvider.post('/count', async (ctx) => {
         });
 });
 
-contentProvider.post('/updateOne', async (ctx) => {
+dataProvider.post('/update-one', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection query update');
 
@@ -160,7 +159,7 @@ contentProvider.post('/updateOne', async (ctx) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.write, body.query, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.write, body.query, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -176,7 +175,7 @@ contentProvider.post('/updateOne', async (ctx) => {
     // operate on db
     await collection.updateOne(body.query, body.update, body.options).exec()
         .then((writeOpResult) => {
-            service.triggers.call('updateOne', body.database, body.collection,
+            service.triggers.call('update-one', body.database, body.collection,
                 { 'input': body.query, 'output': output });
 
             ctx.body = writeOpResult;
@@ -187,7 +186,7 @@ contentProvider.post('/updateOne', async (ctx) => {
         });
 });
 
-contentProvider.post('/insertOne', async (ctx, next) => {
+dataProvider.post('/insert-one', async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection doc');
 
@@ -198,7 +197,7 @@ contentProvider.post('/insertOne', async (ctx, next) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.write, body.doc, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.write, body.doc, ctx.state.user);
     if (!hasAccess) {
       console.log(body);
       console.log(ctx.state.user.permission);
@@ -215,7 +214,7 @@ contentProvider.post('/insertOne', async (ctx, next) => {
     // operate on db
     await new collection(body.doc).save()
         .then(async (newDoc) => {
-            service.triggers.call('insertOne', body.database, body.collection,
+            service.triggers.call('insert-one', body.database, body.collection,
                 { 'input': body.query, 'output': newDoc });
 
             ctx.state = newDoc;
@@ -227,7 +226,7 @@ contentProvider.post('/insertOne', async (ctx, next) => {
         });
 });
 
-contentProvider.post('/removeOne', async (ctx) => {
+dataProvider.post('/remove-one', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection query');
 
@@ -238,7 +237,7 @@ contentProvider.post('/removeOne', async (ctx) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.write, body.query, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.write, body.query, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -254,7 +253,7 @@ contentProvider.post('/removeOne', async (ctx) => {
     // operate on db
     await collection.deleteOne(body.query).exec()
         .then(async (result) => {
-            service.triggers.call('removeOne', body.database, body.collection,
+            service.triggers.call('remove-one', body.database, body.collection,
                 { 'input': body.query, 'output': output });
 
             ctx.body = result;
@@ -265,7 +264,7 @@ contentProvider.post('/removeOne', async (ctx) => {
         });
 });
 
-contentProvider.post('/aggregate', async (ctx, next) => {
+dataProvider.post('/aggregate', async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection piplines accessQuery');
 
@@ -276,7 +275,7 @@ contentProvider.post('/aggregate', async (ctx, next) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.read, body.accessQuery, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, body.accessQuery, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -298,7 +297,7 @@ contentProvider.post('/aggregate', async (ctx, next) => {
         });
 });
 
-contentProvider.post('/getByIds', async (ctx, next) => {
+dataProvider.post('/getByIds', async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection IDs');
 
@@ -309,7 +308,7 @@ contentProvider.post('/getByIds', async (ctx, next) => {
     }
 
     // access validation
-    let hasAccess = service.checkAccess(body.database, body.collection, operationTypes.read, {}, ctx.state.user);
+    let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, {}, ctx.state.user);
     if (!hasAccess) ctx.throw(403, 'access denied');
 
     // collection validation
@@ -351,7 +350,7 @@ contentProvider.post('/getByIds', async (ctx, next) => {
         });
 });
 
-contentProvider.use('/', async (ctx, next) => {
+dataProvider.use('/', async (ctx, next) => {
 
     // this event is responsible to covert whole mongoose doc to json form
     // inclouding getters, public propertise 
@@ -380,4 +379,4 @@ contentProvider.use('/', async (ctx, next) => {
 });
 
 module.exports.name = name;
-module.exports.main = contentProvider;
+module.exports.main = dataProvider;

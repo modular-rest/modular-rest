@@ -171,7 +171,7 @@ userManager.post('/getPermission', async (ctx) =>
 	
 	let query = {_id: body.id};
 
-	let permission = await global.services.contentProvider.getCollection('cms', 'permission')
+	let permission = await global.services.dataProvider.getCollection('cms', 'permission')
 		.findOne(query)
 		.catch(err => {
             ctx.status = 412;

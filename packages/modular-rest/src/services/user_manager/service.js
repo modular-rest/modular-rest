@@ -1,5 +1,5 @@
 let User = require('../../class/user');
-const ContentProvider = require('../content_provider/service')
+const DataProvider = require('../data_provider/service')
 const JWT = require('../jwt/service') 
 
 class UserManager {
@@ -10,7 +10,7 @@ class UserManager {
 
     getUserById(id) {
         return new Promise(async (done, reject) => {
-            let userModel = ContentProvider.getCollection('cms', 'auth');
+            let userModel = DataProvider.getCollection('cms', 'auth');
 
             let userDoc = await userModel.findOne({ '_id': id }).select({ password: 0 })
                 .populate('permission').exec().catch(reject);
@@ -23,10 +23,10 @@ class UserManager {
     }
 
     getUserByToken(token) {
-        return global.services.jwt.main.verify(token)
+        return JWT.main.verify(token)
             .then(async payload => {
                 let user = payload;
-                let permission = await ContentProvider.getCollection('cms', 'permission')
+                let permission = await DataProvider.getCollection('cms', 'permission')
                     .findOne({ _id: user.permission }).exec().then();
 
                 if (!permission) throw ('user has a wrong permission');
@@ -51,7 +51,7 @@ class UserManager {
 
         return new Promise(async (done, reject) => {
             //findUser
-            let userModel = ContentProvider.getCollection('cms', 'auth');
+            let userModel = DataProvider.getCollection('cms', 'auth');
 
             let query = { 'password': password };
 
@@ -71,7 +71,7 @@ class UserManager {
                 // generate json web token
                 let payload = user.getBrief();
 
-                token = await global.services['jwt'].main.sign(payload)
+                token = await JWT.main.sign(payload)
                     .then().catch(reject);
 
                 // return
@@ -85,7 +85,7 @@ class UserManager {
 
         return new Promise(async (done, reject) => {
             //findUser
-            let userModel = ContentProvider.getCollection('cms', 'auth');
+            let userModel = DataProvider.getCollection('cms', 'auth');
 
             let query = { 'type': 'anonymous' };
 
@@ -166,7 +166,7 @@ class UserManager {
         return new Promise(async (done, reject) => {
             // get default permission
             let permissionId;
-            let perM = ContentProvider.getCollection('cms', 'permission');
+            let perM = DataProvider.getCollection('cms', 'permission');
 
             let pQuery = { isDefault: true };
 
@@ -179,10 +179,10 @@ class UserManager {
 
             detail.permission = permissionId;
 
-            let authM = ContentProvider.getCollection('cms', 'auth');
+            let authM = DataProvider.getCollection('cms', 'auth');
             return User.createFromModel(authM, detail)
                 .then(newUser => {
-                    ContentProvider.triggers
+                    DataProvider.triggers
                         .call('insertOne', 'cms', 'auth', { 'input': detail, 'output': newUser.dbModel });
 
                     done(newUser.id);
@@ -193,10 +193,11 @@ class UserManager {
 
     changePassword(query, newPass) {
         let update = { '$set': { 'password': newPass } };
-        let authM = ContentProvider.getCollection('cms', 'auth');
+        let authM = DataProvider.getCollection('cms', 'auth');
         return authM.updateOne(query, update).exec().then();
     }
 }
 
+UserManager.instance = new UserManager()
 module.exports.name = 'userManager';
-module.exports.main = new UserManager();
+module.exports.main = UserManager.instance;

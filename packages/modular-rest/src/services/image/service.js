@@ -3,7 +3,7 @@ let fs = require('file-system');
 function getCollction(type, db = "media") {
   let coll;
 
-  coll = global.services.contentProvider.getCollection(db, type);
+  coll = global.services.dataProvider.getCollection(db, type);
 
   return coll;
 }

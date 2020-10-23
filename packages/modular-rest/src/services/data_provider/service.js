@@ -1,6 +1,6 @@
-let name = 'contentProvider';
+let name = 'dataProvider';
 var colog = require('colog');
-let { operationTypes, AccessDefinition } = require('../../class/security');
+let { AccessTypes, AccessDefinition } = require('../../class/security');
 
 const Mongoose = require('mongoose');
 Mongoose.set('useCreateIndex', true);
@@ -12,9 +12,9 @@ let list_dbs = [
 
 let connections = {};
 let collections = {};
-let AccessDefinitions = {};
+let permissionDefinitions = {};
 
-let triggers = require('./triggers');
+let triggers = require('./../../class/trigger_operator');
 let TypeCasters = require('./typeCasters');
 
 /**
@@ -25,7 +25,7 @@ let TypeCasters = require('./typeCasters');
  * @param {string} mongoOption.dbPrefix
  * @param {string} mongoOption.mongoBaseAddress
  */
-function connectToDatabaseByCollectionDefinitionList(dbName, CollectionDefinitionList = [], mongoOption) {
+function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitionList = [], mongoOption) {
 
     return new Promise((done, reject) => {
         // create db connection
@@ -35,7 +35,7 @@ function connectToDatabaseByCollectionDefinitionList(dbName, CollectionDefinitio
         connections[dbName] = connection;
 
         // add db models from schemas
-        CollectionDefinitionList.forEach(collectionDefinition => {
+        collectionDefinitionList.forEach(collectionDefinition => {
 
             let collection = collectionDefinition.collection;
             let schema = collectionDefinition.schema;
@@ -49,11 +49,16 @@ function connectToDatabaseByCollectionDefinitionList(dbName, CollectionDefinitio
 
             // define Access Definition from component permissions
             // and store it on global access definition object
-            AccessDefinitions[dbName] = new AccessDefinition({
+            permissionDefinitions[dbName] = new AccessDefinition({
                 database: dbName,
                 collection: collectionDefinition.collection,
                 permissionList: collectionDefinition.permissions
             });
+
+            // add trigger
+            if (collectionDefinition.trigger != undefined) {
+                triggers.addTrigger(collectionDefinition.trigger);
+            }
 
         })
 
@@ -104,47 +109,42 @@ function getCollection(db, collection) {
     return fountCollection;
 }
 
-function _getPermissionAccessList(db, collection, operationType) {
-    let permissionAccessList = [];
-    let AD;
+function _getPermissionList(db, collection, operationType) {
+    let permissionList = [];
+    let permissionDefinition;
 
-    if (!AccessDefinitions.hasOwnProperty(db))
-        return permissionAccessList;
+    if (!permissionDefinitions.hasOwnProperty(db))
+        return permissionList;
 
-    AccessDefinitions[db].forEach(accessDefinitions => {
-        if (accessDefinitions.collection == collection)
-            AD = accessDefinitions;
-    })
+    permissionDefinition = permissionDefinitions[db];
 
-    if (AD) {
-        AD.permissionAccessList.forEach(permissionAccess => {
-            if (permissionAccess.onlyOwnData == true) {
-                permissionAccessList.push(permissionAccess);
-            }
+    permissionDefinition.permissionList.forEach(permission => {
+        if (permission.onlyOwnData == true) {
+            permissionList.push(permission);
+        }
 
-            else if (operationType == operationTypes.read &&
-                permissionAccess.read == true) {
-                permissionAccessList.push(permissionAccess);
-            }
+        else if (operationType == AccessTypes.read &&
+            permission.read == true) {
+            permissionList.push(permission);
+        }
 
-            else if (operationType == operationTypes.write &&
-                permissionAccess.write == true) {
-                permissionAccessList.push(permissionAccess);
-            }
-        });
-    }
+        else if (operationType == AccessTypes.write &&
+            permission.write == true) {
+            permissionList.push(permission);
+        }
+    });
 
-    return permissionAccessList;
+    return permissionList;
 }
 
 function checkAccess(db, collection, operationType, queryOrDoc, user) {
     let key = false;
-    let permissionAccessList = _getPermissionAccessList(db, collection, operationType);
+    let permissionList = _getPermissionList(db, collection, operationType);
 
-    permissionAccessList.forEach(permissionAccess => {
-        let permissionField = permissionAccess.name;
+    permissionList.forEach(permission => {
+        let permissionType = permission.type;
 
-        if (permissionAccess.onlyOwnData) {
+        if (permission.onlyOwnData) {
             let refId = queryOrDoc.refId;
             let userId = user.id;
 
@@ -156,16 +156,16 @@ function checkAccess(db, collection, operationType, queryOrDoc, user) {
             }
         }
 
-        else if (operationType == operationTypes.read) {
-            if (permissionAccess.read &&
-                user.permission[permissionField] == true)
+        else if (operationType == AccessTypes.read) {
+            if (permission.read &&
+                user.permission[permissionType] == true)
                 key = true;
         }
 
-        else if (operationType == operationTypes.write) {
+        else if (operationType == AccessTypes.write) {
 
-            if (permissionAccess.write &&
-                user.permission[permissionField] == true)
+            if (permission.write &&
+                user.permission[permissionType] == true)
                 key = true;
         }
     });

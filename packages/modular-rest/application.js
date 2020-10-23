@@ -3,7 +3,7 @@ const koaBody = require('koa-body');
 const koaStatic = require('koa-static');
 var path = require('path');
 var Combination = require('./src/class/combinator');
-let ContentProvider = require('./src/services/content_provider/service');
+let DataProvider = require('./src/services/data_provider/service');
 let DataInsertion = require('./src/helper/data_insertion');
 let JWT = require('./src/services/jwt/service')
 
@@ -76,7 +76,7 @@ async function createRest({
         });
     }
 
-    await ContentProvider.addCollectionDefinitionByList({
+    await DataProvider.addCollectionDefinitionByList({
         list: [...defaultDatabaseDetail, ...(userDatabaseDetail || [])],
         mongoOption: { dbPrefix, mongoBaseAddress }
     })

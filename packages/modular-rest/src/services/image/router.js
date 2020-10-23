@@ -34,7 +34,7 @@ photos.post('/upload', async (ctx) =>
 
     if(!bodyValidate.isValid) {
         ctx.status = 412;
-        result = reply('f',  {'m': 'some fileds required.', 'e': bodyValidate.requires});
+        result = reply('f',  {'m': 'some fields required.', 'e': bodyValidate.requires});
     }
     
     else  {
@@ -62,7 +62,7 @@ photos.post('/remove', async (ctx) =>
 
     if(!bodyValidate.isValid) {
         ctx.status = 412;
-        result = reply('f',  {'m': 'some fileds required.', 'e': bodyValidate.requires});
+        result = reply('f',  {'m': 'some fields required.', 'e': bodyValidate.requires});
     }
     
     else  {

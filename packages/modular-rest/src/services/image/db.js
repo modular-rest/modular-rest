@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-let CollectionDefinition = require('../../class/component_collection');
+let CollectionDefinition = require('../../class/collection_definition');
 let { Permission, PermissionTypes } = require('../../class/security');
 
 module.exports = [

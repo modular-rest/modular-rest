@@ -30,11 +30,11 @@ class PermissionTypes {
     static get anonymous_access() { return 'anonymous_access' };
 }
 
-class operationTypes {
+class AccessTypes {
     static get read() { return 'read' };
     static get write() { return 'write' };
 }
 
 module.exports = {
-    AccessDefinition, Permission, PermissionTypes, operationTypes
+    AccessDefinition, Permission, PermissionTypes, AccessTypes
 }

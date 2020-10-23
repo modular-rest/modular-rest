@@ -1,4 +1,5 @@
 let validateObject = require('./class/validator');
+const userManager = require('./services/user_manager/service');
 
 module.exports.auth = async (ctx, next) => 
 {
@@ -10,7 +11,7 @@ module.exports.auth = async (ctx, next) =>
         
     let token = headers.authorization;
     
-    await global.services.userManager.main.getUserByToken(token)
+    await userManager.main.getUserByToken(token)
         .then(async user => 
         {
             ctx.state.user = user;
