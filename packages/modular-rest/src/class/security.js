@@ -7,7 +7,7 @@ class AccessDefinition {
 }
 
 class Permission {
-    constructor({ type, read = true, write = false, onlyOwnData = false }) {
+    constructor({ type, read = false, write = false, onlyOwnData = false }) {
         this.type = type;
         this.read = read;
         this.write = write;

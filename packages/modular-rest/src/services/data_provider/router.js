@@ -16,7 +16,7 @@ let dataProvider = new Router();
 dataProvider.use('/', middleware.auth, async (ctx, next) => {
     let body = ctx.request.body;
     let bodyValidated = validateObject(body, 'database collection');
-    
+
     // fields validation
     if (!bodyValidated.isValid) {
         ctx.throw(412, JSON.stringify(
@@ -48,7 +48,7 @@ dataProvider.use('/', middleware.auth, async (ctx, next) => {
     await next();
 });
 
-dataProvider.post('/find', async (ctx, next) => {
+dataProvider.post('/find', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection query');
 
@@ -61,9 +61,9 @@ dataProvider.post('/find', async (ctx, next) => {
     // access validation
     let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.read, body.query, ctx.state.user);
     if (!hasAccess) {
-      console.log(body);
-      console.log(ctx.state.user.permission);
-      ctx.throw(403, 'access denied');
+        console.log(body);
+        console.log(ctx.state.user.permission);
+        ctx.throw(403, 'access denied');
     }
 
     // collection validation
@@ -76,8 +76,12 @@ dataProvider.post('/find', async (ctx, next) => {
     // operate on db
     await collection.find(body.query, body.projection, body.options).exec()
         .then(async docs => {
-            ctx.state = docs;
-            await next();
+
+            // Call trigger
+            service.triggers.call('find', body.database, body.collection,
+                { 'query': body.query, 'queryResult': docs });
+
+            ctx.body = docs;
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -85,7 +89,7 @@ dataProvider.post('/find', async (ctx, next) => {
         });
 });
 
-dataProvider.post('/find-one', async (ctx, next) => {
+dataProvider.post('/find-one', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'collection query');
 
@@ -109,8 +113,12 @@ dataProvider.post('/find-one', async (ctx, next) => {
     // operate on db
     await collection.findOne(body.query, body.projection, body.options).exec()
         .then(async doc => {
-            ctx.state = doc;
-            await next();
+
+            // Call trigger
+            service.triggers.call('find-one', body.database, body.collection,
+                { 'query': body.query, 'queryResult': doc });
+
+            ctx.body = doc;
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -141,7 +149,14 @@ dataProvider.post('/count', async (ctx) => {
 
     // operate on db
     await collection.countDocuments(body.query).exec()
-        .then(docs => ctx.body = docs)
+        .then(docs => {
+
+            // Call trigger
+            service.triggers.call('count', body.database, body.collection,
+                { 'query': body.query, 'queryResult': docs });
+
+            ctx.body = docs
+        })
         .catch(err => {
             ctx.status = err.status || 500;
             ctx.body = err.message;
@@ -175,8 +190,10 @@ dataProvider.post('/update-one', async (ctx) => {
     // operate on db
     await collection.updateOne(body.query, body.update, body.options).exec()
         .then((writeOpResult) => {
+
+            // Call trigger
             service.triggers.call('update-one', body.database, body.collection,
-                { 'input': body.query, 'output': output });
+                { 'query': body.query, 'queryResult': writeOpResult });
 
             ctx.body = writeOpResult;
         })
@@ -186,7 +203,7 @@ dataProvider.post('/update-one', async (ctx) => {
         });
 });
 
-dataProvider.post('/insert-one', async (ctx, next) => {
+dataProvider.post('/insert-one', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection doc');
 
@@ -199,9 +216,9 @@ dataProvider.post('/insert-one', async (ctx, next) => {
     // access validation
     let hasAccess = service.checkAccess(body.database, body.collection, AccessTypes.write, body.doc, ctx.state.user);
     if (!hasAccess) {
-      console.log(body);
-      console.log(ctx.state.user.permission);
-      ctx.throw(403, 'access denied');
+        console.log(body);
+        console.log(ctx.state.user.permission);
+        ctx.throw(403, 'access denied');
     }
 
     // collection validation
@@ -214,11 +231,12 @@ dataProvider.post('/insert-one', async (ctx, next) => {
     // operate on db
     await new collection(body.doc).save()
         .then(async (newDoc) => {
-            service.triggers.call('insert-one', body.database, body.collection,
-                { 'input': body.query, 'output': newDoc });
 
-            ctx.state = newDoc;
-            await next();
+            // Call trigger
+            service.triggers.call('insert-one', body.database, body.collection,
+                { 'query': body.query, 'queryResult': newDoc });
+
+            ctx.body = newDoc;
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -253,8 +271,10 @@ dataProvider.post('/remove-one', async (ctx) => {
     // operate on db
     await collection.deleteOne(body.query).exec()
         .then(async (result) => {
+
+            // Call trigger
             service.triggers.call('remove-one', body.database, body.collection,
-                { 'input': body.query, 'output': output });
+                { 'query': body.query, 'queryResult': result });
 
             ctx.body = result;
         })
@@ -264,7 +284,7 @@ dataProvider.post('/remove-one', async (ctx) => {
         });
 });
 
-dataProvider.post('/aggregate', async (ctx, next) => {
+dataProvider.post('/aggregate', async (ctx) => {
     let body = ctx.request.body;
     let bodyValidate = validateObject(body, 'database collection piplines accessQuery');
 
@@ -288,8 +308,12 @@ dataProvider.post('/aggregate', async (ctx, next) => {
     // operate on db
     await collection.aggregate(body.piplines).exec()
         .then(async (result) => {
-            ctx.state = result;
-            await next();
+
+            // Call trigger
+            service.triggers.call('aggregate', body.database, body.collection,
+                { 'query': body.query, 'queryResult': result });
+
+            ctx.body = result;
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -357,23 +381,23 @@ dataProvider.use('/', async (ctx, next) => {
     // each mongoose doc must have a "toJson" method being defined on its own Schema.
 
     let state = ctx.state;
-//     let result;
+    //     let result;
 
-//     // array
-//     if(!isNaN(state.length)) {
-//         result = [];
+    //     // array
+    //     if(!isNaN(state.length)) {
+    //         result = [];
 
-//         for (let index = 0; index < state.length; index++) {
-//             const element = state[index];
-//             if(element.hasOwnProperty('toJson'))
-//                 result.push(element.toJson());
-//             else result.push(element);
-//         }
-//     }
-//     // object
-//     else {
-//         result = state.toJson();
-//     }
+    //         for (let index = 0; index < state.length; index++) {
+    //             const element = state[index];
+    //             if(element.hasOwnProperty('toJson'))
+    //                 result.push(element.toJson());
+    //             else result.push(element);
+    //         }
+    //     }
+    //     // object
+    //     else {
+    //         result = state.toJson();
+    //     }
 
     ctx.body = state;
 });
