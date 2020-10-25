@@ -11,8 +11,8 @@ let defaultServiceRoot = __dirname + '/src/services';
  * 
  * @param {object} option
  * 
- * @param {string} option.servicesPath root directory of your router.js/db.js files.
- * @param {string} option.uploadPath root directory for upload files.
+ * @param {string} option.componentDirectory root directory of your router.js/db.js files.
+ * @param {string} option.uploadDirectory root directory for upload files.
  * @param {function} option.onBeforeInit a callback being called before init koa server.
  * @param {function} option.onAfterInit a callback being called after server initialization.
  * @param {number} option.port server port
@@ -31,8 +31,8 @@ let defaultServiceRoot = __dirname + '/src/services';
  * @param {string} option.adminUser.password
  */
 async function createRest({
-    servicesPath,
-    uploadPath,
+    componentDirectory,
+    uploadDirectory,
     keypair,
     onBeforeInit,
     onAfterInit,
@@ -49,8 +49,8 @@ async function createRest({
 }) {
 
     let options = {
-        servicesPath,
-        uploadPath,
+        componentDirectory,
+        uploadDirectory,
         keypair,
         onBeforeInit,
         onAfterInit,
@@ -106,15 +106,15 @@ async function createRest({
      * 
      * Plug in routes and database
      */
-    if (options.servicesPath) {
+    if (options.componentDirectory) {
 
         // Plug in user routes
-        await Combination.combineRoutesByFilePath(options.servicesPath, app);
+        await Combination.combineRoutesByFilePath(options.componentDirectory, app);
 
         // Collect user CollectionDefinitions (db.js files)
         let userDatabaseDetail = [];
         userDatabaseDetail = await Combination.combineModulesByFilePath({
-            rootDirectory: options.servicesPath,
+            rootDirectory: options.componentDirectory,
             filename: { name: 'db', extension: '.js' },
             combineWithRoot: true
         });

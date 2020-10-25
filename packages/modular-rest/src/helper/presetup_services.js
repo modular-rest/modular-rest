@@ -1,7 +1,8 @@
 let DataInsertion = require('./data_insertion');
 let JWT = require('../services/jwt/service');
+let FileService = require('../services/file/service');
 
-module.exports.setup = async ({ keypair, adminUser }) => {
+module.exports.setup = async ({ keypair, adminUser, uploadDirectory }) => {
 
     /**
      * Json web Token
@@ -24,5 +25,10 @@ module.exports.setup = async ({ keypair, adminUser }) => {
      */
     await DataInsertion.createPermissions();
     await DataInsertion.createAdminUser(adminUser)
+
+    /**
+     * File Service
+     */
+    FileService.setUploadDirectory(uploadDirectory);
 
 }
