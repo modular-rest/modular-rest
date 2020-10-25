@@ -5,11 +5,6 @@ let { AccessTypes, AccessDefinition } = require('../../class/security');
 const Mongoose = require('mongoose');
 Mongoose.set('useCreateIndex', true);
 
-let list_dbs = [
-    { name: 'cms', path: './database/cms.js' },
-    { name: 'user', path: './database/user.js' },
-];
-
 let connections = {};
 let collections = {};
 let permissionDefinitions = {};
@@ -43,15 +38,18 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
             if (collections[dbName] == undefined)
                 collections[dbName] = {};
 
+            if (permissionDefinitions[dbName] == undefined)
+                permissionDefinitions[dbName] = {};
+
             // create model from schema
             // and store in on global collection object
             collections[dbName][collection] = connection.model(collection, schema);
 
             // define Access Definition from component permissions
             // and store it on global access definition object
-            permissionDefinitions[dbName] = new AccessDefinition({
+            permissionDefinitions[dbName][collection] = new AccessDefinition({
                 database: dbName,
-                collection: collectionDefinition.collection,
+                collection: collection,
                 permissionList: collectionDefinition.permissions
             });
 
@@ -98,8 +96,6 @@ async function addCollectionDefinitionByList({ list, mongoOption }) {
 
 function getCollection(db, collection) {
     let fountCollection;
-    // let prefix = global.config.db_prefix;
-    // let dbNameWithPrefix = prefix + db;
 
     if (collections.hasOwnProperty(db)) {
         if (collections[db].hasOwnProperty(collection))
@@ -116,7 +112,7 @@ function _getPermissionList(db, collection, operationType) {
     if (!permissionDefinitions.hasOwnProperty(db))
         return permissionList;
 
-    permissionDefinition = permissionDefinitions[db];
+    permissionDefinition = permissionDefinitions[db][collection];
 
     permissionDefinition.permissionList.forEach(permission => {
         if (permission.onlyOwnData == true) {
@@ -144,12 +140,12 @@ function checkAccess(db, collection, operationType, queryOrDoc, user) {
     permissionList.forEach(permission => {
         let permissionType = permission.type;
 
-        if (permission.onlyOwnData) {
-            let refId = queryOrDoc.refId;
+        if (permission.onlyOwnData == true) {
+            let owner = queryOrDoc.owner;
             let userId = user.id;
 
             try {
-                if (refId.toString() == userId.toString())
+                if (owner.toString() == userId.toString())
                     key = true;
             } catch (error) {
                 key = false;

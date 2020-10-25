@@ -2,7 +2,7 @@ const DataProvider = require('../services/data_provider/service');
 
 function createPermissions() {
   let model = DataProvider.getCollection('cms', 'permission');
-
+  
   return new Promise(async (done, reject) => {
 
     // create customer permission
@@ -22,6 +22,8 @@ function createPermissions() {
       await new model({
         customer_access: true,
         anonymous_access: true,
+        upload_file_access: true,
+        remove_file_access: true,
         isDefault: true,
         title: 'customer',
       }).save().catch(reject);
@@ -32,6 +34,8 @@ function createPermissions() {
         god_access: true,
         customer_access: true,
         anonymous_access: true,
+        upload_file_access: true,
+        remove_file_access: true,
         title: 'administrator',
       }).save().catch(reject);
     }

@@ -30,7 +30,7 @@ function ckeckSimple(obj, requiredFields='')
 
     requires.forEach(key =>
     {
-        if (obj.hasOwnProperty(key)) 
+        if (obj[key]) 
             validMembers++;
         else notValidKeys.push(key);
     });

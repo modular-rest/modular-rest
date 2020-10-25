@@ -22,11 +22,15 @@ class PermissionTypes {
     constructor() {
         this.god_access = 'god_access';
         this.user_access = 'user_access';
+        this.upload_file_access = 'upload_file_access';
+        this.remove_file_access = 'remove_file_access';
         this.anonymous_access = 'anonymous_access';
     }
 
     static get god_access() { return 'god_access' };
     static get user_access() { return 'user_access' };
+    static get upload_file_access() { return 'upload_file_access' };
+    static get remove_file_access() { return 'remove_file_access' };
     static get anonymous_access() { return 'anonymous_access' };
 }
 

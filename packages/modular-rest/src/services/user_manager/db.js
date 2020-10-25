@@ -34,11 +34,11 @@ let authSchema = new Schema({
 authSchema.index({ email: 1 }, { unique: true });
 
 let detailSchema = new Schema({
-    refId: { type: Schema.Types.ObjectId, ref: 'auth', required: true },
+    referenceId: { type: Schema.Types.ObjectId, ref: 'auth', required: true },
     fullname: String,
     imgStamp: String,
 });
-detailSchema.index({ refId: 1 }, { unique: true });
+detailSchema.index({ referenceId: 1 }, { unique: true });
 
 module.exports = [
     new CollectionDefinition({

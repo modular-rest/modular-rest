@@ -7,22 +7,25 @@ let { Permission, PermissionTypes } = require('../../class/security');
 module.exports = [
     new CollectionDefinition({
         db: 'cms',
-        collection: 'slideshow',
+        collection: 'file',
         schema: new Schema({
-            showDetail: Boolean,
-            refId: String,
-            local_title: Object,
-            local_subtitle: Object,
-            imgStamp: String,
-            link: String,
+            originalName: String,
+            fileName: String,
+            owner: String,
         }),
         permissions: [
             new Permission({
-                type: PermissionTypes.advanced_settings,
+                type: PermissionTypes.upload_file_access,
                 read: true,
-                write: false,
+                write: true,
                 onlyOwnData: false,
-            })
+            }),
+            new Permission({
+                type: PermissionTypes.remove_file_access,
+                read: true,
+                write: true,
+                onlyOwnData: false,
+            }),
         ],
     }),
 ]
