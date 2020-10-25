@@ -69,6 +69,12 @@ async function createRest({
     app.use(koaBody(bodyParserOptions));
 
     /**
+     * Plug In KoaStatic
+     */
+    if (options.uploadDirectory)
+        app.use(koaStatic(uploadDirectory));
+
+    /**
      * Run before hook
      */
     if (options.onBeforeInit) onBeforeInit(app);
@@ -99,7 +105,6 @@ async function createRest({
 
     // Setting up default services
     await require('./src/helper/presetup_services').setup(options);
-
 
     /**
      * User Services
