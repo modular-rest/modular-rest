@@ -81,7 +81,7 @@ userManager.post('/register_submit_pass', async (ctx) =>
   }
 
   let registerResult = await service
-  	.submitePasswordForTemporaryID(body.id, body.password, body.serial).then();
+  	.submitPasswordForTemporaryID(body.id, body.password, body.serial).then();
 
   if(registerResult == true) ctx.body = reply('s');
   else {

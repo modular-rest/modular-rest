@@ -26,7 +26,7 @@ module.exports = class User {
         return brief;
     }
 
-    updateDetail(detail)
+    setNewDetail(detail)
     {
         if(detail.phone)    this.phone      = detail.phone;
         if(detail.email)    this.email      = detail.email;

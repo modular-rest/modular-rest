@@ -1,6 +1,6 @@
 let User = require('../../class/user');
 const DataProvider = require('../data_provider/service')
-const JWT = require('../jwt/service') 
+const JWT = require('../jwt/service')
 
 class UserManager {
 
@@ -8,6 +8,11 @@ class UserManager {
         this.tempIds = {};
     }
 
+    /**
+     * Get a user by its Id.
+     * 
+     * @param {string} id userid
+     */
     getUserById(id) {
         return new Promise(async (done, reject) => {
             let userModel = DataProvider.getCollection('cms', 'auth');
@@ -22,6 +27,11 @@ class UserManager {
         })
     }
 
+    /**
+     * Get user by token.
+     * 
+     * @param {string} token auth token
+     */
     getUserByToken(token) {
         return JWT.main.verify(token)
             .then(async payload => {
@@ -36,95 +46,135 @@ class UserManager {
             });
     }
 
-    isSerialValid(id, serial)
-    {
-         let key = false;
-         
-         if(this.tempIds.hasOwnProperty(id) && this.tempIds[id].serial == serial)
-              key = true;
-         
-         return key;
+    /**
+     * Define whether or not verification code is valid.
+     * 
+     * @param {string} id auth id phone|email
+     * @param {string} serial verification code
+     */
+    isSerialValid(id, serial) {
+        let key = false;
+
+        if (this.tempIds.hasOwnProperty(id) && this.tempIds[id].serial.toString() === serial.toString())
+            key = true;
+
+        return key;
     }
 
+    /**
+     * Login and return user token.
+     * 
+     * @param {string} id auth id phone|email
+     * @param {string} idType auth type phone|email
+     * @param {string} password 
+     */
     loginUser(id = '', idType = '', password = '') {
         let token;
 
         return new Promise(async (done, reject) => {
-            //findUser
+
+            // Get user model
             let userModel = DataProvider.getCollection('cms', 'auth');
 
+            /**
+             * Setup query to find by phone or email
+             */
             let query = { 'password': password };
 
             if (idType == 'phone') query['phone'] = id;
             else if (idType == 'email') query['email'] = id;
 
+            // Get from database
             let gottenFromDB = await userModel
                 .findOne(query).populate('permission')
-                .exec().then().catch(reject);
+                .exec().catch(reject);
 
             if (!gottenFromDB) reject('user not found');
+
+            // Token
             else {
-                // load to object
+
+                // Load user
                 let user = await User.loadFromModel(gottenFromDB)
                     .then().catch(reject);
 
-                // generate json web token
+                // Get token payload
+                // This is some information about the user.
                 let payload = user.getBrief();
 
+                // Generate json web token
                 token = await JWT.main.sign(payload)
                     .then().catch(reject);
 
-                // return
                 done(token);
             }
         });
     }
 
+    /**
+     * Login as anonymous user
+     */
     loginAnonymous() {
         let token;
 
         return new Promise(async (done, reject) => {
-            //findUser
+
+            // Get user model
             let userModel = DataProvider.getCollection('cms', 'auth');
 
+            // Setup query
             let query = { 'type': 'anonymous' };
 
+            // Get from database
             let gottenFromDB = await userModel
                 .findOne(query).populate('permission')
                 .exec().then().catch(reject);
 
+            // Create a new anonymous user if it doesn't exist.
+            // There are only one anonymous user in the database
+            // and every guest token being generated from it.
             if (!gottenFromDB) {
                 let newUserId = await this.registerUser({ 'type': 'anonymous' }).catch(reject);
                 gottenFromDB = await this.getUserById(newUserId).catch(reject);
             }
 
-            // load to object
+            // load User
             let user = await User.loadFromModel(gottenFromDB)
                 .then().catch(reject);
 
-            // generate json web token
+            // Get token payload
+            // This is some information about the user.
             let payload = user.getBrief();
 
+            // Generate json web token
             token = await JWT.main.sign(payload)
                 .then().catch(reject);
 
-            // return
             done(token);
         });
     }
 
+    /**
+     * Store user email|phone temporarily in memory.
+     *  
+     * @param {string} id id is username or phone number
+     * @param {string} type type is the type of id
+     * @param {string} serial serial is a string being sent to user and he/she must return it back.
+     */
     registerTemporaryID(id, type, serial) {
-        // id is username or phone number
-        // type is the type of id
-        // serial is a string being sent to user and he must return it back.
         this.tempIds[id] = { 'id': id, 'type': type, 'serial': serial };
     }
 
-    async submitePasswordForTemporaryID(id, password, serial) {
+    async submitPasswordForTemporaryID(id, password, serial) {
         let key = false;
 
-        if (this.tempIds.hasOwnProperty(id)
-            && this.tempIds[id].serial == serial) {
+        // If user email|phone has already stored
+        // a new user being created 
+        if (
+            this.tempIds.hasOwnProperty(id) &&
+            this.tempIds[id].serial.toString() == serial.toString()
+        ) {
+
             let authDetail = { 'password': password };
 
             if (this.tempIds[id].type == 'phone')

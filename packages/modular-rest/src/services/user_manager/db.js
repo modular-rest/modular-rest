@@ -33,13 +33,6 @@ let authSchema = new Schema({
 });
 authSchema.index({ email: 1 }, { unique: true });
 
-let detailSchema = new Schema({
-    referenceId: { type: Schema.Types.ObjectId, ref: 'auth', required: true },
-    fullname: String,
-    imgStamp: String,
-});
-detailSchema.index({ referenceId: 1 }, { unique: true });
-
 module.exports = [
     new CollectionDefinition({
         db: 'cms',
@@ -66,23 +59,4 @@ module.exports = [
             }),
         ],
     }),
-
-    new CollectionDefinition({
-        db: 'cms',
-        collection: 'user',
-        schema: detailSchema,
-        permissions: [
-            new Permission({
-                type: PermissionTypes.customer_access,
-                read: true,
-                write: true,
-                onlyOwnData: true
-            }),
-            new Permission({
-                type: PermissionTypes.user_manager,
-                read: true,
-                write: true
-            }),
-        ]
-    })
 ]
