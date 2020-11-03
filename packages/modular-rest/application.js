@@ -46,7 +46,7 @@ async function createRest({
         dbPrefix: 'mrest_',
     },
     adminUser = {
-        email: 'admin@email,com',
+        email: 'admin@email.com',
         password: '@dmin',
     },
     verificationCodeGeneratorMethod,
