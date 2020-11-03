@@ -27,11 +27,7 @@ userManager.post('/register_submit_id', async (ctx) =>
 		return;
 	}
 	
-	let serial;
-	
-	await global.services.sender.sendVarificationCode(body.idType, body.id)
-		.then(code => serial = code)
-		.catch(err => ctx.throw(err.status || 500, err));
+	let serial = service.generateVerificationCode();
 
 	if(serial) service.registerTemporaryID(body.id, body.idType, serial);
 

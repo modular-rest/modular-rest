@@ -8,6 +8,12 @@ class UserManager {
         this.tempIds = {};
     }
 
+    generateVerificationCode() {
+        // this is default code 
+        return '123'
+    }
+    
+
     /**
      * Get a user by its Id.
      * 

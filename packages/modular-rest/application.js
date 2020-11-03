@@ -4,6 +4,7 @@ const koaStatic = require('koa-static');
 var path = require('path');
 var Combination = require('./src/class/combinator');
 let DataProvider = require('./src/services/data_provider/service');
+let UserService = require('./src/services/user_manager/service')
 
 let defaultServiceRoot = __dirname + '/src/services';
 
@@ -29,6 +30,8 @@ let defaultServiceRoot = __dirname + '/src/services';
  * @param {object} option.adminUser supper admin user to being created as the first user of the system.
  * @param {string} option.adminUser.email
  * @param {string} option.adminUser.password
+ * 
+ * @param {function} option.verificationCodeGeneratorMethod a method to return a code as verification when someone want to register a new user.
  */
 async function createRest({
     componentDirectory,
@@ -46,6 +49,7 @@ async function createRest({
         email: 'admin@email,com',
         password: '@dmin',
     },
+    verificationCodeGeneratorMethod,
 }) {
 
     let options = {
@@ -58,6 +62,7 @@ async function createRest({
         dontListen,
         mongo,
         adminUser,
+        verificationCodeGeneratorMethod
     };
 
     let app = new koa();
@@ -129,6 +134,11 @@ async function createRest({
             list: userDatabaseDetail || [],
             mongoOption: options.mongo
         })
+
+        // Plug in Verification method
+        if (typeof options.verificationCodeGeneratorMethod == 'function') {
+            UserService.main.generateVerificationCode = options.verificationCodeGeneratorMethod;
+        }
     }
 
     /**
