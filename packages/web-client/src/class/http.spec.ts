@@ -1,7 +1,8 @@
-import { Expect, Test, SetupFixture, Timeout } from "alsatian";
+import { Expect, Test, TestFixture, SetupFixture, Timeout } from "alsatian";
 import HTTP from './http';
 
-export class HttpClient {
+@TestFixture('Http Client')
+export class HttpClientTest {
 
     @SetupFixture
     public setGlobals() {

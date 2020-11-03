@@ -1,3 +1,5 @@
+import BaseResponse from '../types/base-response';
+
 interface HTTPClientOption {
     baseUrl: string,
 }
@@ -51,30 +53,42 @@ class HTTPClient {
             request = this.injectHeader(request, options.headers);
         }
 
-        return new Promise<any>((done, reject) => {
+        return new Promise<XMLHttpRequest>((done) => {
 
-            request.send(JSON.stringify(options.body))
+            if (options.method == "POST") {
+                request = this.injectHeader(request, { 'content-type': 'application/json' });
+                request.send(JSON.stringify(options.body))
+            }
+            else {
+                request.send();
+            }
 
             request.onloadend = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
 
-                let result = parsJson(this.responseText);
-
-                if (this.status == 200) {
-                    done(result)
-                }
-                else {
-                    reject(result)
-                }
+                done(this as XMLHttpRequest)
             };
 
             request.onerror = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-                let result = parsJson(this.response);
-                reject(result);
+                done(this)
             }
         })
+            .then((request) => {
+
+                let result = parsJson(request.responseText);
+
+                if (request.status == 200) {
+                    return (result)
+                }
+                else {
+                    throw {
+                        hasError: true,
+                        error: result,
+                    } as BaseResponse;
+                }
+            })
     }
 
-    post(url: string = '', body: object = {}, options: RequestOption = {}) {
+    post(url: string = '', body: object = {}, options: RequestOption = {}): Promise<any> {
 
         let urlObject = new URL(url, this.baseUrl);
 
@@ -93,7 +107,7 @@ class HTTPClient {
             url: urlObject.toString(),
             method: 'GET',
             ...options
-        })
+        });
     }
 }
 
