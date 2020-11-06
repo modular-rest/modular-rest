@@ -1,52 +1,88 @@
-import { Expect, Test, TestFixture, SetupFixture, Timeout, TestCase, } from 'alsatian';
+import { describe, it, before, beforeEach } from 'mocha'
+import { assert, expect } from 'chai'
 import AuthService from './auth-service';
 
-@TestFixture('Auth')
-export class AuthServiceTest {
+describe('Auth Service', () => {
 
-    @SetupFixture
-    public setGlobals() {
+    let authService = AuthService
+        .getInstance('http://localhost:3000');
+
+    before(async () => {
+
+        // Running modular-rest server
+        const mrest = require('modular-rest');
+        await mrest.createRest();
 
         // Mocking global XMLHttpRequest class
         let xhr = require('xmlhttprequest-ts');
         global.XMLHttpRequest = xhr.XMLHttpRequest;
-    }
 
-    @Test('Login Anonymous')
-    @Timeout(30000)
-    public async loginAsAnonymous() {
+    })
 
-        let authService = AuthService
-            .getInstance('http://localhost:3000');
+    it('Login Anonymous', async () => {
 
         await authService.loginAsAnonymous()
             .then(body => {
-                Expect(body.token).toBeDefined();
+                expect(body).to.include.keys('token')
+            }).catch(error => {
+                expect(error.hasError).to.be.false
             })
-            .catch(error => {
-                Expect(error.hasError).toBe(false);
-            })
 
-    }
+    })
 
-    @Test('Login with email')
-    @Timeout(30000)
-    @TestCase('admin@email.com', '@dmin')
-    public async loginToDefaultAdmin(email: string, password: string) {
-
-        let authService = AuthService
-            .getInstance('http://localhost:3000');
+    it('Login with email', async () => {
 
         await authService.login({
             idType: 'email',
-            id: email,
-            password: password
+            id: 'admin@email.com',
+            password: '@dmin',
+        }).then(body => {
+            expect(body).to.include.keys('token')
+        }).catch(error => {
+            expect(error.hasError).to.be.false
         })
-            .then(body => {
-                Expect(body.token).toBeDefined();
+    })
+
+    describe('Register a new user', async () => {
+
+        let fakeMail = 'email' + new Date().getMilliseconds + '@fake.com';
+        let fakePassword = '1234567890';
+
+        it('Register identity', async () => {
+            await authService.registerIdentity({
+                id: fakeMail,
+                idType: 'email'
             })
-            .catch(error => {
-                Expect(error.hasError).toBe(false);
+                .then((body) => {
+                    expect(body).to.have.property('status', 'success');
+                }).catch(error => {
+                    expect(error.hasError).to.be.false
+                })
+        })
+
+        it('Validate verification code', async () => {
+            await authService.validateCode({
+                id: fakeMail,
+                code: '123'
             })
-    }
-}
+                .then((body) => {
+                    expect(body.isValid).to.be.true
+                }).catch(error => {
+                    expect(error.hasError).to.be.false
+                })
+        })
+
+        it('Submit Password', async () => {
+            await authService.submitPassword({
+                id: fakeMail,
+                code: '123',
+                password: fakePassword
+            })
+                .then((body) => {
+                    expect(body).to.have.property('status', 'success');
+                }).catch(error => {
+                    expect(error.hasError).to.be.false
+                })
+        })
+    })
+})

@@ -1,28 +1,27 @@
-import { Expect, Test, TestFixture, SetupFixture, Timeout } from "alsatian";
+import { describe, it, before, beforeEach } from 'mocha'
+import { assert } from 'chai'
 import HTTP from './http';
 
-@TestFixture('Http Client')
-export class HttpClientTest {
+describe('Http Client', () => {
 
-    @SetupFixture
-    public setGlobals() {
+    before(() => {
+
         // mocking global XMLHttpRequest class
         let xhr = require('xmlhttprequest-ts');
         global.XMLHttpRequest = xhr.XMLHttpRequest;
-    }
 
-    @Test('Get Request')
-    @Timeout(30000)
-    public async getRequest() {
+    })
 
+    it('send GET request', async () => {
         let http = new HTTP({
             baseUrl: 'https://reqres.in/'
         });
 
         await http.get('api/users')
             .then((body: { page: number }) => {
-                Expect(body.page).toBe(1);
+                // Expect(body.page).toBe(1);
+                assert.equal(body.page, 1)
             })
-    }
+    })
 
-}
+})
