@@ -33,37 +33,22 @@ let defaultServiceRoot = __dirname + '/src/services';
  * 
  * @param {function} option.verificationCodeGeneratorMethod a method to return a code as verification when someone want to register a new user.
  */
-async function createRest({
-    componentDirectory,
-    uploadDirectory,
-    keypair,
-    onBeforeInit,
-    onAfterInit,
-    port = 3000,
-    dontListen = false,
-    mongo = {
-        mongoBaseAddress: 'mongodb://localhost:27017',
-        dbPrefix: 'mrest_',
-    },
-    adminUser = {
-        email: 'admin@email,com',
-        password: '@dmin',
-    },
-    verificationCodeGeneratorMethod,
-}) {
+async function createRest(options) {
 
-    let options = {
-        componentDirectory,
-        uploadDirectory,
-        keypair,
-        onBeforeInit,
-        onAfterInit,
-        port,
-        dontListen,
-        mongo,
-        adminUser,
-        verificationCodeGeneratorMethod
-    };
+    options = {
+        port: 3000,
+        dontListen: false,
+        mongo: {
+            mongoBaseAddress: 'mongodb://localhost:27017',
+            dbPrefix: 'mrest_',
+        },
+        adminUser: {
+            email: 'admin@email.com',
+            password: '@dmin',
+        },
+
+        ...options,
+    }
 
     let app = new koa();
 
@@ -137,7 +122,9 @@ async function createRest({
 
         // Plug in Verification method
         if (typeof options.verificationCodeGeneratorMethod == 'function') {
-            UserService.main.generateVerificationCode = options.verificationCodeGeneratorMethod;
+            UserService.main.setCustomVerificationCodeGeneratorMethod(
+                options.verificationCodeGeneratorMethod
+            )
         }
     }
 
