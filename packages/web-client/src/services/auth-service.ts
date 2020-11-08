@@ -1,12 +1,13 @@
 import HttpClient from '../class/http';
 import BaseResponse from '../types/base-response';
+import GlobalOptions from '../class/global_options';
 
-interface identity {
+interface Identity {
     idType: 'email' | 'phone';
     id: String;
 }
 
-interface LoginOptions extends identity {
+interface LoginOptions extends Identity {
     password: string;
 }
 
@@ -23,14 +24,14 @@ class AuthService {
     private static instance: AuthService;
     private http: HttpClient;
 
-    private constructor(baseUrl: string) {
-        this.http = new HttpClient({ baseUrl: baseUrl });
+    private constructor() {
+        this.http = new HttpClient({ baseUrl: GlobalOptions.host });
     }
 
-    public static getInstance(baseUrl: string): AuthService {
+    public static getInstance(): AuthService {
 
         if (AuthService.instance == null) {
-            AuthService.instance = new AuthService(baseUrl);
+            AuthService.instance = new AuthService();
         }
 
         return AuthService.instance;
@@ -65,7 +66,7 @@ class AuthService {
      * @param options.idType the type of user identity
      * @param options.id user identity
      */
-    registerIdentity(identity: identity) {
+    registerIdentity(identity: Identity) {
         return this.http.post('/user/register_id', identity)
             .then(body => body as BaseResponse);
     }
@@ -91,7 +92,20 @@ class AuthService {
      * @param options.code verification code
      */
     submitPassword(options: { id: string, password: string, code: string }) {
-        return this.http.post('/user/submit_pass', options)
+        return this.http.post('/user/submit_password', options)
+            .then(body => body as BaseResponse);
+    }
+
+    /**
+     * Change password.
+     * 
+     * @param options 
+     * @param options.id user identity
+     * @param options.password user password
+     * @param options.code verification code
+     */
+    changePassword(options: { id: string, password: string, code: string }) {
+        return this.http.post('/user/change_password', options)
             .then(body => body as BaseResponse);
     }
 }

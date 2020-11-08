@@ -1,11 +1,14 @@
 import { describe, it, before, beforeEach } from 'mocha'
 import { assert, expect } from 'chai'
 import AuthService from './auth-service';
+import GlobalOptions from '../class/global_options';
 
 describe('Auth Service', () => {
 
+    GlobalOptions.set({ host: 'http://localhost:3000' })
+
     let authService = AuthService
-        .getInstance('http://localhost:3000');
+        .getInstance();
 
     before(async () => {
 
@@ -19,7 +22,7 @@ describe('Auth Service', () => {
 
     })
 
-    it('Login Anonymous', async () => {
+    it('should login as Anonymous', async () => {
 
         await authService.loginAsAnonymous()
             .then(body => {
@@ -30,7 +33,7 @@ describe('Auth Service', () => {
 
     })
 
-    it('Login with email', async () => {
+    it('should login with email', async () => {
 
         await authService.login({
             idType: 'email',
@@ -43,12 +46,12 @@ describe('Auth Service', () => {
         })
     })
 
-    describe('Register a new user', async () => {
+    describe('User registration', async () => {
 
-        let fakeMail = 'email' + new Date().getMilliseconds + '@fake.com';
+        let fakeMail = 'email' + new Date().getMilliseconds() + '@fake.com';
         let fakePassword = '1234567890';
 
-        it('Register identity', async () => {
+        it('should register an identity', async () => {
             await authService.registerIdentity({
                 id: fakeMail,
                 idType: 'email'
@@ -60,7 +63,7 @@ describe('Auth Service', () => {
                 })
         })
 
-        it('Validate verification code', async () => {
+        it('should validate verification code', async () => {
             await authService.validateCode({
                 id: fakeMail,
                 code: '123'
@@ -72,7 +75,7 @@ describe('Auth Service', () => {
                 })
         })
 
-        it('Submit Password', async () => {
+        it('should submit Password', async () => {
             await authService.submitPassword({
                 id: fakeMail,
                 code: '123',
@@ -83,6 +86,47 @@ describe('Auth Service', () => {
                 }).catch(error => {
                     expect(error.hasError).to.be.false
                 })
+        })
+
+        describe('Password change', () => {
+
+            it('should register an identity', async () => {
+                await authService.registerIdentity({
+                    id: fakeMail,
+                    idType: 'email'
+                })
+                    .then((body) => {
+                        expect(body).to.have.property('status', 'success');
+                    }).catch(error => {
+                        expect(error.hasError).to.be.false
+                    })
+            })
+
+            it('should validate verification code', async () => {
+                await authService.validateCode({
+                    id: fakeMail,
+                    code: '123'
+                })
+                    .then((body) => {
+                        expect(body.isValid).to.be.true
+                    }).catch(error => {
+                        expect(error.hasError).to.be.false
+                    })
+            })
+
+            it('should submit Password', async () => {
+                await authService.changePassword({
+                    id: fakeMail,
+                    code: '123',
+                    password: fakePassword + '-changed'
+                })
+                    .then((body) => {
+                        expect(body).to.have.property('status', 'success');
+                    }).catch(error => {
+                        expect(error.hasError).to.be.false
+                    })
+            })
+
         })
     })
 })
