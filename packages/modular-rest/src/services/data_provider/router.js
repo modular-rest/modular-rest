@@ -81,7 +81,7 @@ dataProvider.post('/find', async (ctx) => {
             service.triggers.call('find', body.database, body.collection,
                 { 'query': body.query, 'queryResult': docs });
 
-            ctx.body = docs;
+            ctx.body = { data: docs };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -91,7 +91,7 @@ dataProvider.post('/find', async (ctx) => {
 
 dataProvider.post('/find-one', async (ctx) => {
     let body = ctx.request.body;
-    let bodyValidate = validateObject(body, 'collection query');
+    let bodyValidate = validateObject(body, 'database collection query');
 
     // fields validation
     if (!bodyValidate.isValid) {
@@ -118,7 +118,7 @@ dataProvider.post('/find-one', async (ctx) => {
             service.triggers.call('find-one', body.database, body.collection,
                 { 'query': body.query, 'queryResult': doc });
 
-            ctx.body = doc;
+            ctx.body = { data: doc };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -149,13 +149,13 @@ dataProvider.post('/count', async (ctx) => {
 
     // operate on db
     await collection.countDocuments(body.query).exec()
-        .then(docs => {
+        .then(count => {
 
             // Call trigger
             service.triggers.call('count', body.database, body.collection,
-                { 'query': body.query, 'queryResult': docs });
+                { 'query': body.query, 'queryResult': count });
 
-            ctx.body = docs
+            ctx.body = { data: count }
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -195,7 +195,7 @@ dataProvider.post('/update-one', async (ctx) => {
             service.triggers.call('update-one', body.database, body.collection,
                 { 'query': body.query, 'queryResult': writeOpResult });
 
-            ctx.body = writeOpResult;
+            ctx.body = { data: writeOpResult };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -236,7 +236,7 @@ dataProvider.post('/insert-one', async (ctx) => {
             service.triggers.call('insert-one', body.database, body.collection,
                 { 'query': body.query, 'queryResult': newDoc });
 
-            ctx.body = newDoc;
+            ctx.body = { data: newDoc };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -276,7 +276,7 @@ dataProvider.post('/remove-one', async (ctx) => {
             service.triggers.call('remove-one', body.database, body.collection,
                 { 'query': body.query, 'queryResult': result });
 
-            ctx.body = result;
+            ctx.body = { data: result };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -286,7 +286,7 @@ dataProvider.post('/remove-one', async (ctx) => {
 
 dataProvider.post('/aggregate', async (ctx) => {
     let body = ctx.request.body;
-    let bodyValidate = validateObject(body, 'database collection piplines accessQuery');
+    let bodyValidate = validateObject(body, 'database collection  s accessQuery');
 
     // fields validation
     if (!bodyValidate.isValid) {
@@ -306,14 +306,14 @@ dataProvider.post('/aggregate', async (ctx) => {
     }
 
     // operate on db
-    await collection.aggregate(body.piplines).exec()
+    await collection.aggregate(body.pipelines).exec()
         .then(async (result) => {
 
             // Call trigger
             service.triggers.call('aggregate', body.database, body.collection,
                 { 'query': body.query, 'queryResult': result });
 
-            ctx.body = result;
+            ctx.body = { data: result };
         })
         .catch(err => {
             ctx.status = err.status || 500;
@@ -321,9 +321,9 @@ dataProvider.post('/aggregate', async (ctx) => {
         });
 });
 
-dataProvider.post('/getByIds', async (ctx, next) => {
+dataProvider.post('/findByIds', async (ctx, next) => {
     let body = ctx.request.body;
-    let bodyValidate = validateObject(body, 'database collection IDs');
+    let bodyValidate = validateObject(body, 'database collection ids');
 
     // fields validation
     if (!bodyValidate.isValid) {
@@ -345,15 +345,15 @@ dataProvider.post('/getByIds', async (ctx, next) => {
     let or = [];
 
     try {
-        body.IDs.forEach(id => {
+        body.ids.forEach(id => {
             let castedid = service.getAsID(id);
             or.push({ '_id': castedid });
         });
     } catch (e) {
-        console.log('IDs.forEach', e);
+        console.log('ids.forEach', e);
     }
 
-    let piplines = [
+    let pipelines = [
         {
             $match: { $or: or }
         },
@@ -363,9 +363,9 @@ dataProvider.post('/getByIds', async (ctx, next) => {
     ];
 
     // operate on db
-    await collection.aggregate(piplines).exec()
+    await collection.aggregate(pipelines).exec()
         .then(async (result) => {
-            ctx.state = result;
+            ctx.state = { data: result };
             await next();
         })
         .catch(err => {

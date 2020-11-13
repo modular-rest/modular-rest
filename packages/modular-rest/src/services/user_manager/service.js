@@ -8,11 +8,23 @@ class UserManager {
         this.tempIds = {};
     }
 
+    /**
+     * 
+     * @param {function} method a method that return random verification code
+     */
+    setCustomVerificationCodeGeneratorMethod(method) {
+        this.verificationCodeGeneratorMethod = method
+    }
+
     generateVerificationCode() {
+
+        if (this.verificationCodeGeneratorMethod)
+            return this.verificationCodeGeneratorMethod()
+
         // this is default code 
         return '123'
     }
-    
+
 
     /**
      * Get a user by its Id.
@@ -56,12 +68,12 @@ class UserManager {
      * Define whether or not verification code is valid.
      * 
      * @param {string} id auth id phone|email
-     * @param {string} serial verification code
+     * @param {string} code verification code
      */
-    isSerialValid(id, serial) {
+    isCodeValid(id, code) {
         let key = false;
 
-        if (this.tempIds.hasOwnProperty(id) && this.tempIds[id].serial.toString() === serial.toString())
+        if (this.tempIds.hasOwnProperty(id) && this.tempIds[id].code.toString() === code.toString())
             key = true;
 
         return key;
@@ -165,20 +177,20 @@ class UserManager {
      *  
      * @param {string} id id is username or phone number
      * @param {string} type type is the type of id
-     * @param {string} serial serial is a string being sent to user and he/she must return it back.
+     * @param {string} code code is a string being sent to user and he/she must return it back.
      */
-    registerTemporaryID(id, type, serial) {
-        this.tempIds[id] = { 'id': id, 'type': type, 'serial': serial };
+    registerTemporaryID(id, type, code) {
+        this.tempIds[id] = { 'id': id, 'type': type, 'code': code };
     }
 
-    async submitPasswordForTemporaryID(id, password, serial) {
+    async submitPasswordForTemporaryID(id, password, code) {
         let key = false;
 
         // If user email|phone has already stored
         // a new user being created 
         if (
             this.tempIds.hasOwnProperty(id) &&
-            this.tempIds[id].serial.toString() == serial.toString()
+            this.tempIds[id].code.toString() == code.toString()
         ) {
 
             let authDetail = { 'password': password };
@@ -197,11 +209,11 @@ class UserManager {
         return key;
     }
 
-    async changePasswordForTemporaryID(id, password, serial) {
+    async changePasswordForTemporaryID(id, password, code) {
         let key = false;
 
         if (this.tempIds.hasOwnProperty(id)
-            && this.tempIds[id].serial == serial) {
+            && this.tempIds[id].code == code) {
             let query = {};
 
             if (this.tempIds[id].type == 'phone')

@@ -1,3 +1,5 @@
+import BaseResponse from '../types/base-response';
+
 interface HTTPClientOption {
     baseUrl: string,
 }
@@ -29,9 +31,11 @@ function parsJson(entry: string) {
 class HTTPClient {
 
     baseUrl: string;
+    private commonHeaders: Headers;
 
     constructor(options: HTTPClientOption) {
         this.baseUrl = options.baseUrl;
+        this.commonHeaders = {};
     }
 
     private injectHeader(request: XMLHttpRequest, headers: Headers) {
@@ -51,30 +55,50 @@ class HTTPClient {
             request = this.injectHeader(request, options.headers);
         }
 
-        return new Promise<any>((done, reject) => {
+        if (this.commonHeaders) {
+            request = this.injectHeader(request, this.commonHeaders);
+        }
 
-            request.send(JSON.stringify(options.body))
+        return new Promise<XMLHttpRequest>((done) => {
+
+            if (options.method == "POST") {
+                request = this.injectHeader(request, { 'content-type': 'application/json' });
+                request.send(JSON.stringify(options.body))
+            }
+            else {
+                request.send();
+            }
 
             request.onloadend = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
 
-                let result = parsJson(this.responseText);
-
-                if (this.status == 200) {
-                    done(result)
-                }
-                else {
-                    reject(result)
-                }
+                done(this as XMLHttpRequest)
             };
 
             request.onerror = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-                let result = parsJson(this.response);
-                reject(result);
+                done(this)
             }
         })
+            .then((request) => {
+
+                let result = parsJson(request.responseText);
+
+                if (request.status == 200) {
+                    return (result)
+                }
+                else {
+                    throw {
+                        hasError: true,
+                        error: result,
+                    } as BaseResponse;
+                }
+            })
     }
 
-    post(url: string = '', body: object = {}, options: RequestOption = {}) {
+    setCommonHeader(headers: Headers) {
+        this.commonHeaders = headers;
+    }
+
+    post<T>(url: string = '', body: object = {}, options: RequestOption = {}) {
 
         let urlObject = new URL(url, this.baseUrl);
 
@@ -84,9 +108,10 @@ class HTTPClient {
             method: 'POST',
             ...options
         })
+        .then(body => body as T)
     }
 
-    get(url: string = '', options: RequestOption = {}) {
+    get<T>(url: string = '', options: RequestOption = {}) {
         let urlObject = new URL(url, this.baseUrl);
 
         return this.request({
@@ -94,6 +119,7 @@ class HTTPClient {
             method: 'GET',
             ...options
         })
+        .then(body => body as T)
     }
 }
 
