@@ -1,20 +1,20 @@
-import { describe, it, before, beforeEach } from 'mocha'
+import { describe, it, before, after } from 'mocha'
 import { assert, expect } from 'chai'
-import AuthService from './auth-service';
+import AuthService from './authentication';
 import GlobalOptions from '../class/global_options';
 
 describe('Auth Service', () => {
 
     GlobalOptions.set({ host: 'http://localhost:3000' })
-
-    let authService = AuthService
-        .getInstance();
+    let authService = AuthService.getInstance();
+    // let server: any;
 
     before(async () => {
 
         // Running modular-rest server
-        const mrest = require('modular-rest');
-        await mrest.createRest();
+        // const mrest = require('modular-rest');
+        // server = await mrest.createRest()
+        //     .then((mrestInstance: any) => mrestInstance.server);
 
         // Mocking global XMLHttpRequest class
         let xhr = require('xmlhttprequest-ts');

@@ -17,8 +17,8 @@ describe('Http Client', () => {
             baseUrl: 'https://reqres.in/'
         });
 
-        await http.get('api/users')
-            .then((body: { page: number }) => {
+        await http.get<{ page: number }>('api/users')
+            .then((body) => {
                 // Expect(body.page).toBe(1);
                 assert.equal(body.page, 1)
             })

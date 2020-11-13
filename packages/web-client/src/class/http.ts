@@ -31,9 +31,11 @@ function parsJson(entry: string) {
 class HTTPClient {
 
     baseUrl: string;
+    private commonHeaders: Headers;
 
     constructor(options: HTTPClientOption) {
         this.baseUrl = options.baseUrl;
+        this.commonHeaders = {};
     }
 
     private injectHeader(request: XMLHttpRequest, headers: Headers) {
@@ -51,6 +53,10 @@ class HTTPClient {
 
         if (options.headers) {
             request = this.injectHeader(request, options.headers);
+        }
+
+        if (this.commonHeaders) {
+            request = this.injectHeader(request, this.commonHeaders);
         }
 
         return new Promise<XMLHttpRequest>((done) => {
@@ -88,7 +94,11 @@ class HTTPClient {
             })
     }
 
-    post(url: string = '', body: object = {}, options: RequestOption = {}): Promise<any> {
+    setCommonHeader(headers: Headers) {
+        this.commonHeaders = headers;
+    }
+
+    post<T>(url: string = '', body: object = {}, options: RequestOption = {}) {
 
         let urlObject = new URL(url, this.baseUrl);
 
@@ -98,16 +108,18 @@ class HTTPClient {
             method: 'POST',
             ...options
         })
+        .then(body => body as T)
     }
 
-    get(url: string = '', options: RequestOption = {}) {
+    get<T>(url: string = '', options: RequestOption = {}) {
         let urlObject = new URL(url, this.baseUrl);
 
         return this.request({
             url: urlObject.toString(),
             method: 'GET',
             ...options
-        });
+        })
+        .then(body => body as T)
     }
 }
 

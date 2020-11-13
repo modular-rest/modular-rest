@@ -10,28 +10,29 @@ let defaultServiceRoot = __dirname + '/src/services';
 
 /**
  * 
- * @param {object} option
+ * @param {object} options
  * 
- * @param {string} option.componentDirectory root directory of your router.js/db.js files.
- * @param {string} option.uploadDirectory root directory for upload files.
- * @param {function} option.onBeforeInit a callback being called before init koa server.
- * @param {function} option.onAfterInit a callback being called after server initialization.
- * @param {number} option.port server port
- * @param {boolean} option.dontListen server will not being run if it was true and just return koa app object.
+ * @param {string} options.componentDirectory root directory of your router.js/db.js files.
+ * @param {string} options.uploadDirectory root directory for upload files.
+ * @param {function} options.onBeforeInit a callback being called before init koa server.
+ * @param {function} options.onAfterInit a callback being called after server initialization.
+ * @param {number} options.port server port
+ * @param {boolean} options.dontListen server will not being run if it was true and just return koa app object.
  * 
- * @param {string} option.mongo mongodb options.
- * @param {string} option.mongo.dbPrefix a prefix for your database name.
- * @param {string} option.mongo.mongoBaseAddress the address of your mongo server without any database specification on it.
+ * @param {string} options.mongo mongodb options.
+ * @param {string} options.mongo.dbPrefix a prefix for your database name.
+ * @param {string} options.mongo.mongoBaseAddress the address of your mongo server without any database specification on it.
  * 
- * @param {object} option.keypair RSA keypair for authentication module
- * @param {string} option.keypair.private
- * @param {string} option.keypair.public
+ * @param {object} options.keypair RSA keypair for authentication module
+ * @param {string} options.keypair.private
+ * @param {string} options.keypair.public
  * 
- * @param {object} option.adminUser supper admin user to being created as the first user of the system.
- * @param {string} option.adminUser.email
- * @param {string} option.adminUser.password
+ * @param {object} options.adminUser supper admin user to being created as the first user of the system.
+ * @param {string} options.adminUser.email
+ * @param {string} options.adminUser.password
  * 
- * @param {function} option.verificationCodeGeneratorMethod a method to return a code as verification when someone want to register a new user.
+ * @param {function} options.verificationCodeGeneratorMethod a method to return a code as verification when someone want to register a new user.
+ * @param {array} options.CollectionDefinitions an array of additional collectionDefinitions
  */
 async function createRest(options) {
 
@@ -62,7 +63,7 @@ async function createRest(options) {
      * Plug In KoaStatic
      */
     if (options.uploadDirectory)
-        app.use(koaStatic(uploadDirectory));
+        app.use(koaStatic(options.uploadDirectory));
 
     /**
      * Run before hook
@@ -114,6 +115,11 @@ async function createRest(options) {
             combineWithRoot: true
         });
 
+        // combine additional CollectionDefinitions
+        if (options.CollectionDefinitions) {
+            userDatabaseDetail.concat(options.CollectionDefinitions)
+        }
+
         // Plug in user CollectionDefinitions
         await DataProvider.addCollectionDefinitionByList({
             list: userDatabaseDetail || [],
@@ -135,8 +141,10 @@ async function createRest(options) {
      */
     return new Promise((done, reject) => {
 
+        let server;
+
         if (!options.dontListen) {
-            app.listen(options.port);
+            server = app.listen(options.port);
             console.log('\x1b[35m', `KOAS has been launched on: localhost:${options.port}`);
         }
 
@@ -145,7 +153,7 @@ async function createRest(options) {
         if (options.onAfterInit) onAfterInit(app);
 
         //done
-        done(app);
+        done({ app, server });
     });
 }
 

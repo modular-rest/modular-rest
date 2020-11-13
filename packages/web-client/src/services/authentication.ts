@@ -1,6 +1,7 @@
 import HttpClient from '../class/http';
 import BaseResponse from '../types/base-response';
 import GlobalOptions from '../class/global_options';
+import { bus, tokenReceivedEvent } from '../class/event-bus'
 
 interface Identity {
     idType: 'email' | 'phone';
@@ -23,6 +24,7 @@ class AuthService {
 
     private static instance: AuthService;
     private http: HttpClient;
+    private token?: string;
 
     private constructor() {
         this.http = new HttpClient({ baseUrl: GlobalOptions.host });
@@ -37,12 +39,22 @@ class AuthService {
         return AuthService.instance;
     }
 
+    private emitToken() {
+
+        bus.publish(tokenReceivedEvent({ token: this.token || '' }))
+
+    }
+
     /**
      * Login as an anonymous user and get a token.
      */
     loginAsAnonymous() {
-        return this.http.get('/user/loginAnonymous')
-            .then(body => body as LoginResponse)
+        return this.http.get<LoginResponse>('/user/loginAnonymous')
+            .then(body => {
+                this.token = body.token
+                this.emitToken()
+                return body;
+            })
     }
 
     /**
@@ -54,8 +66,12 @@ class AuthService {
      * @param options.password user password
      */
     login(options: LoginOptions) {
-        return this.http.post('/user/login', options)
-            .then(body => body as LoginResponse);
+        return this.http.post<LoginResponse>('/user/login', options)
+            .then(body => {
+                this.token = body.token
+                this.emitToken()
+                return body;
+            })
     }
 
     /**
@@ -67,8 +83,7 @@ class AuthService {
      * @param options.id user identity
      */
     registerIdentity(identity: Identity) {
-        return this.http.post('/user/register_id', identity)
-            .then(body => body as BaseResponse);
+        return this.http.post<BaseResponse>('/user/register_id', identity)
     }
 
     /**
@@ -77,9 +92,8 @@ class AuthService {
      * 
      * @param code verification code  
      */
-    validateCode(options: {code: string, id:string}) {
-        return this.http.post('/user/validateCode', options)
-            .then(body => body as validateCodeResponse);
+    validateCode(options: { code: string, id: string }) {
+        return this.http.post<validateCodeResponse>('/user/validateCode', options)
     }
 
     /**
@@ -92,8 +106,7 @@ class AuthService {
      * @param options.code verification code
      */
     submitPassword(options: { id: string, password: string, code: string }) {
-        return this.http.post('/user/submit_password', options)
-            .then(body => body as BaseResponse);
+        return this.http.post<BaseResponse>('/user/submit_password', options)
     }
 
     /**
@@ -105,8 +118,7 @@ class AuthService {
      * @param options.code verification code
      */
     changePassword(options: { id: string, password: string, code: string }) {
-        return this.http.post('/user/change_password', options)
-            .then(body => body as BaseResponse);
+        return this.http.post<BaseResponse>('/user/change_password', options)
     }
 }
 
