@@ -7,7 +7,7 @@
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" npm run test",
     "start:dev": "nodemon",
-    "build": "rimraf ./build && tsc"
+    "build": "rimraf ./dist && tsc"
   },
   "keywords": [
     "modular-rest",
@@ -33,5 +33,6 @@
   },
   "dependencies": {
     "ts-bus": "^2.3.1"
-  }
+  },
+  "files": ["dist"]
 }
