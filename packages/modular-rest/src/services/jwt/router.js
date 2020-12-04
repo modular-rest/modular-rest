@@ -23,7 +23,7 @@ verify.post('/token', async (ctx) =>
     }
 
 	await service.verify(body.token)
-    	.then((payload) => ctx.body = reply('s', {'peyload': payload}))
+    	.then((payload) => ctx.body = reply('s', {'user': payload}))
     	.catch(err => {
     		ctx.status = 412;
         	ctx.body = reply('e', {'e': err});

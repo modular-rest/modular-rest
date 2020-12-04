@@ -97,7 +97,7 @@ class UserManager {
             /**
              * Setup query to find by phone or email
              */
-            let query = { 'password': password };
+            let query = { 'password': password, type: "user" };
 
             if (idType == 'phone') query['phone'] = id;
             else if (idType == 'email') query['email'] = id;
