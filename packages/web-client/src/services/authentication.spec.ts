@@ -5,7 +5,7 @@ import GlobalOptions from '../class/global_options';
 
 describe('Auth Service', () => {
 
-    GlobalOptions.set({ host: 'http://localhost:3000' })
+    GlobalOptions.set({ host: 'http://localhost:3001' })
     let authService = AuthService.getInstance();
     // let server: any;
 

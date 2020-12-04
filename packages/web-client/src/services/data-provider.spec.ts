@@ -6,7 +6,7 @@ import DataProvider from './data-provider'
 
 describe('Data Provider', () => {
 
-    GlobalOptions.set({ host: 'http://localhost:3000' })
+    GlobalOptions.set({ host: 'http://localhost:3001' })
 
     const authService = AuthService.getInstance();
     const dataProvider = DataProvider.getInstance();

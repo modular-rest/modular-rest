@@ -1,37 +1,9 @@
 import HttpClient from '../class/http';
-import BaseResponse from '../types/base-response';
 import GlobalOptions from '../class/global_options';
 import { bus, tokenReceivedEvent } from '../class/event-bus'
-
-interface BaseRequest {
-    database: string,
-    collection: string
-}
-
-interface FindQuery extends BaseRequest {
-    query: object
-}
-
-interface FindByIdaQuery extends BaseRequest {
-    ids: string[]
-}
-
-interface UpdateQuery extends BaseRequest {
-    query: object,
-    update: object
-}
-
-interface InsertQuery extends BaseRequest {
-    document: object
-}
-
-interface AggregateQuery extends BaseRequest {
-    pipelines: object[]
-}
-
-interface Response extends BaseResponse {
-    data: any
-}
+import {
+    FindQuery, FindByIdsQuery, UpdateQuery, InsertQuery, AggregateQuery, Response
+} from '../types/data-provider';
 
 class DataProvider {
 
@@ -95,7 +67,7 @@ class DataProvider {
             .then(body => body.data as Array<object>)
     }
 
-    findByIds(options: FindByIdaQuery) {
+    findByIds(options: FindByIdsQuery) {
         return this.http.post<Response>('/data-provider/findByIds', options)
             .then(body => body.data as Array<object>)
     }

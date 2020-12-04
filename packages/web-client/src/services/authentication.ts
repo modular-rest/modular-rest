@@ -1,30 +1,22 @@
 import HttpClient from '../class/http';
-import BaseResponse from '../types/base-response';
+import User from '../class/user';
 import GlobalOptions from '../class/global_options';
 import { bus, tokenReceivedEvent } from '../class/event-bus'
 
-interface Identity {
-    idType: 'email' | 'phone';
-    id: String;
-}
+import {
+    Identity, LoginOptions, LoginResponse, ValidateCodeResponse, VerifyTokenResponse, BaseResponse
+} from '../types/auth';
 
-interface LoginOptions extends Identity {
-    password: string;
-}
-
-interface LoginResponse extends BaseResponse {
-    token?: string,
-}
-
-interface validateCodeResponse extends BaseResponse {
-    isValid: boolean,
-}
 
 class AuthService {
 
     private static instance: AuthService;
     private http: HttpClient;
-    private token?: string;
+    private token?: string | null;
+
+    get isLogin() {
+        return !!this.token;
+    }
 
     private constructor() {
         this.http = new HttpClient({ baseUrl: GlobalOptions.host });
@@ -43,6 +35,30 @@ class AuthService {
 
         bus.publish(tokenReceivedEvent({ token: this.token || '' }))
 
+    }
+
+    private saveSession() {
+        if (this.token)
+            localStorage.setItem('token', this.token)
+    }
+
+    /**
+     * Login with last session if you pass allowSave=true in last login.
+     * 
+     * @return user 
+     */
+    loginWithLastSession() {
+
+        // load token
+        this.token = localStorage.getItem('token');
+
+        this.validateToken(this.token || '')
+            .then(({ user }: { user: any }) => new User({
+                email: user.email,
+                phone: user.phone,
+                id: user.id,
+                permission: user['permission']
+            }))
     }
 
     /**
@@ -65,13 +81,28 @@ class AuthService {
      * @param options.id user identity
      * @param options.password user password
      */
-    login(options: LoginOptions) {
+    login(options: LoginOptions, allowSave: boolean) {
         return this.http.post<LoginResponse>('/user/login', options)
             .then(body => {
                 this.token = body.token
                 this.emitToken()
-                return body;
+
+                if (allowSave) this.saveSession();
             })
+            // verify token and get user object
+            .then(_ => {
+                return this.validateToken(this.token || '')
+                    .then(({ user }: { user: any }) => new User({
+                        email: user.email,
+                        phone: user.phone,
+                        id: user.id,
+                        permission: user['permission']
+                    }))
+            })
+    }
+
+    validateToken(token: string) {
+        return this.http.post<VerifyTokenResponse>('verify/token', { token });
     }
 
     /**
@@ -93,7 +124,7 @@ class AuthService {
      * @param code verification code  
      */
     validateCode(options: { code: string, id: string }) {
-        return this.http.post<validateCodeResponse>('/user/validateCode', options)
+        return this.http.post<ValidateCodeResponse>('/user/validateCode', options);
     }
 
     /**

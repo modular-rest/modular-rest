@@ -16,7 +16,7 @@ class GlobalOptions {
         if (GlobalOptions.instance)
             return GlobalOptions.instance;
 
-        GlobalOptions.instance = new GlobalOptions({ host: '' });
+        GlobalOptions.instance = new GlobalOptions({ host: ''});
         return GlobalOptions.instance;
     }
 
@@ -26,7 +26,6 @@ class GlobalOptions {
             ...this.options,
             ...options
         }
-
     }
 
     get host() {

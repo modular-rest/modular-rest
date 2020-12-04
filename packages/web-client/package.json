@@ -2,7 +2,6 @@
   "name": "@mres/web",
   "version": "1.0.0",
   "description": "This is a browser library for using modular-rest server abilities on client side.",
-  "main": "index.js",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" npm run test",
@@ -34,5 +33,7 @@
   "dependencies": {
     "ts-bus": "^2.3.1"
   },
-  "files": ["dist"]
+  "files": ["dist"],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js"
 }

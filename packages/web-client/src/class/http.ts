@@ -1,4 +1,5 @@
 import BaseResponse from '../types/base-response';
+import GlobalOptions from './global_options';
 
 interface HTTPClientOption {
     baseUrl: string,
@@ -30,12 +31,19 @@ function parsJson(entry: string) {
 
 class HTTPClient {
 
-    baseUrl: string;
+    private baseUrl: string;
     private commonHeaders: Headers;
 
     constructor(options: HTTPClientOption) {
         this.baseUrl = options.baseUrl;
         this.commonHeaders = {};
+    }
+
+    get baseurl () {
+        if(!this.baseUrl || !this.baseUrl.length)
+            return GlobalOptions.host;
+
+        return this.baseUrl
     }
 
     private injectHeader(request: XMLHttpRequest, headers: Headers) {
@@ -100,26 +108,47 @@ class HTTPClient {
 
     post<T>(url: string = '', body: object = {}, options: RequestOption = {}) {
 
-        let urlObject = new URL(url, this.baseUrl);
+        return new Promise<T>((resolve, reject) => {
+            let urlObject: string;
 
-        return this.request({
-            url: urlObject.toString(),
-            body: body,
-            method: 'POST',
-            ...options
+            try {
+                urlObject = new URL(url, this.baseurl).toString();
+            } catch (error) {
+                throw error;
+            }
+
+            return this.request({
+                url: urlObject,
+                body: body,
+                method: 'POST',
+                ...options
+            })
+                .then(resolve)
+                .catch(reject);
         })
-        .then(body => body as T)
+            .then(body => body as T)
     }
 
     get<T>(url: string = '', options: RequestOption = {}) {
-        let urlObject = new URL(url, this.baseUrl);
 
-        return this.request({
-            url: urlObject.toString(),
-            method: 'GET',
-            ...options
+        return new Promise<T>((resolve, reject) => {
+
+            let urlObject: string;
+
+            try {
+                urlObject = new URL(url, this.baseurl).toString();
+            } catch (error) {
+                throw error;
+            }
+
+            return this.request({
+                url: urlObject.toString(),
+                method: 'GET',
+                ...options
+            }).then(resolve)
+                .catch(reject);
         })
-        .then(body => body as T)
+            .then(body => body as T)
     }
 }
 
