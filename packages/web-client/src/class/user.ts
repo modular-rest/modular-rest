@@ -1,10 +1,18 @@
 class User {
-
+    /**
+     * Registered email
+     */
     email?: string;
+    /**
+     * Registered phone
+     */
     phone?: string;
+    /**
+     * Unique generated id for the user 
+     */
     id: string;
     /**
-     * Get permission type
+     * permission type
      */
     type: string;
     private permission: any;
