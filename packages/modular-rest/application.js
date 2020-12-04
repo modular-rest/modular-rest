@@ -1,4 +1,5 @@
 let koa = require('koa');
+const cors = require('@koa/cors');
 const koaBody = require('koa-body');
 const koaStatic = require('koa-static');
 var path = require('path');
@@ -11,6 +12,8 @@ let defaultServiceRoot = __dirname + '/src/services';
 /**
  * 
  * @param {object} options
+ * 
+ * @param {object} options.cors @koa/cors options
  * 
  * @param {string} options.componentDirectory root directory of your router.js/db.js files.
  * @param {string} options.uploadDirectory root directory for upload files.
@@ -52,6 +55,11 @@ async function createRest(options) {
     }
 
     let app = new koa();
+
+    /**
+     * Plug in Cors
+     */
+    app.use(cors(options.cors || {}));
 
     /**
      * Plug in BodyParser
