@@ -74,7 +74,22 @@ dataProvider.post('/find', async (ctx) => {
     }
 
     // operate on db
-    await collection.find(body.query, body.projection, body.options).exec()
+    let queryRequest = collection.find(body.query, body.projection);
+
+    if (body.options) {
+        queryRequest = service.performAdditionalOptionsToQueryObject(queryRequest, body.options)
+    }
+
+    if (body.populates) {
+        try {
+            req = service.performPopulateToQueryObject(queryRequest, body.populates);
+        } catch (err) {
+            ctx.status = 412;
+            ctx.body = err;
+        }
+    }
+
+    await queryRequest.exec()
         .then(async docs => {
 
             // Call trigger
@@ -111,7 +126,23 @@ dataProvider.post('/find-one', async (ctx) => {
     }
 
     // operate on db
-    await collection.findOne(body.query, body.projection, body.options).exec()
+    let queryRequest = collection.findOne(body.query, body.projection, body.options);
+
+    if (body.options) {
+        queryRequest = service.performAdditionalOptionsToQueryObject(queryRequest, body.options)
+    }
+
+    if (body.populates) {
+        try {
+            req = service.performPopulateToQueryObject(queryRequest, body.populates);
+        } catch (err) {
+            ctx.status = 412;
+            ctx.body = err;
+        }
+    }
+
+    // operate on db
+    await queryRequest.exec()
         .then(async doc => {
 
             // Call trigger

@@ -180,11 +180,42 @@ function getAsID(strId) {
     return id;
 }
 
-// connectToAllDatabases();
+function performPopulateToQueryObject(queryObj, popArr = []) {
+    /*
+      https://mongoosejs.com/docs/populate.html
+      popArr must be contains this objects
+      { 
+        path: 'fans',
+        select: 'name -_id',
+      }
+    */
+    popArr.forEach(pop => queryObj.populate(pop));
+    return queryObj;
+}
+
+function performAdditionalOptionsToQueryObject(queryObj, options) {
+    /**
+     * https://mongoosejs.com/docs/api/query.html#query_Query-sort
+     * 
+     * Options must be contain a method name and an argument of above methods.
+     * {
+     *  sort: '-_id',
+     *  limit: 10,
+     * }
+     */
+    Object.keys(options).forEach(method => {
+        queryObj = queryObj[method](options[method]);
+    })
+
+    return queryObj;
+}
+
 
 module.exports = {
     name, addCollectionDefinitionByList, getCollection,
     checkAccess, getAsID,
+    performPopulateToQueryObject,
+    performAdditionalOptionsToQueryObject,
     triggers,
     TypeCasters,
 }
