@@ -12,9 +12,7 @@ class DataProvider {
 
     private constructor() {
 
-        this.http = new HttpClient({
-            baseUrl: GlobalOptions.host
-        });
+        this.http = new HttpClient();
 
         bus.subscribe(tokenReceivedEvent, (event) => {
             this.http.setCommonHeader({

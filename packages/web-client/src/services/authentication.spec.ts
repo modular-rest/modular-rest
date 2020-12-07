@@ -4,22 +4,11 @@ import AuthService from './authentication';
 import GlobalOptions from '../class/global_options';
 
 describe('Auth Service', () => {
-
-    GlobalOptions.set({ host: 'http://localhost:3001' })
     let authService = AuthService.getInstance();
     // let server: any;
 
     before(async () => {
-
-        // Running modular-rest server
-        // const mrest = require('modular-rest');
-        // server = await mrest.createRest()
-        //     .then((mrestInstance: any) => mrestInstance.server);
-
-        // Mocking global XMLHttpRequest class
-        let xhr = require('xmlhttprequest-ts');
-        global.XMLHttpRequest = xhr.XMLHttpRequest;
-
+        GlobalOptions.set({ host: 'http://localhost:3001' })
     })
 
     it('should login as Anonymous', async () => {
@@ -39,8 +28,8 @@ describe('Auth Service', () => {
             idType: 'email',
             id: 'admin@email.com',
             password: '@dmin',
-        }).then(body => {
-            expect(body).to.include.keys('token')
+        }, false).then(body => {
+            expect(body).to.include.keys('email')
         }).catch(error => {
             expect(error.hasError).to.be.false
         })

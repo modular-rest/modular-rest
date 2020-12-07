@@ -19,7 +19,7 @@ class AuthService {
     }
 
     private constructor() {
-        this.http = new HttpClient({ baseUrl: GlobalOptions.host });
+        this.http = new HttpClient();
     }
 
     public static getInstance(): AuthService {

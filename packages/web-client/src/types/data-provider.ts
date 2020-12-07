@@ -7,8 +7,8 @@ interface BaseRequest {
 
 interface FindQuery extends BaseRequest {
     query: object,
-    populates: [string | { path: string, select: string }],
-    options: {
+    populates?: [string | { path: string, select: string }],
+    options?: {
         skip: number,
         limit: number,
         sort: string | object,

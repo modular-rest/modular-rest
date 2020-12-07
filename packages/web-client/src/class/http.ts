@@ -1,9 +1,6 @@
 import BaseResponse from '../types/base-response';
 import GlobalOptions from './global_options';
-
-interface HTTPClientOption {
-    baseUrl: string,
-}
+import axios from 'axios';
 
 interface Headers {
     [index: string]: string
@@ -29,21 +26,24 @@ function parsJson(entry: string) {
     }
 }
 
-class HTTPClient {
+/**
+ * Mocking global XMLHttpRequest class
+ * outside of browser
+ */
+// if (global) {
+//     let xhr = require('xmlhttprequest-ts');
+//     global.XMLHttpRequest = xhr.XMLHttpRequest;
+// }
 
-    private baseUrl: string;
+class HTTPClient {
     private commonHeaders: Headers;
 
-    constructor(options: HTTPClientOption) {
-        this.baseUrl = options.baseUrl;
+    constructor(/*options?: HTTPClientOption*/) {
         this.commonHeaders = {};
     }
 
-    get baseurl () {
-        if(!this.baseUrl || !this.baseUrl.length)
-            return GlobalOptions.host;
-
-        return this.baseUrl
+    get baseurl() {
+        return GlobalOptions.host;
     }
 
     private injectHeader(request: XMLHttpRequest, headers: Headers) {
@@ -56,50 +56,87 @@ class HTTPClient {
     }
 
     private request(options: RequestOptionAllProperties) {
-        let request = new XMLHttpRequest();
-        request.open(options.method, options.url)
+        // let request = new XMLHttpRequest();
+        // request.open(options.method, options.url)
 
-        if (options.headers) {
-            request = this.injectHeader(request, options.headers);
-        }
-
-        if (this.commonHeaders) {
-            request = this.injectHeader(request, this.commonHeaders);
-        }
-
-        return new Promise<XMLHttpRequest>((done) => {
-
-            if (options.method == "POST") {
-                request = this.injectHeader(request, { 'content-type': 'application/json' });
-                request.send(JSON.stringify(options.body))
+        return new Promise<{ data: any }>((resolve, reject) => {
+            if (options.method == 'POST') {
+                axios.post(options.url, options.body, {
+                    params: options.query,
+                    headers: {
+                        ...this.commonHeaders,
+                        ...options.headers,
+                    },
+                }).then(resolve).catch(reject)
             }
             else {
-                request.send();
-            }
-
-            request.onloadend = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-
-                done(this as XMLHttpRequest)
-            };
-
-            request.onerror = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-                done(this)
+                axios.get(options.url, {
+                    params: options.query,
+                    headers: {
+                        ...this.commonHeaders,
+                        ...options.headers,
+                    }
+                }).then(resolve).catch(reject)
             }
         })
-            .then((request) => {
+            .then(body => body.data)
+            .catch(error => {
+                let result;
 
-                let result = parsJson(request.responseText);
 
-                if (request.status == 200) {
-                    return (result)
+                if (error.response) {
+                    result = error.response.data;
+                } else {
+                    result = error.message;
                 }
-                else {
-                    throw {
-                        hasError: true,
-                        error: result,
-                    } as BaseResponse;
-                }
+
+                throw {
+                    hasError: true,
+                    error: result,
+                } as BaseResponse;
             })
+
+        // if (options.headers) {
+        //     request = this.injectHeader(request, options.headers);
+        // }
+
+        // if (this.commonHeaders) {
+        //     request = this.injectHeader(request, this.commonHeaders);
+        // }
+
+        // return new Promise<XMLHttpRequest>((done) => {
+
+        //     if (options.method == "POST") {
+        //         request = this.injectHeader(request, { 'content-type': 'application/json' });
+        //         request.send(JSON.stringify(options.body))
+        //     }
+        //     else {
+        //         request.send();
+        //     }
+
+        //     request.onloadend = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
+
+        //         done(this as XMLHttpRequest)
+        //     };
+
+        //     request.onerror = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
+        //         done(this)
+        //     }
+        // })
+        //     .then((request) => {
+
+        //         let result = parsJson(request.responseText);
+
+        //         if (request.status == 200) {
+        //             return (result)
+        //         }
+        //         else {
+        //             throw {
+        //                 hasError: true,
+        //                 error: result,
+        //             } as BaseResponse;
+        //         }
+        //     })
     }
 
     setCommonHeader(headers: Headers) {
@@ -123,7 +160,7 @@ class HTTPClient {
                 method: 'POST',
                 ...options
             })
-                .then(resolve)
+                .then((body) => resolve(body as T))
                 .catch(reject);
         })
             .then(body => body as T)
@@ -145,7 +182,8 @@ class HTTPClient {
                 url: urlObject.toString(),
                 method: 'GET',
                 ...options
-            }).then(resolve)
+            })
+                .then((body) => resolve(body as T))
                 .catch(reject);
         })
             .then(body => body as T)
