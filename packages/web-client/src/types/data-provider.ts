@@ -6,7 +6,14 @@ interface BaseRequest {
 }
 
 interface FindQuery extends BaseRequest {
-    query: object
+    query: object,
+    populates: [string | { path: string, select: string }],
+    options: {
+        skip: number,
+        limit: number,
+        sort: string | object,
+        select: string | object | [string]
+    }
 }
 
 interface FindByIdsQuery extends BaseRequest {
@@ -19,7 +26,7 @@ interface UpdateQuery extends BaseRequest {
 }
 
 interface InsertQuery extends BaseRequest {
-    document: object
+    doc: object
 }
 
 interface AggregateQuery extends BaseRequest {
@@ -31,10 +38,10 @@ interface Response extends BaseResponse {
 }
 
 export {
-    FindQuery, 
-    FindByIdsQuery, 
-    UpdateQuery, 
-    InsertQuery, 
-    AggregateQuery, 
+    FindQuery,
+    FindByIdsQuery,
+    UpdateQuery,
+    InsertQuery,
+    AggregateQuery,
     Response
 }
