@@ -1,5 +1,5 @@
 {
-  "name": "@mrest/server",
+  "name": "@modular-rest/server",
   "version": "1.0.0",
   "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
   "main": "src/index.js",
