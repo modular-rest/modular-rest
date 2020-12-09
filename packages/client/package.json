@@ -1,5 +1,5 @@
 {
-  "name": "@mres/client",
+  "name": "@modular-rest/client",
   "version": "1.0.0",
   "description": "This is a browser library for using modular-rest server abilities on client side.",
   "scripts": {
