@@ -2,11 +2,9 @@
   "name": "@mrest/server",
   "version": "1.0.0",
   "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "tsc && node dist/index.js",
-    "build": "tsc"
   },
   "repository": {
     "type": "git",

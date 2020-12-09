@@ -3,11 +3,11 @@ const cors = require('@koa/cors');
 const koaBody = require('koa-body');
 const koaStatic = require('koa-static');
 var path = require('path');
-var Combination = require('./src/class/combinator');
-let DataProvider = require('./src/services/data_provider/service');
-let UserService = require('./src/services/user_manager/service')
+var Combination = require('./class/combinator');
+let DataProvider = require('./services/data_provider/service');
+let UserService = require('./services/user_manager/service')
 
-let defaultServiceRoot = __dirname + '/src/services';
+let defaultServiceRoot = __dirname + '/services';
 
 /**
  * 
@@ -103,7 +103,7 @@ async function createRest(options) {
     })
 
     // Setting up default services
-    await require('./src/helper/presetup_services').setup(options);
+    await require('./helper/presetup_services').setup(options);
 
     /**
      * User Services
