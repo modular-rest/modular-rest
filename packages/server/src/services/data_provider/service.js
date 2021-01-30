@@ -43,7 +43,8 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
 
             // create model from schema
             // and store in on global collection object
-            collections[dbName][collection] = connection.model(collection, schema);
+            let model = connection.model(collection, schema);
+            collections[dbName][collection] = model
 
             // define Access Definition from component permissions
             // and store it on global access definition object

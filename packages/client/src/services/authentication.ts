@@ -32,9 +32,7 @@ class AuthService {
     }
 
     private emitToken() {
-
         bus.publish(tokenReceivedEvent({ token: this.token || '' }))
-
     }
 
     private saveSession() {
@@ -58,7 +56,7 @@ class AuthService {
                 phone: user.phone,
                 id: user.id,
                 permission: user['permission']
-            }))
+            }));
     }
 
     /**
@@ -121,7 +119,7 @@ class AuthService {
      * Send verification code to server,
      * second step for creating new account.
      * 
-     * @param code verification code  
+     * @param code verification code
      */
     validateCode(options: { code: string, id: string }) {
         return this.http.post<ValidateCodeResponse>('/user/validateCode', options);
@@ -131,7 +129,7 @@ class AuthService {
      * Submit password,
      * third step for creating new account.
      * 
-     * @param options 
+     * @param options
      * @param options.id user identity
      * @param options.password user password
      * @param options.code verification code
@@ -143,7 +141,7 @@ class AuthService {
     /**
      * Change password.
      * 
-     * @param options 
+     * @param options
      * @param options.id user identity
      * @param options.password user password
      * @param options.code verification code
