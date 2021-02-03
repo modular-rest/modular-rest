@@ -41,7 +41,7 @@ class DataProvider {
     }
 
     count(options: FindQuery) {
-        return this.http.post<Response>('/data-provider/find-one', options)
+        return this.http.post<Response>('/data-provider/count', options)
             .then(body => body.data as number)
     }
 

@@ -317,7 +317,7 @@ dataProvider.post('/remove-one', async (ctx) => {
 
 dataProvider.post('/aggregate', async (ctx) => {
     let body = ctx.request.body;
-    let bodyValidate = validateObject(body, 'database collection  s accessQuery');
+    let bodyValidate = validateObject(body, 'database collection accessQuery');
 
     // fields validation
     if (!bodyValidate.isValid) {

@@ -3,13 +3,16 @@ import 'package:mrest_flutter/src/class/user.dart';
 
 import '../src/class/http_client.dart';
 import '../src/class/global_options.dart';
-import '../src/class/request.dart';
+import '../src/class/response.dart';
+import '../src/class/event_bus.dart';
 
 enum IDType { email, phone }
 
 class AuthService {
-  final HttpClient http = HttpClient();
+  final _eventBus = EventBus();
+  final HttpClient _http = HttpClient();
   String _token;
+  bool isLogin = false;
 
   String get baseUrl => GlobalOptions().baseUrl;
 
@@ -17,20 +20,43 @@ class AuthService {
    * Singleton pattern
    */
   static final AuthService _instance = AuthService._internal();
-  AuthService._internal();
+  AuthService._internal() {
+    _eventBus.tokenStream.listen((token) {
+      isLogin = true;
+    });
+  }
+
   factory AuthService() {
     return _instance;
   }
+  //-- End Singleton pattern
 
-  void emitToken() {}
+  // Emit token to other service listeners.
+  void _emitToken() {
+    _eventBus.tokenSink.add(_token);
+  }
+
+  Future<void> _waiteUntilTokenEmitted() {
+    return Future.doWhile(() async {
+      if (isLogin)
+        return false;
+      else {
+        await Future.delayed(Duration(milliseconds: 500));
+        return true;
+      }
+    });
+  }
 
   /// Login as an anonymouse user
   Future<LoginResponse> loginAsAnonymous() {
-    return http.get(baseUrl + '/user/loginAnonymous').then((body) {
+    return _http.get(baseUrl + '/user/loginAnonymous').then((body) {
       Map bodyMap = body as Map;
       _token = bodyMap['token'];
-      emitToken();
+      _emitToken();
       return LoginResponse(false, null, bodyMap['status'], bodyMap['token']);
+    }).then((value) async {
+      await _waiteUntilTokenEmitted();
+      return value;
     }).catchError((value) {
       return LoginResponse(true, value, 'fail', null);
     });
@@ -48,13 +74,16 @@ class AuthService {
       'password': password,
     };
 
-    return http.post(baseUrl + '/user/login', body: data).then((body) {
+    return _http.post(baseUrl + '/user/login', body: data).then((body) {
       Map bodyMap = body as Map;
       _token = bodyMap['token'];
-      emitToken();
+      _emitToken();
       return validateToken(_token);
+    }).then((value) async {
+      await _waiteUntilTokenEmitted();
+      return value;
     }).catchError((value) {
-      return LoginResponse(true, value, 'fail', null);
+      throw LoginResponse(true, value, 'fail', null);
     });
   }
 
@@ -63,7 +92,7 @@ class AuthService {
       'token': token,
     };
 
-    return http.post(baseUrl + '/verify/token', body: data).then((body) {
+    return _http.post(baseUrl + '/verify/token', body: data).then((body) {
       Map userData = body['user'];
       return User(
         id: userData['id'],
@@ -88,10 +117,10 @@ class AuthService {
       'id': id,
     };
 
-    return http.post(baseUrl + '/user/register_id', body: data).then((value) {
+    return _http.post(baseUrl + '/user/register_id', body: data).then((value) {
       Map body = value as Map;
       return BaseResponse(false, null, body['status']);
-    }).catchError((value) => BaseResponse(true, value, 'fail'));
+    }).catchError((value) => throw BaseResponse(true, value, 'fail'));
   }
 
   /// Send verification code to server,
@@ -102,10 +131,11 @@ class AuthService {
       'code': code,
     };
 
-    return http.post(baseUrl + '/user/validateCode', body: data).then((value) {
+    return _http.post(baseUrl + '/user/validateCode', body: data).then((value) {
       Map body = value as Map;
       return ValidateCodeResponse(false, null, body['status'], body['isValid']);
-    }).catchError((value) => ValidateCodeResponse(true, value, 'fail', false));
+    }).catchError(
+        (value) => throw ValidateCodeResponse(true, value, 'fail', false));
   }
 
   /// Submit password,
@@ -117,12 +147,12 @@ class AuthService {
       'password': password,
     };
 
-    return http
+    return _http
         .post(baseUrl + '/user/submit_password', body: data)
         .then((value) {
       Map body = value as Map;
       return BaseResponse(false, null, body['status']);
-    }).catchError((value) => BaseResponse(true, value, 'fail'));
+    }).catchError((value) => throw BaseResponse(true, value, 'fail'));
   }
 
   /// Change password
@@ -133,11 +163,11 @@ class AuthService {
       'password': password,
     };
 
-    return http
+    return _http
         .post(baseUrl + '/user/change_password', body: data)
         .then((value) {
       Map body = value as Map;
       return BaseResponse(false, null, body['status']);
-    }).catchError((value) => BaseResponse(true, value, 'fail'));
+    }).catchError((value) => throw BaseResponse(true, value, 'fail'));
   }
 }
