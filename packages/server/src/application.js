@@ -1,7 +1,7 @@
 let koa = require('koa');
 const cors = require('@koa/cors');
 const koaBody = require('koa-body');
-const koaStatic = require('koa-static');
+const koaStatic = require('koa-static-server');
 var path = require('path');
 var Combination = require('./class/combinator');
 let DataProvider = require('./services/data_provider/service');
@@ -71,7 +71,11 @@ async function createRest(options) {
      * Plug In KoaStatic
      */
     if (options.uploadDirectory)
-        app.use(koaStatic(options.uploadDirectory));
+        app.use(koaStatic({
+            rootDir: options.uploadDirectory, 
+            rootPath: '/assets/', 
+
+        }));
 
     /**
      * Run before hook

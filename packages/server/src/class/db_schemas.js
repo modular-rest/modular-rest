@@ -1,7 +1,10 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-module.exports = image = new Schema({
-    type: String,
-    imgStamp: String
-});
+module.exports = {
+    'file': new Schema({
+        originalName: String,
+        fileName: String,
+        owner: String,
+    })
+}

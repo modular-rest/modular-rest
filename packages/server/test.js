@@ -4,4 +4,6 @@ const { PermissionTypes } = require('./src/class/security');
 { createRest } require('./src/application');
 {PermissionTypes} require('./src/class/security');
 
-createRest();
+createRest({
+    uploadDirectory: 'uploads'
+});
