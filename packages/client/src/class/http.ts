@@ -17,24 +17,6 @@ interface RequestOptionAllProperties extends RequestOption {
     body?: object,
 }
 
-function parsJson(entry: string) {
-    try {
-        return JSON.parse(entry);
-    } catch (error) {
-        // console.error('can\'t pars json', error);
-        return entry
-    }
-}
-
-/**
- * Mocking global XMLHttpRequest class
- * outside of browser
- */
-// if (global) {
-//     let xhr = require('xmlhttprequest-ts');
-//     global.XMLHttpRequest = xhr.XMLHttpRequest;
-// }
-
 class HTTPClient {
     private commonHeaders: Headers;
 
@@ -46,18 +28,7 @@ class HTTPClient {
         return GlobalOptions.host;
     }
 
-    private injectHeader(request: XMLHttpRequest, headers: Headers) {
-
-        Object.keys(headers).forEach(key => {
-            request.setRequestHeader(key, headers[key]);
-        })
-
-        return request;
-    }
-
     private request(options: RequestOptionAllProperties) {
-        // let request = new XMLHttpRequest();
-        // request.open(options.method, options.url)
 
         return new Promise<{ data: any }>((resolve, reject) => {
             if (options.method == 'POST') {
@@ -94,53 +65,53 @@ class HTTPClient {
                     hasError: true,
                     error: result,
                 } as BaseResponse;
-            })
-
-        // if (options.headers) {
-        //     request = this.injectHeader(request, options.headers);
-        // }
-
-        // if (this.commonHeaders) {
-        //     request = this.injectHeader(request, this.commonHeaders);
-        // }
-
-        // return new Promise<XMLHttpRequest>((done) => {
-
-        //     if (options.method == "POST") {
-        //         request = this.injectHeader(request, { 'content-type': 'application/json' });
-        //         request.send(JSON.stringify(options.body))
-        //     }
-        //     else {
-        //         request.send();
-        //     }
-
-        //     request.onloadend = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-
-        //         done(this as XMLHttpRequest)
-        //     };
-
-        //     request.onerror = function (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
-        //         done(this)
-        //     }
-        // })
-        //     .then((request) => {
-
-        //         let result = parsJson(request.responseText);
-
-        //         if (request.status == 200) {
-        //             return (result)
-        //         }
-        //         else {
-        //             throw {
-        //                 hasError: true,
-        //                 error: result,
-        //             } as BaseResponse;
-        //         }
-        //     })
+            });
     }
 
     setCommonHeader(headers: Headers) {
         this.commonHeaders = headers;
+    }
+
+    uploadFile(url: string | '', file: string | Blob, onProgress: Function) {
+        let urlObject: string;
+
+        try {
+            urlObject = new URL(url, this.baseurl).toString();
+        } catch (error) {
+            throw error;
+        }
+
+        let form = new FormData();
+        form.append('file', file);
+
+        return axios({
+            baseURL: urlObject.toString(),
+            method: 'post',
+            headers: {
+                ...this.commonHeaders,
+                'content-type': 'multipart/form-data'
+            },
+            data: form,
+            onUploadProgress: (progressEvent) => {
+                if (onProgress) onProgress(progressEvent.loaded);
+            }
+        })
+            .then(body => body.data)
+            .catch(error => {
+                let result;
+
+
+                if (error.response) {
+                    result = error.response.data;
+                } else {
+                    result = error.message;
+                }
+
+                throw {
+                    hasError: true,
+                    error: result,
+                } as BaseResponse;
+            });
     }
 
     post<T>(url: string = '', body: object = {}, options: RequestOption = {}) {
@@ -158,6 +129,28 @@ class HTTPClient {
                 url: urlObject,
                 body: body,
                 method: 'POST',
+                ...options
+            })
+                .then((body) => resolve(body as T))
+                .catch(reject);
+        })
+            .then(body => body as T)
+    }
+
+    delete<T>(url: string = '', options: RequestOption = {}) {
+
+        return new Promise<T>((resolve, reject) => {
+            let urlObject: string;
+
+            try {
+                urlObject = new URL(url, this.baseurl).toString();
+            } catch (error) {
+                throw error;
+            }
+
+            return this.request({
+                url: urlObject,
+                method: 'DELETE',
                 ...options
             })
                 .then((body) => resolve(body as T))

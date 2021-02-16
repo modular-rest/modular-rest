@@ -5,5 +5,6 @@ const { PermissionTypes } = require('./src/class/security');
 {PermissionTypes} require('./src/class/security');
 
 createRest({
-    uploadDirectory: 'uploads'
+    uploadDirectory: 'uploads',
+    port: '3001'
 });
