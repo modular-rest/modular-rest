@@ -25,11 +25,17 @@ userManager.post('/register_id', async (ctx) => {
 		return;
 	}
 
-	let serial = service.generateVerificationCode();
+	let serial = service.generateVerificationCode(body.id, body.idType);
 
-	if (serial) service.registerTemporaryID(body.id, body.idType, serial);
+	if (serial) {
+		service.registerTemporaryID(body.id, body.idType, serial);
+		ctx.body = reply('s');
+	}
+	else {
+		ctx.status = 412;
+		ctx.body = reply('e', { 'e': 'Could not generate verification code.' });
+	}
 
-	ctx.body = reply('s');
 });
 
 userManager.post('/validateCode', async (ctx) => {
