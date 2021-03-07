@@ -47,16 +47,23 @@ class AuthService {
      */
     loginWithLastSession() {
 
-        // load token
-        this.token = localStorage.getItem('token');
+        return new Promise((done, reject) => {
+            // Load token
+            this.token = localStorage.getItem('token');
 
-        this.validateToken(this.token || '')
-            .then(({ user }: { user: any }) => new User({
-                email: user.email,
-                phone: user.phone,
-                id: user.id,
-                permission: user['permission']
-            }));
+            if (!this.token)
+                throw { hasError: true, error: 'Token dosen\'t find on local machine' };
+
+            return this.validateToken(this.token || '')
+                .then(({ user }: { user: any }) => new User({
+                    email: user.email,
+                    phone: user.phone,
+                    id: user.id,
+                    permission: user['permission']
+                }))
+                .then(done)
+                .catch(reject)
+        })
     }
 
     /**
