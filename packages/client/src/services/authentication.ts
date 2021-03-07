@@ -54,6 +54,8 @@ class AuthService {
             if (!this.token)
                 throw { hasError: true, error: 'Token dosen\'t find on local machine' };
 
+            this.emitToken()
+
             return this.validateToken(this.token || '')
                 .then(({ user }: { user: any }) => new User({
                     email: user.email,
