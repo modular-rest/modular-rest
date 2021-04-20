@@ -20,15 +20,16 @@ class FileService {
    * @returns storedFile.fileName
    * @returns storedFile.directory
    * @returns storedFile.fullPath
+   * @returns storedFile.fileFormat
    */
   createStoredDetail(fileType) {
 
     let time = new Date().getTime();
     let fileFormat = fileType.split('/')[1];
     let fileName = `${time}.${fileFormat}`;
-    let fullPath = pathModule.join(this.directory, fileName);
+    let fullPath = pathModule.join(this.directory, fileFormat, fileName);
 
-    return { fileName, fullPath };
+    return { fileName, fullPath, fileFormat };
   }
 
 
@@ -75,6 +76,7 @@ class FileService {
           owner: ownerId,
           fileName: storedFile.fileName,
           originalName: file.name,
+          format: storedFile.fileFormat,
         });
 
         return doc.save().then(() => doc);
@@ -115,7 +117,7 @@ class FileService {
         .then(() => {
 
           // create file path
-          let filePath = pathModule.join(this.directory, fileDoc.fileName);
+          let filePath = pathModule.join(this.directory, fileDoc.format, fileDoc.fileName);
 
           // Remove file from disc
           return this.removeFromDisc(filePath)

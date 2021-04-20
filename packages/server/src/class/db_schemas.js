@@ -6,5 +6,6 @@ module.exports = {
         originalName: String,
         fileName: String,
         owner: String,
+        format: String,
     })
 }
