@@ -38,7 +38,8 @@ class FileProvider {
     }
 
     getFileLink(fileName: string) {
-        return new URL('/assets/' + fileName, GlobalOptions.host).toString();
+        let format = fileName.split('.')[fileName.split('.').length - 1];
+        return new URL('/assets/' + `${format}/` + fileName, GlobalOptions.host).toString();
     }
 }
 
