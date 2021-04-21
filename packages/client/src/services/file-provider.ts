@@ -37,9 +37,8 @@ class FileProvider {
         return this.http.delete('/file', { 'query': { 'id': id } });
     }
 
-    getFileLink(fileName: string) {
-        let format = fileName.split('.')[fileName.split('.').length - 1];
-        return new URL('/assets/' + `${format}/` + fileName, GlobalOptions.host).toString();
+    getFileLink(fileDoc: { fileName: string, format: string, tag: String }) {
+        return new URL('/assets/' + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName, GlobalOptions.host).toString();
     }
 }
 
