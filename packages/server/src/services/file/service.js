@@ -22,12 +22,12 @@ class FileService {
    * @returns storedFile.fullPath
    * @returns storedFile.fileFormat
    */
-  createStoredDetail(fileType) {
+  createStoredDetail(fileType, tag) {
 
     let time = new Date().getTime();
     let fileFormat = fileType.split('/')[1];
     let fileName = `${time}.${fileFormat}`;
-    let fullPath = pathModule.join(this.directory, fileFormat, fileName);
+    let fullPath = pathModule.join(this.directory, fileFormat, tag, fileName);
 
     return { fileName, fullPath, fileFormat };
   }
@@ -39,7 +39,7 @@ class FileService {
    * @param {file} args.file file object
    * @param {string} args.ownerId file object
    */
-  storeFile({ file, ownerId }) {
+  storeFile({ file, ownerId, tag }) {
 
     if (!this.directory)
       throw 'upload directory has not been set.'
@@ -51,7 +51,7 @@ class FileService {
    * Store file and remove temp file
    */ {
 
-      storedFile = this.createStoredDetail(file.type);
+      storedFile = this.createStoredDetail(file.type, tag);
 
       fs.copyFile(file.path, storedFile.fullPath, {
         done: (err) => {
@@ -77,6 +77,7 @@ class FileService {
           fileName: storedFile.fileName,
           originalName: file.name,
           format: storedFile.fileFormat,
+          tag,
         });
 
         return doc.save().then(() => doc);
@@ -117,7 +118,7 @@ class FileService {
         .then(() => {
 
           // create file path
-          let filePath = pathModule.join(this.directory, fileDoc.format, fileDoc.fileName);
+          let filePath = pathModule.join(this.directory, fileDoc.format, fileDoc.tag, fileDoc.fileName);
 
           // Remove file from disc
           return this.removeFromDisc(filePath)

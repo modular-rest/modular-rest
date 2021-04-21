@@ -7,5 +7,8 @@ module.exports = {
         fileName: String,
         owner: String,
         format: String,
+        // Tag being used as the parent dir for files
+        // uploaddir/$format/$tag/timestamp.format
+        tag: String,
     })
 }
