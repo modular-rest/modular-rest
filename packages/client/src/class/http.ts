@@ -40,6 +40,15 @@ class HTTPClient {
                     },
                 }).then(resolve).catch(reject)
             }
+            else if (options.method == 'DELETE') {
+                axios.delete(options.url, {
+                    params: options.query,
+                    headers: {
+                        ...this.commonHeaders,
+                        ...options.headers,
+                    }
+                }).then(resolve).catch(reject)
+            }
             else {
                 axios.get(options.url, {
                     params: options.query,
@@ -49,6 +58,7 @@ class HTTPClient {
                     }
                 }).then(resolve).catch(reject)
             }
+
         })
             .then(body => body.data)
             .catch(error => {
@@ -72,7 +82,7 @@ class HTTPClient {
         this.commonHeaders = headers;
     }
 
-    uploadFile(url: string | '', file: string | Blob, onProgress: Function) {
+    uploadFile(url: string | '', file: string | Blob, body: any, onProgress: Function) {
         let urlObject: string;
 
         try {
@@ -83,6 +93,10 @@ class HTTPClient {
 
         let form = new FormData();
         form.append('file', file);
+
+        Object.keys(body).forEach(key => {
+            form.append(key, body[key].toString());
+        })
 
         return axios({
             baseURL: urlObject.toString(),

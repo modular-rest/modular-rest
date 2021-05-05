@@ -28,8 +28,8 @@ class FileProvider {
         return FileProvider.instance;
     }
 
-    uploadFile(file: string | Blob, onProgress: Function) {
-        return this.http.uploadFile('/file', file, onProgress)
+    uploadFile(file: string | Blob, onProgress: Function, tag: string) {
+        return this.http.uploadFile('/file', file, { tag }, onProgress)
             .then(body => body['file'] as FileDocument);
     }
 
