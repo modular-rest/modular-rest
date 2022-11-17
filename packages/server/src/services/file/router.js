@@ -16,7 +16,17 @@ fileRouter.use('/', middleware.auth, async (ctx, next) => {
 
 fileRouter.post('/', async (ctx) => {
 
-    let body = ctx.body;
+    let body = ctx.request.body;
+
+    // validate result
+	let bodyValidate = validateObject(body, 'tag');
+
+	// fields validation
+	if (!bodyValidate.isValid) {
+		ctx.status = 412;
+		ctx.body = reply('e', { 'e': bodyValidate.requires });
+		return;
+	}
 
     // Access validation
     let hasAccess = DataService.checkAccess('cms', 'file', AccessTypes.write, body, ctx.state.user);
@@ -37,7 +47,8 @@ fileRouter.post('/', async (ctx) => {
     else {
         await service.storeFile({
             file: file,
-            ownerId: ctx.state.user.id
+            ownerId: ctx.state.user.id,
+            tag: body.tag
         })
             .then((file) => {
                 result = reply('s', { file });
@@ -74,7 +85,6 @@ fileRouter.delete('/', async (ctx) => {
             });
     }
 
-    console.log('remove', result);
     ctx.body = result;
 });
 

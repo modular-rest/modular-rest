@@ -1,7 +1,10 @@
 const { createRest } = require('.');
 const { PermissionTypes } = require('./src/class/security');
 
-{ createRest } require('./application');
+{ createRest } require('./src/application');
 {PermissionTypes} require('./src/class/security');
 
-createRest();
+createRest({
+    uploadDirectory: 'uploads',
+    port: '3001'
+});

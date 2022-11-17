@@ -16,10 +16,10 @@ class UserManager {
         this.verificationCodeGeneratorMethod = method
     }
 
-    generateVerificationCode() {
+    generateVerificationCode(id, idType) {
 
         if (this.verificationCodeGeneratorMethod)
-            return this.verificationCodeGeneratorMethod()
+            return this.verificationCodeGeneratorMethod(id, idType)
 
         // this is default code 
         return '123'

@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var Schemas = require('../../class/db_schemas');
 
 let CollectionDefinition = require('../../class/collection_definition');
 let { Permission, PermissionTypes } = require('../../class/security');
@@ -8,11 +8,7 @@ module.exports = [
     new CollectionDefinition({
         db: 'cms',
         collection: 'file',
-        schema: new Schema({
-            originalName: String,
-            fileName: String,
-            owner: String,
-        }),
+        schema: Schemas.file,
         permissions: [
             new Permission({
                 type: PermissionTypes.upload_file_access,
