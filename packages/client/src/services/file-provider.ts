@@ -33,6 +33,10 @@ class FileProvider {
             .then(body => body['file'] as FileDocument);
     }
 
+    uploadFileToURL(url:string, file: string | Blob, body:any={}, onProgress: Function, tag: string) {
+        return this.http.uploadFile(url, file, body, onProgress);
+    }
+
     removeFile(id: string) {
         return this.http.delete('/file', { 'query': { 'id': id } });
     }
