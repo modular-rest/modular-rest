@@ -80,7 +80,7 @@ async function createRest(options) {
     /**
      * Run before hook
      */
-    if (options.onBeforeInit) onBeforeInit(app);
+    if (options.onBeforeInit) options.onBeforeInit(app);
 
     /**
      * Setup default services
@@ -162,7 +162,7 @@ async function createRest(options) {
 
 
         // on after init
-        if (options.onAfterInit) onAfterInit(app);
+        if (options.onAfterInit) options.onAfterInit(app);
 
         //done
         done({ app, server });

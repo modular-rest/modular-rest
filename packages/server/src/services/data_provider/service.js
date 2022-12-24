@@ -1,6 +1,9 @@
 let name = 'dataProvider';
 var colog = require('colog');
-let { AccessTypes, AccessDefinition } = require('../../class/security');
+let {
+    AccessTypes,
+    AccessDefinition
+} = require('../../class/security');
 
 const Mongoose = require('mongoose');
 Mongoose.set('useCreateIndex', true);
@@ -9,7 +12,7 @@ let connections = {};
 let collections = {};
 let permissionDefinitions = {};
 
-let triggers = require('./../../class/trigger_operator');
+let triggers = require('../../class/trigger_operator');
 let TypeCasters = require('./typeCasters');
 
 /**
@@ -25,7 +28,11 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
     return new Promise((done, reject) => {
         // create db connection
         let connectionString = mongoOption.mongoBaseAddress + `/${mongoOption.dbPrefix + dbName}`;
-        let connection = Mongoose.createConnection(connectionString, { useUnifiedTopology: true, useNewUrlParser: true, });
+        let connection = Mongoose.createConnection(connectionString, {
+            ...mongoOption,
+            useUnifiedTopology: true,
+            useNewUrlParser: true,
+        });
         // store connection
         connections[dbName] = connection;
 
@@ -76,7 +83,10 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
  * @param {string} option.mongoOption.dbPrefix
  * @param {string} option.mongoOption.mongoBaseAddress
  */
-async function addCollectionDefinitionByList({ list, mongoOption }) {
+async function addCollectionDefinitionByList({
+    list,
+    mongoOption
+}) {
     let clusteredByDBName = {};
 
     // cluster list by their database name.
@@ -118,14 +128,10 @@ function _getPermissionList(db, collection, operationType) {
     permissionDefinition.permissionList.forEach(permission => {
         if (permission.onlyOwnData == true) {
             permissionList.push(permission);
-        }
-
-        else if (operationType == AccessTypes.read &&
+        } else if (operationType == AccessTypes.read &&
             permission.read == true) {
             permissionList.push(permission);
-        }
-
-        else if (operationType == AccessTypes.write &&
+        } else if (operationType == AccessTypes.write &&
             permission.write == true) {
             permissionList.push(permission);
         }
@@ -151,15 +157,11 @@ function checkAccess(db, collection, operationType, queryOrDoc, user) {
             } catch (error) {
                 key = false;
             }
-        }
-
-        else if (operationType == AccessTypes.read) {
+        } else if (operationType == AccessTypes.read) {
             if (permission.read &&
                 user.permission[permissionType] == true)
                 key = true;
-        }
-
-        else if (operationType == AccessTypes.write) {
+        } else if (operationType == AccessTypes.write) {
 
             if (permission.write &&
                 user.permission[permissionType] == true)
@@ -213,11 +215,13 @@ function performAdditionalOptionsToQueryObject(queryObj, options) {
 
 
 module.exports = {
-    name, addCollectionDefinitionByList, getCollection,
-    checkAccess, getAsID,
+    name,
+    addCollectionDefinitionByList,
+    getCollection,
+    checkAccess,
+    getAsID,
     performPopulateToQueryObject,
     performAdditionalOptionsToQueryObject,
     triggers,
     TypeCasters,
 }
-
