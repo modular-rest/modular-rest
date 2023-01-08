@@ -22,9 +22,11 @@ let defaultServiceRoot = __dirname + '/services';
  * @param {number} options.port server port
  * @param {boolean} options.dontListen server will not being run if it was true and just return koa app object.
  * 
+ * 
  * @param {string} options.mongo mongodb options.
  * @param {string} options.mongo.dbPrefix a prefix for your database name.
  * @param {string} options.mongo.mongoBaseAddress the address of your mongo server without any database specification on it.
+ * @param {string} options.mongo.addressMap specific address for each database
  * 
  * @param {object} options.keypair RSA keypair for authentication module
  * @param {string} options.keypair.private
@@ -43,6 +45,7 @@ async function createRest(options) {
         port: 3000,
         dontListen: false,
         mongo: {
+            atlas: false,
             mongoBaseAddress: 'mongodb://localhost:27017',
             dbPrefix: 'mrest_',
         },

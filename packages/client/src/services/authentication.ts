@@ -56,7 +56,7 @@ class AuthService {
 
             this.emitToken()
 
-            return this.validateToken(this.token || '')
+            this.validateToken(this.token || '')
                 .then(({ user }: { user: any }) => new User({
                     email: user.email,
                     phone: user.phone,
