@@ -1,36 +1,38 @@
+import { join } from "../helper/url";
+
 interface Options {
-    host: string;
+  host: string;
 }
 
 class GlobalOptions {
+  private static instance: GlobalOptions;
+  private options: Options;
 
-    private static instance: GlobalOptions;
-    private options: Options;
+  private constructor(options: Options) {
+    this.options = options;
+  }
 
-    private constructor(options: Options) {
-        this.options = options
-    }
+  static getInstance() {
+    if (GlobalOptions.instance) return GlobalOptions.instance;
 
-    static getInstance() {
+    GlobalOptions.instance = new GlobalOptions({ host: "" });
+    return GlobalOptions.instance;
+  }
 
-        if (GlobalOptions.instance)
-            return GlobalOptions.instance;
+  set(options: Options) {
+    this.options = {
+      ...this.options,
+      ...options,
+    };
+  }
 
-        GlobalOptions.instance = new GlobalOptions({ host: ''});
-        return GlobalOptions.instance;
-    }
+  get host() {
+    return this.options.host;
+  }
 
-    set(options: Options) {
-
-        this.options = {
-            ...this.options,
-            ...options
-        }
-    }
-
-    get host() {
-        return this.options.host
-    }
+  getUrl(path: string) {
+    return join([this.host, path]);
+  }
 }
 
 export default GlobalOptions.getInstance();

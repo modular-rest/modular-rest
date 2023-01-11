@@ -29,7 +29,7 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
         // Create db connection
         //
         const fullDbName = (mongoOption.dbPrefix || '') + dbName
-        const connectionString = mongoOption.mongoBaseAddress;
+        const connectionString = mongoOption.mongoBaseAddress + '/' + fullDbName;
 
         colog.info(`- Connecting to database ${connectionString}`)
 

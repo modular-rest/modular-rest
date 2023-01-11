@@ -29,7 +29,8 @@ class FileProvider {
     }
 
     uploadFile(file: string | Blob, onProgress: Function, tag: string) {
-        return this.http.uploadFile('/file', file, { tag }, onProgress)
+        const url = GlobalOptions.getUrl('/file');
+        return this.http.uploadFile(url, file, { tag }, onProgress)
             .then(body => body['file'] as FileDocument);
     }
 
@@ -38,11 +39,13 @@ class FileProvider {
     }
 
     removeFile(id: string) {
-        return this.http.delete('/file', { 'query': { 'id': id } });
+        const url = GlobalOptions.getUrl('/file');
+        return this.http.delete(url, { 'query': { 'id': id } });
     }
 
     getFileLink(fileDoc: { fileName: string, format: string, tag: String }) {
-        return new URL('/assets/' + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName, GlobalOptions.host).toString();
+        const url = GlobalOptions.getUrl('/assets/' + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName);
+        return url;
     }
 }
 

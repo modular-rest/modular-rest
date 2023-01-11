@@ -86,7 +86,7 @@ class HTTPClient {
         let urlObject: string;
 
         try {
-            urlObject = new URL(url, this.baseurl).toString();
+            urlObject = (this.baseurl || '') + url;
         } catch (error) {
             throw error;
         }
@@ -134,7 +134,7 @@ class HTTPClient {
             let urlObject: string;
 
             try {
-                urlObject = new URL(url, this.baseurl).toString();
+                urlObject = (this.baseurl || '') + url;
             } catch (error) {
                 throw error;
             }
