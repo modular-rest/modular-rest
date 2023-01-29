@@ -1,200 +1,201 @@
-import BaseResponse from '../types/base-response';
-import GlobalOptions from './global_options';
-import axios from 'axios';
+import BaseResponse from "../types/base-response";
+import GlobalOptions from "./global_options";
+import axios from "axios";
 
 interface Headers {
-    [index: string]: string
+  [index: string]: string;
 }
 
 interface RequestOption {
-    headers?: Headers,
-    query?: object,
+  headers?: Headers;
+  query?: object;
 }
 
 interface RequestOptionAllProperties extends RequestOption {
-    url: string,
-    method: string,
-    body?: object,
+  url: string;
+  method: string;
+  body?: object;
 }
 
 class HTTPClient {
-    private commonHeaders: Headers;
+  private commonHeaders: Headers;
 
-    constructor(/*options?: HTTPClientOption*/) {
-        this.commonHeaders = {};
-    }
+  constructor(/*options?: HTTPClientOption*/) {
+    this.commonHeaders = {};
+  }
 
-    get baseurl() {
-        return GlobalOptions.host;
-    }
+  get baseurl() {
+    return GlobalOptions.host;
+  }
 
-    private request(options: RequestOptionAllProperties) {
+  private request(options: RequestOptionAllProperties) {
+    return new Promise<{ data: any }>((resolve, reject) => {
+      if (options.method == "POST") {
+        axios
+          .post(options.url, options.body, {
+            params: options.query,
+            headers: {
+              ...this.commonHeaders,
+              ...options.headers,
+            },
+          })
+          .then(resolve)
+          .catch(reject);
+      } else if (options.method == "DELETE") {
+        axios
+          .delete(options.url, {
+            params: options.query,
+            headers: {
+              ...this.commonHeaders,
+              ...options.headers,
+            },
+          })
+          .then(resolve)
+          .catch(reject);
+      } else {
+        axios
+          .get(options.url, {
+            params: options.query,
+            headers: {
+              ...this.commonHeaders,
+              ...options.headers,
+            },
+          })
+          .then(resolve)
+          .catch(reject);
+      }
+    })
+      .then((body) => body.data)
+      .catch((error) => {
+        let result;
 
-        return new Promise<{ data: any }>((resolve, reject) => {
-            if (options.method == 'POST') {
-                axios.post(options.url, options.body, {
-                    params: options.query,
-                    headers: {
-                        ...this.commonHeaders,
-                        ...options.headers,
-                    },
-                }).then(resolve).catch(reject)
-            }
-            else if (options.method == 'DELETE') {
-                axios.delete(options.url, {
-                    params: options.query,
-                    headers: {
-                        ...this.commonHeaders,
-                        ...options.headers,
-                    }
-                }).then(resolve).catch(reject)
-            }
-            else {
-                axios.get(options.url, {
-                    params: options.query,
-                    headers: {
-                        ...this.commonHeaders,
-                        ...options.headers,
-                    }
-                }).then(resolve).catch(reject)
-            }
-
-        })
-            .then(body => body.data)
-            .catch(error => {
-                let result;
-
-
-                if (error.response) {
-                    result = error.response.data;
-                } else {
-                    result = error.message;
-                }
-
-                throw {
-                    hasError: true,
-                    error: result,
-                } as BaseResponse;
-            });
-    }
-
-    setCommonHeader(headers: Headers) {
-        this.commonHeaders = headers;
-    }
-
-    uploadFile(url: string | '', file: string | Blob, body: any, onProgress: Function) {
-        let urlObject: string;
-
-        try {
-            urlObject = (this.baseurl || '') + url;
-        } catch (error) {
-            throw error;
+        if (error.response) {
+          result = error.response.data;
+        } else {
+          result = error.message;
         }
 
-        let form = new FormData();
-        form.append('file', file);
+        throw {
+          hasError: true,
+          error: result,
+        } as BaseResponse;
+      });
+  }
 
-        Object.keys(body).forEach(key => {
-            form.append(key, body[key].toString());
-        })
+  setCommonHeader(headers: Headers) {
+    this.commonHeaders = headers;
+  }
 
-        return axios({
-            baseURL: urlObject.toString(),
-            method: 'post',
-            headers: {
-                ...this.commonHeaders,
-                'content-type': 'multipart/form-data'
-            },
-            data: form,
-            onUploadProgress: (progressEvent) => {
-                if (onProgress) onProgress(progressEvent.loaded);
-            }
-        })
-            .then(body => body.data)
-            .catch(error => {
-                let result;
+  uploadFile(
+    url: string | "",
+    file: string | Blob,
+    body: any,
+    onProgress: Function
+  ) {
+    let urlObject: string;
 
-
-                if (error.response) {
-                    result = error.response.data;
-                } else {
-                    result = error.message;
-                }
-
-                throw {
-                    hasError: true,
-                    error: result,
-                } as BaseResponse;
-            });
+    try {
+      urlObject = GlobalOptions.getUrl(url);
+    } catch (error) {
+      throw error;
     }
 
-    post<T>(url: string = '', body: object = {}, options: RequestOption = {}) {
+    let form = new FormData();
+    form.append("file", file);
 
-        return new Promise<T>((resolve, reject) => {
-            let urlObject: string;
+    Object.keys(body).forEach((key) => {
+      form.append(key, body[key].toString());
+    });
 
-            try {
-                urlObject = (this.baseurl || '') + url;
-            } catch (error) {
-                throw error;
-            }
+    return axios({
+      baseURL: urlObject.toString(),
+      method: "post",
+      headers: {
+        ...this.commonHeaders,
+        "content-type": "multipart/form-data",
+      },
+      data: form,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress) onProgress(progressEvent.loaded);
+      },
+    })
+      .then((body) => body.data)
+      .catch((error) => {
+        let result;
 
-            return this.request({
-                url: urlObject,
-                body: body,
-                method: 'POST',
-                ...options
-            })
-                .then((body) => resolve(body as T))
-                .catch(reject);
-        })
-            .then(body => body as T)
-    }
+        if (error.response) {
+          result = error.response.data;
+        } else {
+          result = error.message;
+        }
 
-    delete<T>(url: string = '', options: RequestOption = {}) {
+        throw {
+          hasError: true,
+          error: result,
+        } as BaseResponse;
+      });
+  }
 
-        return new Promise<T>((resolve, reject) => {
-            let urlObject: string;
+  post<T>(url: string = "", body: object = {}, options: RequestOption = {}) {
+    return new Promise<T>((resolve, reject) => {
+      let urlObject: string;
 
-            try {
-                urlObject = (this.baseurl || '') + url;
-            } catch (error) {
-                throw error;
-            }
+      try {
+        urlObject = GlobalOptions.getUrl(url);
+      } catch (error) {
+        throw error;
+      }
 
-            return this.request({
-                url: urlObject,
-                method: 'DELETE',
-                ...options
-            })
-                .then((body) => resolve(body as T))
-                .catch(reject);
-        })
-            .then(body => body as T)
-    }
+      return this.request({
+        url: urlObject,
+        body: body,
+        method: "POST",
+        ...options,
+      })
+        .then((body) => resolve(body as T))
+        .catch(reject);
+    }).then((body) => body as T);
+  }
 
-    get<T>(url: string = '', options: RequestOption = {}) {
+  delete<T>(url: string = "", options: RequestOption = {}) {
+    return new Promise<T>((resolve, reject) => {
+      let urlObject: string;
 
-        return new Promise<T>((resolve, reject) => {
+      try {
+        urlObject = GlobalOptions.getUrl(url);
+      } catch (error) {
+        throw error;
+      }
 
-            let urlObject: string;
+      return this.request({
+        url: urlObject,
+        method: "DELETE",
+        ...options,
+      })
+        .then((body) => resolve(body as T))
+        .catch(reject);
+    }).then((body) => body as T);
+  }
 
-            try {
-                urlObject = (this.baseurl || '') + url;
-            } catch (error) {
-                throw error;
-            }
+  get<T>(url: string = "", options: RequestOption = {}) {
+    return new Promise<T>((resolve, reject) => {
+      let urlObject: string;
 
-            return this.request({
-                url: urlObject.toString(),
-                method: 'GET',
-                ...options
-            })
-                .then((body) => resolve(body as T))
-                .catch(reject);
-        })
-            .then(body => body as T)
-    }
+      try {
+        urlObject = GlobalOptions.getUrl(url);
+      } catch (error) {
+        throw error;
+      }
+
+      return this.request({
+        url: urlObject.toString(),
+        method: "GET",
+        ...options,
+      })
+        .then((body) => resolve(body as T))
+        .catch(reject);
+    }).then((body) => body as T);
+  }
 }
 
 export default HTTPClient;
