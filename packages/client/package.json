@@ -21,7 +21,7 @@
     "@types/node": "^14.14.5",
     "alsatian": "^3.2.1",
     "chai": "^4.2.0",
-    "mocha": "^8.2.1",
+    "mocha": "^10.2.0",
     "modular-rest": "file:../modular-rest",
     "nodemon": "^2.0.6",
     "nyc": "^15.1.0",
