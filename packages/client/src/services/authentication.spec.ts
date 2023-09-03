@@ -64,7 +64,7 @@ describe('Auth Service', () => {
                 })
         })
 
-        it('should submit Password', async () => {
+        it('should submit password', async () => {
             await authService.submitPassword({
                 id: fakeMail,
                 code: '123',

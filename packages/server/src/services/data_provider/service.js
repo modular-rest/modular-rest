@@ -1,5 +1,5 @@
 let name = 'dataProvider';
-var colog = require('colog');
+const colog = require('colog');
 let {
     AccessTypes,
     AccessDefinition
@@ -26,14 +26,20 @@ let TypeCasters = require('./typeCasters');
 function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitionList = [], mongoOption) {
 
     return new Promise((done, reject) => {
-        // create db connection
-        let connectionString = mongoOption.mongoBaseAddress + `/${mongoOption.dbPrefix + dbName}`;
+        // Create db connection
+        //
+        const fullDbName = (mongoOption.dbPrefix || '') + dbName
+        const connectionString = mongoOption.mongoBaseAddress + '/' + fullDbName;
+
+        colog.info(`- Connecting to database ${connectionString}`)
+
         let connection = Mongoose.createConnection(connectionString, {
             ...mongoOption,
             useUnifiedTopology: true,
             useNewUrlParser: true,
         });
-        // store connection
+
+        // Store connection
         connections[dbName] = connection;
 
         // add db models from schemas
@@ -69,7 +75,7 @@ function connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitio
         })
 
         connection.on('connected', () => {
-            colog.success(`- ${mongoOption.dbPrefix + dbName} database has been connected`)
+            colog.success(`- ${fullDbName} database has been connected`)
             done()
         });
     })

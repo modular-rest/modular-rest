@@ -32,9 +32,7 @@ class AuthService {
     }
 
     private emitToken() {
-
         bus.publish(tokenReceivedEvent({ token: this.token || '' }))
-
     }
 
     private saveSession() {
@@ -49,16 +47,25 @@ class AuthService {
      */
     loginWithLastSession() {
 
-        // load token
-        this.token = localStorage.getItem('token');
+        return new Promise((done, reject) => {
+            // Load token
+            this.token = localStorage.getItem('token');
 
-        this.validateToken(this.token || '')
-            .then(({ user }: { user: any }) => new User({
-                email: user.email,
-                phone: user.phone,
-                id: user.id,
-                permission: user['permission']
-            }))
+            if (!this.token)
+                throw { hasError: true, error: 'Token dosen\'t find on local machine' };
+
+            this.emitToken()
+
+            this.validateToken(this.token || '')
+                .then(({ user }: { user: any }) => new User({
+                    email: user.email,
+                    phone: user.phone,
+                    id: user.id,
+                    permission: user['permission']
+                }))
+                .then(done)
+                .catch(reject)
+        })
     }
 
     /**
@@ -121,7 +128,7 @@ class AuthService {
      * Send verification code to server,
      * second step for creating new account.
      * 
-     * @param code verification code  
+     * @param code verification code
      */
     validateCode(options: { code: string, id: string }) {
         return this.http.post<ValidateCodeResponse>('/user/validateCode', options);
@@ -131,7 +138,7 @@ class AuthService {
      * Submit password,
      * third step for creating new account.
      * 
-     * @param options 
+     * @param options
      * @param options.id user identity
      * @param options.password user password
      * @param options.code verification code
@@ -143,7 +150,7 @@ class AuthService {
     /**
      * Change password.
      * 
-     * @param options 
+     * @param options
      * @param options.id user identity
      * @param options.password user password
      * @param options.code verification code
