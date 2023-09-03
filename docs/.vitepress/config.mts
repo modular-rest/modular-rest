@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Modular Rest",
   description: "A set of libraries to bring database access into client side (web/mobile) except bother yourself by developing backend side. ",
+  base: "/modular-rest/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
