@@ -29,18 +29,18 @@ class FileProvider {
     }
 
     uploadFile(file: string | Blob, onProgress: Function, tag: string) {
-        const url = GlobalOptions.getUrl('/file');
-        return this.http.uploadFile(url, file, { tag }, onProgress)
+        const path = '/file';
+        return this.http.uploadFile(path, file, { tag }, onProgress)
             .then(body => body['file'] as FileDocument);
     }
 
-    uploadFileToURL(url:string, file: string | Blob, body:any={}, onProgress: Function, tag: string) {
+    uploadFileToURL(url: string, file: string | Blob, body: any = {}, onProgress: Function, tag: string) {
         return this.http.uploadFile(url, file, body, onProgress);
     }
 
     removeFile(id: string) {
-        const url = GlobalOptions.getUrl('/file');
-        return this.http.delete(url, { 'query': { 'id': id } });
+        const path = '/file';
+        return this.http.delete(path, { 'query': { 'id': id } });
     }
 
     getFileLink(fileDoc: { fileName: string, format: string, tag: String }) {

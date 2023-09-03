@@ -137,63 +137,51 @@ class HTTPClient {
   }
 
   post<T>(url: string = "", body: object = {}, options: RequestOption = {}) {
-    return new Promise<T>((resolve, reject) => {
-      let urlObject: string;
+    let urlObject: string;
 
-      try {
-        urlObject = GlobalOptions.getUrl(url);
-      } catch (error) {
-        throw error;
-      }
+    try {
+      urlObject = GlobalOptions.getUrl(url);
+    } catch (error) {
+      throw error;
+    }
 
-      return this.request({
-        url: urlObject,
-        body: body,
-        method: "POST",
-        ...options,
-      })
-        .then((body) => resolve(body as T))
-        .catch(reject);
-    }).then((body) => body as T);
+    return this.request({
+      url: urlObject,
+      body: body,
+      method: "POST",
+      ...options,
+    }).then((data) => data as T);
   }
 
   delete<T>(url: string = "", options: RequestOption = {}) {
-    return new Promise<T>((resolve, reject) => {
-      let urlObject: string;
+    let urlObject: string;
 
-      try {
-        urlObject = GlobalOptions.getUrl(url);
-      } catch (error) {
-        throw error;
-      }
+    try {
+      urlObject = GlobalOptions.getUrl(url);
+    } catch (error) {
+      throw error;
+    }
 
-      return this.request({
-        url: urlObject,
-        method: "DELETE",
-        ...options,
-      })
-        .then((body) => resolve(body as T))
-        .catch(reject);
+    return this.request({
+      url: urlObject,
+      method: "DELETE",
+      ...options,
     }).then((body) => body as T);
   }
 
   get<T>(url: string = "", options: RequestOption = {}) {
-    return new Promise<T>((resolve, reject) => {
-      let urlObject: string;
+    let urlObject: string;
 
-      try {
-        urlObject = GlobalOptions.getUrl(url);
-      } catch (error) {
-        throw error;
-      }
+    try {
+      urlObject = GlobalOptions.getUrl(url);
+    } catch (error) {
+      throw error;
+    }
 
-      return this.request({
-        url: urlObject.toString(),
-        method: "GET",
-        ...options,
-      })
-        .then((body) => resolve(body as T))
-        .catch(reject);
+    return this.request({
+      url: urlObject.toString(),
+      method: "GET",
+      ...options,
     }).then((body) => body as T);
   }
 }
