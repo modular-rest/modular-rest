@@ -14,10 +14,27 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Examples',
+        text: 'Introduction',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'Get Started', link: '/intro/start' },
+        ]
+      },
+      {
+        text: 'Server',
+        items: [
+          { text: 'Install', link: '/server/install' },
+        ]
+      },
+      {
+        text: 'JS Client',
+        items: [
+          { text: 'Install', link: '/js-client/install' },
+        ]
+      },
+      {
+        text: 'Flutter Client',
+        items: [
+          { text: 'Install', link: '/flutter-client/install' },
         ]
       }
     ],

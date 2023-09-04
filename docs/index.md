@@ -5,11 +5,11 @@ layout: home
 hero:
   name: "Modular Rest"
   text: "Headless CMS With General Features"
-  tagline: Run your server app simply by a config file and start developing your client app.
+  tagline: Run your server app simply then focus on developing your client app.
   actions:
     - theme: brand
       text: Get Started
-      link: /markdown-examples
+      link: /intro/start
 
 features:
   - title: Authentication (JWT)
