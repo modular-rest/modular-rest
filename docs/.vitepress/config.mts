@@ -22,7 +22,12 @@ export default defineConfig({
       {
         text: 'Server',
         items: [
-          { text: 'Install', link: '/server/install' },
+          { text: 'Install', link: '/server-client/install' },
+          { text: 'Database', link: '/server-client/database' },
+          { text: 'File Manager', link: '/server-client/file-manager' },
+          { text: 'Custom Route', link: '/server-client/custom-route' },
+          { text: 'Cors', link: '/server-client/cors' },
+          { text: 'Otp', link: '/server-client/otp' },
         ]
       },
       {

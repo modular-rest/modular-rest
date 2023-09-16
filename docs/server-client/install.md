@@ -1,0 +1,20 @@
+# Install server client
+It assumed that you have initialized a project with npm, then use below command to install modular-rest server client.
+```sh
+npm i @modular-rest/server --save
+```
+Now you can use modular-rest server client in your project.
+```js
+const { createRest } = require('@modular-rest/server');
+
+const app = createRest({
+    port: '80',
+    mongo: {
+        mongoBaseAddress: 'mongodb://localhost:27017',
+        dbPrefix: 'mrest_'
+    },
+    onBeforeInit: (koaApp) => {
+       // do something before init with the koa app
+    }
+})
+```
