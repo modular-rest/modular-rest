@@ -40,7 +40,7 @@ module.exports = {
 
     /** 
      * @type {import('./services/data_provider/service').getCollection}
-     * @return {import('mongoose').Model} Mongoose model
+     * @return {import('mongoose').Model} Mongoose model https://mongoosejs.com/docs/api/model.html
      */
     getCollection,
 
