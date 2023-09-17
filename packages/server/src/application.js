@@ -10,36 +10,29 @@ let UserService = require('./services/user_manager/service')
 let defaultServiceRoot = __dirname + '/services';
 
 /**
- * 
  * @param {object} options
- * 
- * @param {object} options.cors @koa/cors options
- * 
- * @param {string} options.componentDirectory root directory of your router.js/db.js files.
- * @param {string} options.uploadDirectory root directory for upload files.
- * @param {function} options.onBeforeInit a callback being called before init koa server.
- * @param {function} options.onAfterInit a callback being called after server initialization.
- * @param {number} options.port server port
- * @param {boolean} options.dontListen server will not being run if it was true and just return koa app object.
- * 
- * 
- * @param {string} options.mongo mongodb options.
- * @param {string} options.mongo.dbPrefix a prefix for your database name.
- * @param {string} options.mongo.mongoBaseAddress the address of your mongo server without any database specification on it.
- * @param {string} options.mongo.addressMap specific address for each database
- * 
- * @param {object} options.keypair RSA keypair for authentication module
- * @param {string} options.keypair.private
- * @param {string} options.keypair.public
- * 
- * @param {object} options.adminUser supper admin user to being created as the first user of the system.
- * @param {string} options.adminUser.email
- * @param {string} options.adminUser.password
- * 
- * @param {function} options.verificationCodeGeneratorMethod a method to return a code as verification when someone want to register a new user.
- * @param {array} options.CollectionDefinitions an array of additional collectionDefinitions
+ * @param {object} options.cors Options for koa-cors middleware
+ * @param {string} options.componentDirectory Root directory of your router.js/db.js files.
+ * @param {string} options.uploadDirectory Root directory for uploaded files.
+ * @param {function} options.onBeforeInit A callback called before initializing the Koa server.
+ * @param {function} options.onAfterInit A callback called after server initialization.
+ * @param {number} options.port Server port.
+ * @param {boolean} options.dontListen If true, the server will not run and will only return the Koa app object.
+ * @param {string} options.mongo MongoDB options.
+ * @param {string} options.mongo.dbPrefix A prefix for your database name.
+ * @param {string} options.mongo.mongoBaseAddress The address of your MongoDB server without any database specification.
+ * @param {string} options.mongo.addressMap Specific addresses for each database.
+ * @param {object} options.keypair RSA keypair for the authentication module.
+ * @param {string} options.keypair.private Private key.
+ * @param {string} options.keypair.public Public key.
+ * @param {object} options.adminUser Super admin user to be created as the first user of the system.
+ * @param {string} options.adminUser.email Admin user email.
+ * @param {string} options.adminUser.password Admin user password.
+ * @param {function} options.verificationCodeGeneratorMethod A method to return a verification code when someone wants to register a new user.
+ * @param {array} options.CollectionDefinitions An array of additional collection definitions.
+ * @returns {Promise<{app: Koa, server: http.Server}>} Returns a promise that resolves to an object containing the Koa app object and the server object.
  */
-async function createRest(options) {
+module.exports = async function createRest(options) {
 
     options = {
         port: 3000,
@@ -67,7 +60,9 @@ async function createRest(options) {
     /**
      * Plug in BodyParser
      */
-    let bodyParserOptions = { multipart: true };
+    let bodyParserOptions = {
+        multipart: true
+    };
     app.use(koaBody(bodyParserOptions));
 
     /**
@@ -75,8 +70,8 @@ async function createRest(options) {
      */
     if (options.uploadDirectory)
         app.use(koaStatic({
-            rootDir: options.uploadDirectory, 
-            rootPath: '/assets/', 
+            rootDir: options.uploadDirectory,
+            rootPath: '/assets/',
 
         }));
 
@@ -99,7 +94,10 @@ async function createRest(options) {
     // Collect default databaseDefinitions
     let defaultDatabaseDefinitionList = await Combination.combineModulesByFilePath({
         rootDirectory: defaultServiceRoot,
-        filename: { name: 'db', extension: '.js' },
+        filename: {
+            name: 'db',
+            extension: '.js'
+        },
         combineWithRoot: true
     });
 
@@ -126,7 +124,10 @@ async function createRest(options) {
         let userDatabaseDetail = [];
         userDatabaseDetail = await Combination.combineModulesByFilePath({
             rootDirectory: options.componentDirectory,
-            filename: { name: 'db', extension: '.js' },
+            filename: {
+                name: 'db',
+                extension: '.js'
+            },
             combineWithRoot: true
         });
 
@@ -168,8 +169,9 @@ async function createRest(options) {
         if (options.onAfterInit) options.onAfterInit(app);
 
         //done
-        done({ app, server });
+        done({
+            app,
+            server
+        });
     });
 }
-
-module.exports = createRest;
