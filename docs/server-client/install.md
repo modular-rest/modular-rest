@@ -18,3 +18,15 @@ const app = createRest({
     }
 })
 ```
+
+## Create a new project
+You can use our boilerplate to create a new project with modular-rest server client.
+```sh
+npm init @modular-rest/server my-project
+```
+now just start your project with below command:
+```sh
+cd my-project
+npm install
+npm start
+```
