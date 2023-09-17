@@ -12,8 +12,8 @@ let defaultServiceRoot = __dirname + '/services';
 /**
  * @param {{
  *   cors: any; // Options for @koa/cors middleware.
- *   componentDirectory: string; // Root directory of your router.js/db.js files.
- *   uploadDirectory: string; // Root directory for uploaded files.
+ *   modulesPath: string; // Root directory of your router.js/db.js files.
+ *   staticPath: string; // Root directory for uploaded files.
  *   onBeforeInit: (koaApp) => void; // A callback called before initializing the Koa server.
  *   onAfterInit: (koaApp) => void; // A callback called after server initialization.
  *   port: number; // Server port.
@@ -71,9 +71,9 @@ module.exports = async function createRest(options) {
     /**
      * Plug In KoaStatic
      */
-    if (options.uploadDirectory)
+    if (options.staticPath)
         app.use(koaStatic({
-            rootDir: options.uploadDirectory,
+            rootDir: options.staticPath,
             rootPath: '/assets/',
 
         }));
@@ -118,15 +118,15 @@ module.exports = async function createRest(options) {
      * 
      * Plug in routes and database
      */
-    if (options.componentDirectory) {
+    if (options.modulesPath) {
 
         // Plug in user routes
-        await Combination.combineRoutesByFilePath(options.componentDirectory, app);
+        await Combination.combineRoutesByFilePath(options.modulesPath, app);
 
         // Collect user CollectionDefinitions (db.js files)
         let userDatabaseDetail = [];
         userDatabaseDetail = await Combination.combineModulesByFilePath({
-            rootDirectory: options.componentDirectory,
+            rootDirectory: options.modulesPath,
             filename: {
                 name: 'db',
                 extension: '.js'
