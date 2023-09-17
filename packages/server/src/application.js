@@ -10,27 +10,30 @@ let UserService = require('./services/user_manager/service')
 let defaultServiceRoot = __dirname + '/services';
 
 /**
- * @param {object} options
- * @param {object} options.cors Options for koa-cors middleware
- * @param {string} options.componentDirectory Root directory of your router.js/db.js files.
- * @param {string} options.uploadDirectory Root directory for uploaded files.
- * @param {function} options.onBeforeInit A callback called before initializing the Koa server.
- * @param {function} options.onAfterInit A callback called after server initialization.
- * @param {number} options.port Server port.
- * @param {boolean} options.dontListen If true, the server will not run and will only return the Koa app object.
- * @param {string} options.mongo MongoDB options.
- * @param {string} options.mongo.dbPrefix A prefix for your database name.
- * @param {string} options.mongo.mongoBaseAddress The address of your MongoDB server without any database specification.
- * @param {string} options.mongo.addressMap Specific addresses for each database.
- * @param {object} options.keypair RSA keypair for the authentication module.
- * @param {string} options.keypair.private Private key.
- * @param {string} options.keypair.public Public key.
- * @param {object} options.adminUser Super admin user to be created as the first user of the system.
- * @param {string} options.adminUser.email Admin user email.
- * @param {string} options.adminUser.password Admin user password.
- * @param {function} options.verificationCodeGeneratorMethod A method to return a verification code when someone wants to register a new user.
- * @param {array} options.CollectionDefinitions An array of additional collection definitions.
- * @returns {Promise<{app: Koa, server: http.Server}>} Returns a promise that resolves to an object containing the Koa app object and the server object.
+ * @param {{
+ *   cors: any; // Options for @koa/cors middleware.
+ *   componentDirectory: string; // Root directory of your router.js/db.js files.
+ *   uploadDirectory: string; // Root directory for uploaded files.
+ *   onBeforeInit: (koaApp) => void; // A callback called before initializing the Koa server.
+ *   onAfterInit: (koaApp) => void; // A callback called after server initialization.
+ *   port: number; // Server port.
+ *   dontListen: boolean; // If true, the server will not run and will only return the Koa app object.
+ *   mongo: {
+ *     dbPrefix: string; // A prefix for your database name.
+ *     mongoBaseAddress: string; // The address of your MongoDB server without any database specification.
+ *     addressMap: string; // Specific addresses for each database.
+ *   };
+ *   keypair: {
+ *     private: string; // Private key for RSA authentication.
+ *     public: string; // Public key for RSA authentication.
+ *   };
+ *   adminUser: {
+ *     email: string; // Admin user email.
+ *     password: string; // Admin user password.
+ *   };
+ *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
+ *   collectionDefinitions: CollectionDefinition[]; // An array of additional collection definitions.
+ * }} options
  */
 module.exports = async function createRest(options) {
 
@@ -132,8 +135,8 @@ module.exports = async function createRest(options) {
         });
 
         // combine additional CollectionDefinitions
-        if (options.CollectionDefinitions) {
-            userDatabaseDetail.concat(options.CollectionDefinitions)
+        if (options.collectionDefinitions) {
+            userDatabaseDetail.concat(options.collectionDefinitions)
         }
 
         // Plug in user CollectionDefinitions
