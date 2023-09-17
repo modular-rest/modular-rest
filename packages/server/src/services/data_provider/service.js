@@ -222,8 +222,8 @@ function performAdditionalOptionsToQueryObject(queryObj, options) {
 
 module.exports = {
     name,
-    addCollectionDefinitionByList,
     getCollection,
+    addCollectionDefinitionByList,
     checkAccess,
     getAsID,
     performPopulateToQueryObject,

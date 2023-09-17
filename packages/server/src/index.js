@@ -6,7 +6,9 @@ const Schema = require('mongoose').Schema;
 const paginator = require('./class/paginator');
 const reply = require('./class/reply');
 const validator = require('./class/validator');
-const { getCollection } = require('./services/data_provider/service');
+const {
+    getCollection
+} = require('./services/data_provider/service');
 const TypeCasters = require('./services/data_provider/typeCasters');
 
 // Base class
@@ -20,11 +22,31 @@ const middleware = require('./middlewares');
 module.exports = {
     createRest,
 
+    //
     // Utilities
-    paginator, reply, validator,
-    getCollection, TypeCasters,
+    //
+    reply,
+    TypeCasters,
 
+    /**
+     * @type {import('./class/paginator').create}
+     */
+    paginator,
+
+    /**
+     * @type {import('./class/validator')}
+     */
+    validator,
+
+    /** 
+     * @type {import('./services/data_provider/service').getCollection}
+     * @return {import('mongoose').Model} Mongoose model
+     */
+    getCollection,
+
+    //
     // Base class
+    //
     CollectionDefinition,
     Schemas,
     Schema,
@@ -33,4 +55,3 @@ module.exports = {
     ...SecurityClass,
     middleware
 }
-
