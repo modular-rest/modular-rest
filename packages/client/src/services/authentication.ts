@@ -38,6 +38,7 @@ class AuthService {
 
   private saveSession() {
     if (this.token) localStorage.setItem("token", this.token);
+    else localStorage.removeItem("token");
   }
 
   /**
@@ -65,7 +66,10 @@ class AuthService {
           });
         })
         .then(done)
-        .catch(reject);
+        .catch((err) => {
+          this.logout();
+          reject(err);
+        });
     });
   }
 
