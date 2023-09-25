@@ -1,74 +1,83 @@
-import HttpClient from '../class/http';
-import GlobalOptions from '../class/global_options';
-import { bus, tokenReceivedEvent } from '../class/event-bus'
+import HttpClient from "../class/http";
+import GlobalOptions from "../class/global_options";
+import { bus, tokenReceivedEvent } from "../class/event-bus";
 import {
-    FindQuery, FindByIdsQuery, UpdateQuery, InsertQuery, AggregateQuery, Response
-} from '../types/data-provider';
+  FindQuery,
+  FindByIdsQuery,
+  UpdateQuery,
+  InsertQuery,
+  AggregateQuery,
+  Response,
+} from "../types/data-provider";
 
 class DataProvider {
+  private static instance: DataProvider;
+  private http: HttpClient;
 
-    private static instance: DataProvider;
-    private http: HttpClient;
+  private constructor() {
+    this.http = new HttpClient();
 
-    private constructor() {
+    bus.subscribe(tokenReceivedEvent, (event) => {
+      this.http.setCommonHeader({
+        authorization: event.payload.token,
+      });
+    });
+  }
 
-        this.http = new HttpClient();
+  static getInstance() {
+    if (DataProvider.instance) return DataProvider.instance;
 
-        bus.subscribe(tokenReceivedEvent, (event) => {
-            this.http.setCommonHeader({
-                'authorization': event.payload.token
-            })
-        })
-    };
+    DataProvider.instance = new DataProvider();
+    return DataProvider.instance;
+  }
 
-    static getInstance() {
+  find(options: FindQuery) {
+    return this.http
+      .post<Response>("/data-provider/find", options)
+      .then((body) => body.data as Array<object>);
+  }
 
-        if (DataProvider.instance)
-            return DataProvider.instance;
+  findOne(options: FindQuery) {
+    return this.http
+      .post<Response>("/data-provider/find-one", options)
+      .then((body) => body.data as Response);
+  }
 
-        DataProvider.instance = new DataProvider();
-        return DataProvider.instance;
-    }
+  count(options: FindQuery) {
+    return this.http
+      .post<Response>("/data-provider/count", options)
+      .then((body) => body.data as number);
+  }
 
-    find(options: FindQuery) {
-        return this.http.post<Response>('/data-provider/find', options)
-            .then(body => body.data as Array<object>)
-    }
+  updateOne(options: UpdateQuery) {
+    return this.http
+      .post<Response>("/data-provider/update-one", options)
+      .then((body) => body.data as Response);
+  }
 
-    findOne(options: FindQuery) {
-        return this.http.post<Response>('/data-provider/find-one', options)
-            .then(body => body.data as object)
-    }
+  insertOne(options: InsertQuery) {
+    return this.http
+      .post<Response>("/data-provider/insert-one", options)
+      .then((body) => body.data as Response);
+  }
 
-    count(options: FindQuery) {
-        return this.http.post<Response>('/data-provider/count', options)
-            .then(body => body.data as number)
-    }
+  removeOne(options: FindQuery) {
+    return this.http
+      .post<Response>("/data-provider/remove-one", options)
+      .then((body) => body.data as Response);
+  }
 
-    updateOne(options: UpdateQuery) {
-        return this.http.post<Response>('/data-provider/update-one', options)
-            .then(body => body.data as object)
-    }
+  aggregate(options: AggregateQuery) {
+    return this.http
+      .post<Response>("/data-provider/aggregate", options)
+      .then((body) => body.data as Array<object>);
+  }
 
-    insertOne(options: InsertQuery) {
-        return this.http.post<Response>('/data-provider/insert-one', options)
-            .then(body => body.data as object)
-    }
-
-    removeOne(options: FindQuery) {
-        return this.http.post<Response>('/data-provider/remove-one', options)
-            .then(body => body.data as object)
-    }
-
-    aggregate(options: AggregateQuery) {
-        return this.http.post<Response>('/data-provider/aggregate', options)
-            .then(body => body.data as Array<object>)
-    }
-
-    findByIds(options: FindByIdsQuery) {
-        return this.http.post<Response>('/data-provider/findByIds', options)
-            .then(body => body.data as Array<object>)
-    }
+  findByIds(options: FindByIdsQuery) {
+    return this.http
+      .post<Response>("/data-provider/findByIds", options)
+      .then((body) => body.data as Array<object>);
+  }
 }
 
 export default DataProvider;
