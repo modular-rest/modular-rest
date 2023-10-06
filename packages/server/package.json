@@ -1,6 +1,6 @@
 {
   "name": "@modular-rest/server",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
   "main": "src/index.js",
   "scripts": {
@@ -26,8 +26,8 @@
     "@koa/cors": "^3.1.0",
     "colog": "^1.0.4",
     "file-system": "^2.2.2",
-    "generate-rsa-keypair": "^0.2.1",
     "jsonwebtoken": "^8.5.1",
+    "keypair": "^1.0.4",
     "koa": "^2.5.3",
     "koa-body": "^4.2.0",
     "koa-router": "^7.4.0",
