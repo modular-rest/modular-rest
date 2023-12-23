@@ -16,6 +16,7 @@ const DatabaseTrigger = require("./class/database_trigger");
 const SecurityClass = require("./class/security");
 
 const middleware = require("./middlewares");
+const userManager = require("./services/user_manager/service");
 
 module.exports = {
   createRest,
@@ -54,4 +55,6 @@ module.exports = {
 
   // Middlewares
   middleware,
+
+  userManager: userManager.main,
 };
