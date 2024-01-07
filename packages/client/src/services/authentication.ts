@@ -46,10 +46,10 @@ class AuthService {
    *
    * @return user
    */
-  loginWithLastSession() {
+  loginWithLastSession(token?: string) {
     return new Promise<User>((done, reject) => {
       // Load token
-      this.token = localStorage.getItem("token");
+      this.token = token || localStorage.getItem("token");
 
       if (!this.token)
         throw { hasError: true, error: "Token dosen't find on local machine" };
