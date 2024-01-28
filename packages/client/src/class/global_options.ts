@@ -30,8 +30,8 @@ class GlobalOptions {
     return this.options.host;
   }
 
-  getUrl(path: string) {
-    return join([this.host, path]);
+  getUrl(path: string, overrideUrl?: string) {
+    return join([overrideUrl || this.host, path]);
   }
 }
 

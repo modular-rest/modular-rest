@@ -2,7 +2,7 @@ export function join([...args]) {
   let url = "";
 
   for (let i = 0; i < args.length; i++) {
-    const path = args[i];
+    const path = args[i] || "";
 
     let parts = path.split("");
     if (path.startsWith("/")) parts[0] = "";
@@ -10,7 +10,7 @@ export function join([...args]) {
 
     url += parts.join("");
 
-    if (i < args.length-1) url += "/";
+    if (i < args.length - 1) url += "/";
   }
 
   return url;
