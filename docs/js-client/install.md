@@ -1,1 +1,3 @@
-install js client
+# Install Javascript Client
+
+## Setup

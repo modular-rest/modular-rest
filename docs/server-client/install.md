@@ -1,4 +1,21 @@
-# Install server client
+# Install Server App
+Thank you for choosing `modular-rest` to build your app. You can install the server app in two ways:
+
+## Create a new project
+In this way, you can create a new project with `modular-rest` server app. it will create a new folder with your project name and setup the project for you.
+
+Just use below command:
+```sh
+npm init @modular-rest/server my-project
+```
+And now you can start your project with below commands:
+```sh
+cd my-project
+npm install
+npm start
+```
+
+## Add modular-rest server client to your project
 It assumed that you have initialized a project with npm, then use below command to install modular-rest server client.
 ```sh
 npm i @modular-rest/server --save
@@ -17,16 +34,4 @@ const app = createRest({
        // do something before init with the koa app
     }
 })
-```
-
-## Create a new project
-You can use our boilerplate to create a new project with modular-rest server client.
-```sh
-npm init @modular-rest/server my-project
-```
-now just start your project with below command:
-```sh
-cd my-project
-npm install
-npm start
 ```

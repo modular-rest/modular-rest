@@ -16,7 +16,7 @@ features:
     details: Protects your backend app by json-web-token authentication with defferent permission.
   - title: MongoDB
     details: Use mongodb directly on your client app.
-  - title: Custom Rutes
+  - title: Custom Routes
     details: Write your custom API for specific use cases. Modular-rest give you a base and you can scale it to direction you want.
 ---
 
