@@ -6,6 +6,8 @@ a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.
 this module has one method:
 - `createRest`: is the main functionality of the module.
 
+**Note**: active "javascript.implicitProjectConfig.checkJs": true in your vscode settings.
+
 ## Install 
 
 Install using [npm](https://www.npmjs.com/package/modular-rest):

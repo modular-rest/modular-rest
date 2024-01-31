@@ -1,6 +1,7 @@
 /lib
 .vscode
 /dist
+/types
 
 # Logs
 logs

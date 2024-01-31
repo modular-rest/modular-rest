@@ -1,4 +1,13 @@
+/**
+ * Validator module
+ * @module class/validator
+ */
 let validateObject = require("./class/validator");
+
+/**
+ * User manager service
+ * @module services/user_manager/service
+ */
 const userManager = require("./services/user_manager/service");
 
 /**
@@ -9,7 +18,7 @@ const userManager = require("./services/user_manager/service");
  * @param {Function} next - Koa next function
  * @returns {Promise<void>}
  */
-module.exports.auth = async (ctx, next) => {
+async function auth(ctx, next) {
   let headers = ctx.header;
   let headersValidated = validateObject(headers, "authorization");
 
@@ -27,4 +36,8 @@ module.exports.auth = async (ctx, next) => {
       console.log(err);
       ctx.throw(err.status || 412, err.message);
     });
+}
+
+module.exports = {
+  auth,
 };

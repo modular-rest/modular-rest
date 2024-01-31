@@ -11,6 +11,9 @@
     },
     {
       "path": "docs"
+    },
+    {
+      "path": "../create-modular-rest"
     }
   ],
   "settings": {}

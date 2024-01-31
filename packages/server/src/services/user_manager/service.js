@@ -373,8 +373,12 @@ class UserManager {
     let authM = DataProvider.getCollection("cms", "auth");
     return authM.updateOne(query, update).exec().then();
   }
+
+  static get instance() {
+    return instance;
+  }
 }
 
-UserManager.instance = new UserManager();
+const instance = new UserManager();
 module.exports.name = "userManager";
 module.exports.main = UserManager.instance;
