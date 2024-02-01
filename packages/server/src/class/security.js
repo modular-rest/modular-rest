@@ -17,7 +17,7 @@ class AccessDefinition {
 }
 
 /**
- * @typedef {('god_access'|'user_access'|'delete'|'upload_file_access'|'remove_file_access'|'anonymous_access')} PermissionType
+ * @typedef {('god_access'|'user_access'|'upload_file_access'|'remove_file_access'|'anonymous_access')} PermissionType
  */
 
 /**

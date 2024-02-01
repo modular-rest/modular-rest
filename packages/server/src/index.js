@@ -19,16 +19,24 @@ const userManager = require("./services/user_manager/service");
 
 module.exports = {
   createRest,
+
+  // Route utilities
   reply,
   TypeCasters,
   paginator,
   validator,
+
+  // Service utilities
   getCollection,
+
+  // Database
   CollectionDefinition,
   Schemas,
   Schema,
   DatabaseTrigger,
   ...SecurityClass,
+
+  // Middlewares
   middleware,
   userManager: userManager.main,
 };

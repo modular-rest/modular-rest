@@ -22,11 +22,10 @@ export default defineConfig({
         text: "Server",
         items: [
           { text: "Install", link: "/server-client/install" },
+          { text: "Configuration", link: "/server-client/configuration" },
           { text: "Database", link: "/server-client/database" },
-          { text: "File Manager", link: "/server-client/file-manager" },
+          { text: "Utilities", link: "/server-client/utilities" },
           { text: "Custom Route", link: "/server-client/custom-route" },
-          { text: "Cors", link: "/server-client/cors" },
-          { text: "Otp", link: "/server-client/otp" },
         ],
       },
       {
@@ -41,6 +40,10 @@ export default defineConfig({
       {
         text: "Flutter Client",
         items: [{ text: "Install", link: "/flutter-client/install" }],
+      },
+      {
+        text: "Http Api",
+        items: [{ text: "Intro", link: "/http-api/intro" }],
       },
     ],
 
