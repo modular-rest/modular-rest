@@ -31,12 +31,20 @@ class Permission {
    * @param {boolean} [options.read=false] - The read access of the permission.
    * @param {boolean} [options.write=false] - The write access of the permission.
    * @param {boolean} [options.onlyOwnData=false] - If true, users can perform CRUD on documents that they created already.
+   * @param {string} [options.ownerIdField='refId'] - The name of the field that contains the owner's id of the document.
    */
-  constructor({ type, read = false, write = false, onlyOwnData = false }) {
+  constructor({
+    type,
+    read = false,
+    write = false,
+    onlyOwnData = false,
+    ownerIdField = "refId",
+  }) {
     this.type = type;
     this.read = read;
     this.write = write;
     this.onlyOwnData = onlyOwnData;
+    this.ownerIdField = ownerIdField;
   }
 }
 

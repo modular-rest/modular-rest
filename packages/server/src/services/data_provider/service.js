@@ -149,17 +149,19 @@ function _getPermissionList(db, collection, operationType) {
 
 function checkAccess(db, collection, operationType, queryOrDoc, user) {
   let key = false;
-  let permissionList = _getPermissionList(db, collection, operationType);
+  const permissionList = _getPermissionList(db, collection, operationType);
 
   permissionList.forEach((permission) => {
     let permissionType = permission.type;
 
     if (permission.onlyOwnData == true) {
-      let owner = queryOrDoc.owner;
-      let userId = user.id;
+      const userId = user.id;
 
       try {
-        if (owner.toString() == userId.toString()) key = true;
+        if (
+          queryOrDoc[permission.ownerIdField].toString() === userId.toString()
+        )
+          key = true;
       } catch (error) {
         key = false;
       }

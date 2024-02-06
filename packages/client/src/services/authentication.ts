@@ -16,6 +16,8 @@ class AuthService {
   private http: HttpClient;
   private token?: string | null;
 
+  user: User | null = null;
+
   get isLogin() {
     return !!this.token;
   }
@@ -58,12 +60,14 @@ class AuthService {
 
       this.validateToken(this.token || "")
         .then(({ user }: { user: any }) => {
-          return new User({
+          this.user = new User({
             email: user.email,
             phone: user.phone,
             id: user.id,
             permission: user["permission"],
           });
+
+          return this.user;
         })
         .then(done)
         .catch((err) => {

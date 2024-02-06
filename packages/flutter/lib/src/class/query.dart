@@ -118,11 +118,13 @@ class InsertQuery extends BaseQuery {
 
 class AggregateQuery extends BaseQuery {
   List<Map> pipelines;
+  Map<String, dynamic> accessQuery;
 
   AggregateQuery({
     @required String database,
     @required String collection,
     @required this.pipelines,
+    this.accessQuery = const {},
   }) : super(database, collection);
 
   @override
@@ -131,7 +133,7 @@ class AggregateQuery extends BaseQuery {
       'database': database,
       'collection': collection,
       'pipelines': pipelines,
-      'accessQuery': {},
+      'accessQuery': accessQuery,
     };
 
     return convert.json.encode(data);

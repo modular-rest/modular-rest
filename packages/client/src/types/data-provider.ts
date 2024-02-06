@@ -31,6 +31,7 @@ interface InsertQuery extends BaseRequest {
 
 interface AggregateQuery extends BaseRequest {
   pipelines: object[];
+  accessQuery: { [key: string]: any };
 }
 
 interface Response extends BaseResponse {

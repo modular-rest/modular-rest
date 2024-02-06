@@ -7,10 +7,8 @@ class DatabaseTrigger {
   /**
    * Creates a new instance of `DatabaseTrigger`.
    *
-   * @param {string} operation - The name of the operation on which the callback should be triggered.
-   * @param {function} [callback=(query, queryResult) => {}] - The callback function to be triggered. It accepts two parameters:
-   * 1. `query` - The query that is being executed.
-   * 2. `queryResult` - The result of the query execution.
+   * @param {'find' | 'find-one' | 'count' | 'update-one' | 'insert-one' | 'remove-one' | 'aggregate'} operation - The operation to be triggered. Supported operations are:
+   * @param {function(query, queryResult)} callback - The callback to be called when the operation is executed.
    */
   constructor(operation, callback = (query, queryResult) => {}) {
     this.operation = operation;
