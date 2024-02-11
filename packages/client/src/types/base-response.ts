@@ -1,5 +1,5 @@
-export default interface BaseResponse {
-    hasError?: boolean,
-    error?: any,
-    status?: string,
+export interface BaseResponseType {
+  hasError?: boolean;
+  error?: any;
+  status?: string;
 }

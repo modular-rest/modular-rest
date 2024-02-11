@@ -1,11 +1,11 @@
-import BaseResponse from "./base-response";
+import { BaseResponseType } from "./base-response";
 
-interface BaseRequest {
+export interface BaseRequestType {
   database: string;
   collection: string;
 }
 
-interface FindQuery extends BaseRequest {
+export interface FindQueryType extends BaseRequestType {
   query: object;
   populates?: [string | { path: string; select: string }];
   options?: {
@@ -16,33 +16,38 @@ interface FindQuery extends BaseRequest {
   };
 }
 
-interface FindByIdsQuery extends BaseRequest {
+export interface FindByIdsQueryType extends BaseRequestType {
   ids: string[];
 }
 
-interface UpdateQuery extends BaseRequest {
+export interface UpdateQueryType extends BaseRequestType {
   query: object;
   update: object;
 }
 
-interface InsertQuery extends BaseRequest {
+export interface InsertQueryType extends BaseRequestType {
   doc: object;
 }
 
-interface AggregateQuery extends BaseRequest {
+export interface AggregateQueryType extends BaseRequestType {
   pipelines: object[];
   accessQuery: { [key: string]: any };
 }
 
-interface Response extends BaseResponse {
+export interface ResponseType extends BaseResponseType {
   data: any;
 }
 
-export {
-  FindQuery,
-  FindByIdsQuery,
-  UpdateQuery,
-  InsertQuery,
-  AggregateQuery,
-  Response,
-};
+export interface PaginationType {
+  from: number;
+  limit: number;
+  page: number;
+  pages: number;
+  to: number;
+}
+
+export interface PaginatedResponseType<T> {
+  pagination: PaginationType;
+  updatePagination: () => Promise<void>;
+  fetchPage: (page: number) => Promise<Array<T>>;
+}

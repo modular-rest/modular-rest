@@ -1,4 +1,10 @@
-export function createPagination(count: number, perPage: number, page: number) {
+import { PaginationType } from "../types/data-provider";
+
+export function createPagination(
+  count: number,
+  perPage: number,
+  page: number
+): PaginationType {
   let totalPgaes = Math.ceil(count / perPage);
   if (page > totalPgaes) page = 1;
 

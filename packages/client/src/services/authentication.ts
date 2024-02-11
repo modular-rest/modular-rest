@@ -67,6 +67,8 @@ class AuthService {
             permission: user["permission"],
           });
 
+          localStorage.setItem("token", this.token!);
+
           return this.user;
         })
         .then(done)
@@ -79,6 +81,7 @@ class AuthService {
 
   logout() {
     this.token = null;
+    localStorage.removeItem("token");
     this.emitToken();
     this.saveSession();
   }

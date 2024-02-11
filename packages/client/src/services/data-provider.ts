@@ -9,6 +9,7 @@ import {
   InsertQuery,
   AggregateQuery,
   Response,
+  PaginatedResponseType,
 } from "../types/data-provider";
 import { createPagination } from "../helper/list";
 
@@ -46,18 +47,32 @@ class DataProvider {
    * @param paginationOption - The pagination options to limit and paginate data.
    * @returns Pagination information, `getPage` for fetching data for a specific page, and `updatePagination` for updating the pagination object.
    */
-  async list<T>(
+  list<T>(
     findOption: FindQuery,
     paginationOption: { limit: number; page: number }
-  ) {
-    const count = await this.count(findOption);
+  ): PaginatedResponseType<T> {
+    let count = 0;
     const pagination = createPagination(
-      count,
+      0,
       paginationOption.limit,
       paginationOption.page || 0
     );
 
     const _this = this;
+
+    async function calculatePages() {
+      count = await _this.count(findOption);
+      const { from, to, page, pages } = createPagination(
+        count,
+        paginationOption.limit,
+        paginationOption.page || 0
+      );
+
+      pagination.from = from;
+      pagination.to = to;
+      pagination.page = page;
+      pagination.pages = pages;
+    }
 
     return {
       /**
@@ -70,7 +85,7 @@ class DataProvider {
        * @returns A new pagination object.
        */
       updatePagination() {
-        return _this.list<T>(findOption, paginationOption);
+        return calculatePages();
       },
 
       /**
@@ -78,7 +93,12 @@ class DataProvider {
        * @param page - The page number to retrieve.
        * @returns The data for the specified page.
        */
-      getPage(page: number) {
+      fetchPage(page: number) {
+        // return empty array if page is out of range
+        if (page < 1 || page > pagination.pages) {
+          return Promise.resolve([]);
+        }
+
         return _this
           .find<T>({
             ...findOption,
