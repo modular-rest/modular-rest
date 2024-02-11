@@ -3,12 +3,12 @@ import User from "../class/user";
 import { bus, tokenReceivedEvent } from "../class/event-bus";
 
 import {
-  Identity,
-  LoginOptions,
-  LoginResponse,
-  ValidateCodeResponse,
-  VerifyTokenResponse,
-  BaseResponse,
+  IdentityType,
+  LoginOptionsType,
+  LoginResponseType,
+  ValidateCodeResponseType,
+  VerifyTokenResponseType,
+  BaseResponseType,
 } from "../types/auth";
 
 class AuthService {
@@ -54,7 +54,7 @@ class AuthService {
       this.token = token || localStorage.getItem("token");
 
       if (!this.token)
-        throw { hasError: true, error: "Token dosen't find on local machine" };
+        throw { hasError: true, error: "Token doesn't find on local machine" };
 
       this.emitToken();
 
@@ -90,11 +90,13 @@ class AuthService {
    * Login as an anonymous user and get a token.
    */
   loginAsAnonymous() {
-    return this.http.get<LoginResponse>("/user/loginAnonymous").then((body) => {
-      this.token = body.token;
-      this.emitToken();
-      return body;
-    });
+    return this.http
+      .get<LoginResponseType>("/user/loginAnonymous")
+      .then((body) => {
+        this.token = body.token;
+        this.emitToken();
+        return body;
+      });
   }
 
   /**
@@ -105,17 +107,17 @@ class AuthService {
    * @param options.id user identity
    * @param options.password user password
    */
-  login(options: LoginOptions, allowSave: boolean) {
+  login(options: LoginOptionsType, allowSave: boolean) {
     return (
       this.http
-        .post<LoginResponse>("/user/login", options)
+        .post<LoginResponseType>("/user/login", options)
         .then((body) => {
           this.token = body.token;
           this.emitToken();
 
           if (allowSave) this.saveSession();
         })
-        // verify token and get user object
+        // Verify token and get user object
         .then((_) => {
           return this.validateToken(this.token || "").then(
             ({ user }: { user: any }) => {
@@ -132,7 +134,7 @@ class AuthService {
   }
 
   validateToken(token: string) {
-    return this.http.post<VerifyTokenResponse>("verify/token", { token });
+    return this.http.post<VerifyTokenResponseType>("verify/token", { token });
   }
 
   /**
@@ -143,8 +145,8 @@ class AuthService {
    * @param options.idType the type of user identity
    * @param options.id user identity
    */
-  registerIdentity(identity: Identity) {
-    return this.http.post<BaseResponse>("/user/register_id", identity);
+  registerIdentity(identity: IdentityType) {
+    return this.http.post<BaseResponseType>("/user/register_id", identity);
   }
 
   /**
@@ -154,7 +156,10 @@ class AuthService {
    * @param code verification code
    */
   validateCode(options: { code: string; id: string }) {
-    return this.http.post<ValidateCodeResponse>("/user/validateCode", options);
+    return this.http.post<ValidateCodeResponseType>(
+      "/user/validateCode",
+      options
+    );
   }
 
   /**
@@ -167,7 +172,7 @@ class AuthService {
    * @param options.code verification code
    */
   submitPassword(options: { id: string; password: string; code: string }) {
-    return this.http.post<BaseResponse>("/user/submit_password", options);
+    return this.http.post<BaseResponseType>("/user/submit_password", options);
   }
 
   /**
@@ -179,7 +184,7 @@ class AuthService {
    * @param options.code verification code
    */
   changePassword(options: { id: string; password: string; code: string }) {
-    return this.http.post<BaseResponse>("/user/change_password", options);
+    return this.http.post<BaseResponseType>("/user/change_password", options);
   }
 }
 

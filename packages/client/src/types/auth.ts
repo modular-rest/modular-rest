@@ -1,31 +1,24 @@
-import BaseResponse from './base-response';
+import { BaseResponseType } from "./base-response";
 
-interface Identity {
-    idType: 'email' | 'phone';
-    id: string;
+export interface IdentityType {
+  idType: "email" | "phone";
+  id: string;
 }
 
-interface LoginOptions extends Identity {
-    password: string;
+export interface LoginOptionsType extends IdentityType {
+  password: string;
 }
 
-interface LoginResponse extends BaseResponse {
-    token?: string,
+export interface LoginResponseType extends BaseResponseType {
+  token?: string;
 }
 
-interface ValidateCodeResponse extends BaseResponse {
-    isValid: boolean,
+export interface ValidateCodeResponseType extends BaseResponseType {
+  isValid: boolean;
 }
 
-interface VerifyTokenResponse extends BaseResponse {
-    user: object,
+export interface VerifyTokenResponseType extends BaseResponseType {
+  user: object;
 }
 
-export {
-    Identity,
-    LoginOptions,
-    LoginResponse,
-    ValidateCodeResponse,
-    VerifyTokenResponse,
-    BaseResponse
-}
+export { BaseResponseType };

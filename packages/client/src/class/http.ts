@@ -1,4 +1,4 @@
-import BaseResponse from "../types/base-response";
+import { BaseResponseType } from "../types/base-response";
 import GlobalOptions from "./global_options";
 import axios from "axios";
 
@@ -78,7 +78,7 @@ class HTTPClient {
         throw {
           hasError: true,
           error: result,
-        } as BaseResponse;
+        } as BaseResponseType;
       });
   }
 
@@ -132,7 +132,7 @@ class HTTPClient {
         throw {
           hasError: true,
           error: result,
-        } as BaseResponse;
+        } as BaseResponseType;
       });
   }
 

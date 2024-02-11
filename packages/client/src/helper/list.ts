@@ -5,10 +5,10 @@ export function createPagination(
   perPage: number,
   page: number
 ): PaginationType {
-  let totalPgaes = Math.ceil(count / perPage);
-  if (page > totalPgaes) page = 1;
+  const totalPages = Math.ceil(count / perPage);
+  if (page > totalPages) page = 1;
 
-  // fixes
+  // Fixes
   perPage = perPage < 1 ? 1 : perPage;
   page = page < 1 ? 1 : page;
 
@@ -18,11 +18,12 @@ export function createPagination(
 
   if (page <= 1) from = 0;
 
-  let result = {
-    pages: totalPgaes,
+  const result = {
+    pages: totalPages,
     page: page,
     from: from,
     to: perPage,
+    limit: perPage,
   };
 
   return result;

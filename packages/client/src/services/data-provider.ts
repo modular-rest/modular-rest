@@ -3,14 +3,15 @@ import HttpClient from "../class/http";
 import { bus, tokenReceivedEvent } from "../class/event-bus";
 
 import {
-  FindQuery,
-  FindByIdsQuery,
-  UpdateQuery,
-  InsertQuery,
-  AggregateQuery,
-  Response,
+  FindQueryType,
+  FindByIdsQueryType,
+  UpdateQueryType,
+  InsertQueryType,
+  AggregateQueryType,
+  ResponseType,
   PaginatedResponseType,
 } from "../types/data-provider";
+
 import { createPagination } from "../helper/list";
 
 class DataProvider {
@@ -34,9 +35,9 @@ class DataProvider {
     return DataProvider.instance;
   }
 
-  find<T>(options: FindQuery) {
+  find<T>(options: FindQueryType) {
     return this.http
-      .post<Response>("/data-provider/find", options)
+      .post<ResponseType>("/data-provider/find", options)
       .then((body) => body.data as Array<T>);
   }
 
@@ -48,8 +49,12 @@ class DataProvider {
    * @returns Pagination information, `getPage` for fetching data for a specific page, and `updatePagination` for updating the pagination object.
    */
   list<T>(
-    findOption: FindQuery,
-    paginationOption: { limit: number; page: number }
+    findOption: FindQueryType,
+    paginationOption: {
+      limit: number;
+      page: number;
+      onFetched?: (docs: T[]) => void;
+    }
   ): PaginatedResponseType<T> {
     let count = 0;
     const pagination = createPagination(
@@ -116,51 +121,55 @@ class DataProvider {
             this.pagination.page = np.page;
             this.pagination.pages = np.pages;
 
+            if (paginationOption.onFetched) {
+              paginationOption.onFetched(data);
+            }
+
             return data;
           });
       },
     };
   }
 
-  findOne<T>(options: FindQuery) {
+  findOne<T>(options: FindQueryType) {
     return this.http
-      .post<Response>("/data-provider/find-one", options)
+      .post<ResponseType>("/data-provider/find-one", options)
       .then((body) => body.data as T);
   }
 
-  count(options: FindQuery) {
+  count(options: FindQueryType) {
     return this.http
-      .post<Response>("/data-provider/count", options)
+      .post<ResponseType>("/data-provider/count", options)
       .then((body) => body.data as number);
   }
 
-  updateOne(options: UpdateQuery) {
+  updateOne(options: UpdateQueryType) {
     return this.http
-      .post<Response>("/data-provider/update-one", options)
+      .post<ResponseType>("/data-provider/update-one", options)
       .then((body) => body.data);
   }
 
-  insertOne(options: InsertQuery) {
+  insertOne(options: InsertQueryType) {
     return this.http
-      .post<Response>("/data-provider/insert-one", options)
+      .post<ResponseType>("/data-provider/insert-one", options)
       .then((body) => body.data);
   }
 
-  removeOne(options: FindQuery) {
+  removeOne(options: FindQueryType) {
     return this.http
-      .post<Response>("/data-provider/remove-one", options)
+      .post<ResponseType>("/data-provider/remove-one", options)
       .then((body) => body.data);
   }
 
-  aggregate<T>(options: AggregateQuery) {
+  aggregate<T>(options: AggregateQueryType) {
     return this.http
-      .post<Response>("/data-provider/aggregate", options)
+      .post<ResponseType>("/data-provider/aggregate", options)
       .then((body) => body.data as Array<T>);
   }
 
-  findByIds<T>(options: FindByIdsQuery) {
+  findByIds<T>(options: FindByIdsQueryType) {
     return this.http
-      .post<Response>("/data-provider/findByIds", options)
+      .post<ResponseType>("/data-provider/findByIds", options)
       .then((body) => body.data as Array<T>);
   }
 }
