@@ -11,6 +11,7 @@ let permissionDefinitions = {};
 
 let triggers = require("../../class/trigger_operator");
 let TypeCasters = require("./typeCasters");
+const { config } = require("../../config");
 
 /**
  *
@@ -132,7 +133,11 @@ function _getPermissionList(db, collection, operationType) {
 
   if (!permissionDefinitions.hasOwnProperty(db)) return permissionList;
 
-  permissionDefinition = permissionDefinitions[db][collection];
+  try {
+    permissionDefinition = permissionDefinitions[db][collection];
+  } catch (error) {
+    return permissionList;
+  }
 
   permissionDefinition.permissionList.forEach((permission) => {
     if (permission.onlyOwnData == true) {
@@ -147,30 +152,40 @@ function _getPermissionList(db, collection, operationType) {
   return permissionList;
 }
 
+/**
+ * Check access to a collection.
+ * @param {string} db - The database name.
+ * @param {string} collection - The collection name.
+ * @param {string} operationType - The operation type.
+ * @param {object} queryOrDoc - The query or document.
+ * @param {import('../../class/user')} user - The user.
+ * @returns {boolean} The access result.
+ */
 function checkAccess(db, collection, operationType, queryOrDoc, user) {
   let key = false;
-  const permissionList = _getPermissionList(db, collection, operationType);
 
-  permissionList.forEach((permission) => {
-    let permissionType = permission.type;
+  const collectionPermissionList = _getPermissionList(
+    db,
+    collection,
+    operationType
+  );
+
+  collectionPermissionList.forEach((permission) => {
+    const collectionPermissionType = permission.type;
 
     if (permission.onlyOwnData == true) {
       const userId = user.id;
 
       try {
-        if (
-          queryOrDoc[permission.ownerIdField].toString() === userId.toString()
-        )
-          key = true;
+        key =
+          queryOrDoc[permission.ownerIdField].toString() === userId.toString();
       } catch (error) {
         key = false;
       }
-    } else if (operationType == AccessTypes.read) {
-      if (permission.read && user.permission[permissionType] == true)
-        key = true;
-    } else if (operationType == AccessTypes.write) {
-      if (permission.write && user.permission[permissionType] == true)
-        key = true;
+    } else if (operationType == AccessTypes.read && permission.read) {
+      key = user.hasPermission(collectionPermissionType);
+    } else if (operationType == AccessTypes.write && permission.write) {
+      key = user.permission[collectionPermissionType];
     }
   });
 

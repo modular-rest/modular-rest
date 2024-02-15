@@ -7,15 +7,21 @@ const Combination = require("./class/combinator");
 const DataProvider = require("./services/data_provider/service");
 const UserService = require("./services/user_manager/service");
 
-let defaultServiceRoot = __dirname + "/services";
+const defaultServiceRoot = __dirname + "/services";
 
 /**
  * @typedef {import('koa')} Koa
+ * @typedef {import('http').Server} server
+ * @typedef {import('@koa/cors').Options} Cors
+ * @typedef {import('./class/security').PermissionGroup} PermissionGroup
  */
 
+const { config, setConfig } = require("./config");
+
 /**
+ * Create a modular REST instance with Koa and MongoDB support.
  * @param {{
- *   cors?: any; // Options for @koa/cors middleware.
+ *   cors?: Cors; // CORS options.
  *   modulesPath?: string; // Root directory of your router.js/db.js files.
  *   staticPath?: {
  *      rootDir?: string; // Root directory of your static files.
@@ -48,10 +54,12 @@ let defaultServiceRoot = __dirname + "/services";
  *   };
  *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
  *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
+ *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
  * }} options
+ * @returns {Promise<{app: Koa, server: Server}>}
  */
-module.exports = async function createRest(options) {
-  options = {
+async function createRest(options) {
+  setConfig({
     port: 3000,
     dontListen: false,
     mongo: {
@@ -65,19 +73,19 @@ module.exports = async function createRest(options) {
     },
 
     ...options,
-  };
+  });
 
-  let app = new koa();
+  const app = new koa();
 
   /**
    * Plug in Cors
    */
-  app.use(cors(options.cors || {}));
+  app.use(cors(config.cors || {}));
 
   /**
    * Plug in BodyParser
    */
-  let bodyParserOptions = {
+  const bodyParserOptions = {
     multipart: true,
   };
   app.use(koaBody(bodyParserOptions));
@@ -85,14 +93,14 @@ module.exports = async function createRest(options) {
   /**
    * Plug In KoaStatic
    */
-  if (options.staticPath) {
-    app.use(koaStatic(options.staticPath));
+  if (config.staticPath) {
+    app.use(koaStatic(config.staticPath));
   }
 
   /**
    * Run before hook
    */
-  if (options.onBeforeInit) options.onBeforeInit(app);
+  if (config.onBeforeInit) config.onBeforeInit(app);
 
   /**
    * Setup default services
@@ -118,25 +126,29 @@ module.exports = async function createRest(options) {
   // Plug in default databaseDefinitions
   await DataProvider.addCollectionDefinitionByList({
     list: defaultDatabaseDefinitionList,
-    mongoOption: options.mongo,
+    mongoOption: config.mongo,
   });
 
   // Setting up default services
-  await require("./helper/presetup_services").setup(options);
+  try {
+    await require("./helper/presetup_services").setup(options);
+  } catch (e) {
+    return Promise.reject(e);
+  }
 
   /**
    * User Services
    *
    * Plug in routes and database
    */
-  if (options.modulesPath) {
+  if (config.modulesPath) {
     // Plug in user routes
-    await Combination.combineRoutesByFilePath(options.modulesPath, app);
+    await Combination.combineRoutesByFilePath(config.modulesPath, app);
 
     // Collect user CollectionDefinitions (db.js files)
     let userDatabaseDetail = [];
     userDatabaseDetail = await Combination.combineModulesByFilePath({
-      rootDirectory: options.modulesPath,
+      rootDirectory: config.modulesPath,
       filename: {
         name: "db",
         extension: ".js",
@@ -144,21 +156,21 @@ module.exports = async function createRest(options) {
       combineWithRoot: true,
     });
 
-    // combine additional CollectionDefinitions
-    if (options.collectionDefinitions) {
-      userDatabaseDetail.concat(options.collectionDefinitions);
+    // Combine additional CollectionDefinitions
+    if (config.collectionDefinitions) {
+      userDatabaseDetail.concat(config.collectionDefinitions);
     }
 
     // Plug in user CollectionDefinitions
     await DataProvider.addCollectionDefinitionByList({
       list: userDatabaseDetail || [],
-      mongoOption: options.mongo,
+      mongoOption: config.mongo,
     });
 
     // Plug in Verification method
-    if (typeof options.verificationCodeGeneratorMethod == "function") {
+    if (typeof config.verificationCodeGeneratorMethod == "function") {
       UserService.main.setCustomVerificationCodeGeneratorMethod(
-        options.verificationCodeGeneratorMethod
+        config.verificationCodeGeneratorMethod
       );
     }
   }
@@ -169,23 +181,29 @@ module.exports = async function createRest(options) {
    * return KOA app object
    */
   return new Promise((done, reject) => {
-    let server;
+    try {
+      let server;
 
-    if (!options.dontListen) {
-      server = app.listen(options.port);
-      console.log(
-        "\x1b[35m",
-        `KOAS has been launched on: localhost:${options.port}`
-      );
+      if (!config.dontListen) {
+        server = app.listen(config.port);
+
+        console.log(
+          "\x1b[35m",
+          `KOAS has been launched on: localhost:${config.port}`
+        );
+      }
+
+      // on after init
+      if (config.onAfterInit) config.onAfterInit(app);
+
+      done({
+        app,
+        server,
+      });
+    } catch (err) {
+      reject(err);
     }
-
-    // on after init
-    if (options.onAfterInit) options.onAfterInit(app);
-
-    //done
-    done({
-      app,
-      server,
-    });
   });
-};
+}
+
+module.exports = createRest;

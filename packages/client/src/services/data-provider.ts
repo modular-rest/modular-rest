@@ -67,7 +67,7 @@ class DataProvider {
 
     async function calculatePages() {
       count = await _this.count(findOption);
-      const { from, to, page, pages } = createPagination(
+      const { from, to, page, pages, total } = createPagination(
         count,
         paginationOption.limit,
         paginationOption.page || 0
@@ -77,6 +77,7 @@ class DataProvider {
       pagination.to = to;
       pagination.page = page;
       pagination.pages = pages;
+      pagination.total = total;
     }
 
     return {
@@ -99,10 +100,13 @@ class DataProvider {
        * @returns The data for the specified page.
        */
       fetchPage(page: number) {
-        // return empty array if page is out of range
+        // return if page is out of range
         if (page < 1 || page > pagination.pages) {
           return Promise.resolve([]);
         }
+
+        // Calculate the "from" value for the next page.
+        this.pagination.from = (page - 1) * paginationOption.limit;
 
         return _this
           .find<T>({

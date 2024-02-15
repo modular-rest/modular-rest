@@ -1,97 +1,112 @@
-let validateObject = require('./validator')
+const { config } = require("../config");
+let validateObject = require("./validator");
 
 module.exports = class User {
+  constructor(id, permissionGroup, phone, email, password, type, model) {
+    this.id = id;
+    this.permissionGroup = permissionGroup;
+    this.email = email;
+    this.phone = phone;
+    this.password = password;
+    this.type = type;
+    this.dbModel = model;
+  }
 
-    constructor(id, permission, phone, email, password, type, model)
-    {
-        this.id         = id;
-        this.permission = permission;
-        this.email      = email;
-        this.phone      = phone;
-        this.password   = password;
-        this.type       = type;
-        this.dbModel    = model;
+  getBrief() {
+    const permissionGroup = config.permissionGroups.find(
+      (group) => group.title == this.permissionGroup
+    );
+
+    const brief = {
+      id: this.id,
+      permissionGroup: permissionGroup,
+      phone: this.phone,
+      email: this.email,
+      type: this.type,
+    };
+
+    return brief;
+  }
+
+  setNewDetail(detail) {
+    if (detail.phone) this.phone = detail.phone;
+    if (detail.email) this.email = detail.email;
+    if (detail.password) this.password = detail.password;
+  }
+
+  hasPermission(permissionField) {
+    const permissionGroup = config.permissionGroups.find(
+      (group) => group.title == this.permissionGroup
+    );
+
+    if (permissionGroup == null) return false;
+
+    let key = false;
+
+    for (let i = 0; i < permissionGroup.validPermissionTypes.length; i++) {
+      const userPermissionType = permissionGroup.validPermissionTypes[i];
+
+      if (userPermissionType == permissionField) {
+        key = true;
+        break;
+      }
     }
 
-    getBrief()
-    {
-        let brief = {
-            id : this.id,
-            permission : this.permission,
-            phone : this.phone, 
-            email : this.email,
-            type  : this.type,
-        }
+    return key;
+  }
 
-        return brief;
-    }
+  async save() {
+    this.mode["permissionGroup"] = this.permissionGroup;
+    this.mode["phone"] = this.phone;
+    this.mode["email"] = this.email;
+    this.mode["password"] = this.password;
 
-    setNewDetail(detail)
-    {
-        if(detail.phone)    this.phone      = detail.phone;
-        if(detail.email)    this.email      = detail.email;
-        if(detail.password) this.password   = detail.password;
-    }
+    await mode.save();
+  }
 
-    hasPermission(permissionField)
-    {
-        let key = false;
+  static loadFromModel(model) {
+    return new Promise((done, reject) => {
+      // check required fields
+      let isValidData = validateObject(
+        model,
+        "fullname email password permission"
+      );
+      if (!isValidData) reject(User.notValid(detail));
 
-        if(this.permission[permissionField] == null)
-            return key;
+      let id = model.id;
+      let permissionGroup = model.permissionGroup;
+      let phone = model.phone;
+      let email = model.email;
+      let password = model.password;
+      let type = model.type;
 
-        key = this.permission[permissionField];
-        return key;
-    }
+      //create user
+      let newUser = new User(
+        id,
+        permissionGroup,
+        phone,
+        email,
+        password,
+        type,
+        model
+      );
+      done(newUser);
+    });
+  }
 
-    async save()
-    {
-        this.mode['permission'] =  this.permission;
-        this.mode['phone']      =  this.phone;
-        this.mode['email']      =  this.email;
-        this.mode['password']   =  this.password;
+  static createFromModel(model, detail) {
+    return new Promise(async (done, reject) => {
+      //create user
+      await new model(detail)
+        .save()
+        .then((newUser) => done(User.loadFromModel(newUser)))
+        .catch(reject);
+    });
+  }
 
-        await mode.save();
-    }
-
-    static loadFromModel(model)
-    {
-        return new Promise((done, reject) => 
-        {
-            // check required fields
-            let isValidData = validateObject(model, 'fullname email password permission');
-            if(!isValidData) 
-                reject(User.notValid(detail));
-
-            let id         = model.id;
-            let permission = model.permission; 
-            let phone      = model.phone;
-            let email      = model.email;
-            let password   = model.password;
-            let type       = model.type; 
-
-            //create user
-            let newUser = new User(id, permission, phone, email, password, type, model);
-            done(newUser);
-        });
-    }
-
-    static createFromModel(model, detail)
-    {
-        return new Promise( async (done, reject) => 
-        {
-            //create user
-            await new model(detail).save()
-                .then(newUser => 
-                    done(User.loadFromModel(newUser)))
-                .catch(reject);
-        });
-    }
-
-    static notValid(object)
-    {
-        let error = `user detail are not valid ${object}`;
-        console.error(error);
-        return error;
-    }
-}
+  static notValid(object) {
+    let error = `user detail are not valid ${object}`;
+    console.error(error);
+    return error;
+  }
+};

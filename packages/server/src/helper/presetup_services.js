@@ -19,22 +19,10 @@ module.exports.setup = async ({ keypair, adminUser, uploadDirectory }) => {
   /**
    * Data Insertion
    *
-   * Insert permissions and admin user
+   * Insert admin user
    * for the first time
    */
-  await DataInsertion.createPermissions().catch((err) => {
-    console.log(
-      "Error while creating permissions, it seems data is already inserted.",
-      err
-    );
-  });
-
-  await DataInsertion.createAdminUser(adminUser).catch((err) => {
-    console.log(
-      "Error while creating admin user, it seems data is already inserted.",
-      err
-    );
-  });
+  await DataInsertion.createAdminUser(adminUser);
 
   /**
    * File Service

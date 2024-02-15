@@ -1,6 +1,6 @@
 {
   "name": "@modular-rest/server",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
   "main": "src/index.js",
   "scripts": {
@@ -38,7 +38,9 @@
     "nested-property": "^4.0.0"
   },
   "devDependencies": {
+    "@types/bson": "4.2.0",
     "@types/koa": "^2.14.0",
+    "@types/koa__cors": "^5.0.0",
     "typescript": "^5.3.3"
   }
 }

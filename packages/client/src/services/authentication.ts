@@ -64,7 +64,8 @@ class AuthService {
             email: user.email,
             phone: user.phone,
             id: user.id,
-            permission: user["permission"],
+            permissionGroup: user["permissionGroup"],
+            type: user.type,
           });
 
           localStorage.setItem("token", this.token!);
@@ -125,7 +126,8 @@ class AuthService {
                 email: user.email,
                 phone: user.phone,
                 id: user.id,
-                permission: user["permission"],
+                permissionGroup: user["permissionGroup"],
+                type: user.type,
               });
             }
           );

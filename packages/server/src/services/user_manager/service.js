@@ -1,6 +1,7 @@
 let User = require("../../class/user");
 const DataProvider = require("../data_provider/service");
 const JWT = require("../jwt/service");
+const { getDefaultPermissionGroups } = require("./permissionManager");
 
 class UserManager {
   constructor() {
@@ -42,7 +43,6 @@ class UserManager {
       let userDoc = await userModel
         .findOne({ _id: id })
         .select({ password: 0 })
-        .populate("permission")
         .exec()
         .catch(reject);
 
@@ -75,7 +75,6 @@ class UserManager {
       let userDoc = await userModel
         .findOne(query)
         .select({ password: 0 })
-        .populate("permission")
         .exec()
         .catch(reject);
 
@@ -93,21 +92,9 @@ class UserManager {
    * Get a user by their token.
    * @param {string} token - The token of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
-   * @throws {string} If the user has a wrong permission.
    */
   getUserByToken(token) {
-    return JWT.main.verify(token).then(async (payload) => {
-      let user = payload;
-      let permission = await DataProvider.getCollection("cms", "permission")
-        .findOne({ _id: user.permission })
-        .exec()
-        .then();
-
-      if (!permission) throw "user has a wrong permission";
-
-      user.permission = permission;
-      return user;
-    });
+    return JWT.main.verify(token);
   }
 
   /**
@@ -155,11 +142,7 @@ class UserManager {
       else if (idType == "email") query["email"] = id;
 
       // Get from database
-      const gottenFromDB = await userModel
-        .findOne(query)
-        .populate("permission")
-        .exec()
-        .catch(reject);
+      const gottenFromDB = await userModel.findOne(query).exec().catch(reject);
 
       if (!gottenFromDB) reject("user not found");
       // Token
@@ -193,11 +176,7 @@ class UserManager {
       const query = { email: email };
 
       // Get from database
-      const gottenFromDB = await userModel
-        .findOne(query)
-        .populate("permission")
-        .exec()
-        .catch(reject);
+      const gottenFromDB = await userModel.findOne(query).exec().catch(reject);
 
       if (!gottenFromDB) reject("user not found");
 
@@ -230,7 +209,6 @@ class UserManager {
       // Get from database
       let gottenFromDB = await userModel
         .findOne(query)
-        .populate("permission")
         .exec()
         .then()
         .catch(reject);
@@ -333,20 +311,12 @@ class UserManager {
   registerUser(detail) {
     return new Promise(async (done, reject) => {
       // get default permission
-      let permissionId;
-      let perM = DataProvider.getCollection("cms", "permission");
+      detail.permissionGroup = getDefaultPermissionGroups().title;
 
-      let pQuery = { isDefault: true };
-
-      if (detail.type == "anonymous") pQuery = { isAnonymous: true };
-
-      await perM
-        .findOne(pQuery, "_id")
-        .exec()
-        .then((doc) => (permissionId = doc._id))
-        .catch(reject);
-
-      detail.permission = permissionId;
+      if (!detail.permissionGroup) {
+        reject("default permission group not found");
+        return;
+      }
 
       let authM = DataProvider.getCollection("cms", "auth");
       return User.createFromModel(authM, detail)

@@ -18,6 +18,7 @@ export interface FindQueryType extends BaseRequestType {
 
 export interface FindByIdsQueryType extends BaseRequestType {
   ids: string[];
+  accessQuery: { [key: string]: any };
 }
 
 export interface UpdateQueryType extends BaseRequestType {
@@ -44,6 +45,7 @@ export interface PaginationType {
   page: number;
   pages: number;
   to: number;
+  total: number;
 }
 
 export interface PaginatedResponseType<T> {
