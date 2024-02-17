@@ -67,8 +67,16 @@ function connectToDatabaseByCollectionDefinitionList(
       });
 
       // add trigger
-      if (collectionDefinition.trigger != undefined) {
-        triggers.addTrigger(collectionDefinition.trigger);
+      if (collectionDefinition.triggers != undefined) {
+        if (!Array.isArray(collectionDefinition.triggers)) {
+          throw "Triggers must be an array";
+        }
+
+        collectionDefinition.triggers.forEach((trigger) => {
+          trigger.database = collectionDefinition.database;
+          trigger.collection = collectionDefinition.collection;
+          triggers.addTrigger(trigger);
+        });
       }
     });
 

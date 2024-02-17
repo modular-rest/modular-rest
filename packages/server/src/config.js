@@ -3,6 +3,7 @@
  * @typedef {import('@koa/cors').Options} Cors
  * @typedef {import('./class/collection_definition')} CollectionDefinition
  * @typedef {import('./class/security').PermissionGroup} PermissionGroup
+ * @typedef {import('./class/database_trigger.js')} DatabaseTrigger
  */
 
 /**
@@ -41,9 +42,15 @@
  *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
  *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
  *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
+ *   authTriggers?: DatabaseTrigger[]; // An array of additional database triggers for the auth collection.
  * }} Config
  * @exports Config
  */
+
+/**
+ * @type {Config}
+ */
+const config = {};
 
 /**
  * @param {Config} options
@@ -51,11 +58,6 @@
 function setConfig(options) {
   Object.assign(config, options);
 }
-
-/**
- * @type {Config}
- */
-const config = {};
 
 module.exports = {
   setConfig,

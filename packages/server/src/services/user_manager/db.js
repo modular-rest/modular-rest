@@ -3,6 +3,8 @@ var Schema = mongoose.Schema;
 
 let CollectionDefinition = require("../../class/collection_definition");
 let { Permission, PermissionTypes } = require("../../class/security");
+const { config } = require("../../config");
+const triggerOperator = require("./../../class/trigger_operator");
 
 let authSchema = new Schema({
   permissionGroup: String,
@@ -21,6 +23,46 @@ authSchema.pre(["save", "updateOne"], function (next) {
   next();
 });
 
+authSchema.post("save", function (doc, next) {
+  triggerOperator.call("insert-one", "cms", "auth", {
+    query: null,
+    queryResult: doc._doc,
+  });
+  next();
+});
+
+authSchema.post("findOneAndUpdate", function (doc, next) {
+  triggerOperator.call("update-one", "cms", "auth", {
+    query: null,
+    queryResult: doc._doc,
+  });
+  next();
+});
+
+authSchema.post("updateOne", function (result, next) {
+  triggerOperator.call("update-one", "cms", "auth", {
+    query: null,
+    queryResult: doc._doc,
+  });
+  next();
+});
+
+authSchema.post("findOneAndDelete", function (doc, next) {
+  triggerOperator.call("remove-one", "cms", "auth", {
+    query: null,
+    queryResult: doc._doc,
+  });
+  next();
+});
+
+authSchema.post("deleteOne", function (result, next) {
+  triggerOperator.call("remove-one", "cms", "auth", {
+    query: null,
+    queryResult: doc._doc,
+  });
+  next();
+});
+
 module.exports = [
   new CollectionDefinition({
     db: "cms",
@@ -33,5 +75,6 @@ module.exports = [
         write: true,
       }),
     ],
+    triggers: config.authTriggers || [],
   }),
 ];
