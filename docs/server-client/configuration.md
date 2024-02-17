@@ -16,22 +16,22 @@ const app = createRest({
 
 ## Configuration Summary Table
 
-| Property                          | Type       | Optional | Description                                   |
-| --------------------------------- | ---------- | -------- | --------------------------------------------- |
-| `cors`                            | `Cors`     | Yes      | CORS options.                                 |
-| `modulesPath`                     | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
-| `staticPath`                      | `Object`   | Yes      | Configuration for serving static files.       |
-| `onBeforeInit`                    | `Function` | Yes      | Callback before Koa server initialization.    |
-| `onAfterInit`                     | `Function` | Yes      | Callback after Koa server initialization.     |
-| `port`                            | `number`   | Yes      | Server port number.                           |
-| `dontListen`                      | `boolean`  | Yes      | If `true`, doesn't start the server.          |
-| `mongo`                           | `Object`   | No       | MongoDB configuration.                        |
-| `keypair`                         | `Object`   | No       | RSA keypair for authentication.               |
-| `adminUser`                       | `Object`   | No       | Admin user credentials.                       |
-| `verificationCodeGeneratorMethod` | `Function` | No       | Method to generate a verification code.       |
-| `collectionDefinitions`           | `Array`    | No       | Additional collection definitions.            |
-| `permissionGroups`                | `Array`    | No       | Additional permission groups.                 |
-| `authTriggers`                    | `Array`    | No       | Database triggers for the auth collection.    |
+| Property                                                                  | Type       | Optional | Description                                   |
+| ------------------------------------------------------------------------- | ---------- | -------- | --------------------------------------------- |
+| [cors](./advanced-topics/cors.md)                                         | `Cors`     | Yes      | CORS options.                                 |
+| modulesPath                                                               | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
+| staticPath                                                                | `Object`   | Yes      | Configuration for serving static files.       |
+| onBeforeInit                                                              | `Function` | Yes      | Callback before Koa server initialization.    |
+| onAfterInit                                                               | `Function` | Yes      | Callback after Koa server initialization.     |
+| port                                                                      | `number`   | Yes      | Server port number.                           |
+| dontListen                                                                | `boolean`  | Yes      | If `true`, doesn't start the server.          |
+| mongo                                                                     | `Object`   | No       | MongoDB configuration.                        |
+| keypair                                                                   | `Object`   | No       | RSA keypair for authentication.               |
+| adminUser                                                                 | `Object`   | No       | Admin user credentials.                       |
+| verificationCodeGeneratorMethod                                           | `Function` | No       | Method to generate a verification code.       |
+| [collectionDefinitions](/server-client/database.html#define-a-collection) | `Array`    | No       | Additional collection definitions.            |
+| permissionGroups                                                          | `Array`    | No       | Additional permission groups.                 |
+| [authTriggers](/server-client/database.html#triggers)                     | `Array`    | No       | Database triggers for the auth collection.    |
 
 ## Server and Middleware Configuration
 

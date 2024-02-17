@@ -16,17 +16,17 @@ The `@modular-rest/server` framework uses `koa/cors` middleware to configure COR
 
 Below is a detailed explanation of the CORS configuration options provided by `koa/cors` in `@modular-rest/server`:
 
-| Property               | Type                         | Default                                 | Description                                                                                                            |
-| ---------------------- | ---------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `origin`               | `String` \| `Function(ctx)`  | `'*'`                                   | Determines which origins are allowed. Can be a static string, `'*'` for all origins, or a function returning a string. |
-| `allowMethods`         | `String` \| `Array`          | `'GET, HEAD, PUT, POST, DELETE, PATCH'` | Specifies the HTTP methods allowed for CORS requests.                                                                  |
-| `exposeHeaders`        | `String` \| `Array`          | -                                       | Indicates which headers can be exposed as part of the response.                                                        |
-| `allowHeaders`         | `String` \| `Array`          | -                                       | Specifies which headers can be included in the request.                                                                |
-| `maxAge`               | `String` \| `Number`         | -                                       | Defines how long the results of a preflight request can be cached.                                                     |
-| `credentials`          | `Boolean` \| `Function(ctx)` | `false`                                 | Indicates whether the request can include user credentials like cookies or HTTP auth.                                  |
-| `keepHeadersOnError`   | `Boolean`                    | -                                       | If true, includes CORS headers in the response even when an error occurs.                                              |
-| `secureContext`        | `Boolean`                    | `false`                                 | Enables `Cross-Origin-Opener-Policy` & `Cross-Origin-Embedder-Policy` headers for secure contexts.                     |
-| `privateNetworkAccess` | `Boolean`                    | `false`                                 | Handles `Access-Control-Request-Private-Network`, allowing requests from private networks if set to true.              |
+| Property             | Type                         | Default                                 | Description                                                                                                            |
+| -------------------- | ---------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| origin               | `String` \| `Function(ctx)`  | `'*'`                                   | Determines which origins are allowed. Can be a static string, `'*'` for all origins, or a function returning a string. |
+| allowMethods         | `String` \| `Array`          | `'GET, HEAD, PUT, POST, DELETE, PATCH'` | Specifies the HTTP methods allowed for CORS requests.                                                                  |
+| exposeHeaders        | `String` \| `Array`          | -                                       | Indicates which headers can be exposed as part of the response.                                                        |
+| allowHeaders         | `String` \| `Array`          | -                                       | Specifies which headers can be included in the request.                                                                |
+| maxAge               | `String` \| `Number`         | -                                       | Defines how long the results of a preflight request can be cached.                                                     |
+| credentials          | `Boolean` \| `Function(ctx)` | `false`                                 | Indicates whether the request can include user credentials like cookies or HTTP auth.                                  |
+| keepHeadersOnError   | `Boolean`                    | -                                       | If true, includes CORS headers in the response even when an error occurs.                                              |
+| secureContext        | `Boolean`                    | `false`                                 | Enables `Cross-Origin-Opener-Policy` & `Cross-Origin-Embedder-Policy` headers for secure contexts.                     |
+| privateNetworkAccess | `Boolean`                    | `false`                                 | Handles `Access-Control-Request-Private-Network`, allowing requests from private networks if set to true.              |
 
 ### Example Configuration
 
