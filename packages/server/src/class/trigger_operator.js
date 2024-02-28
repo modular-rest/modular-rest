@@ -13,24 +13,21 @@ class TriggerOperator {
 
   /**
    * Call a trigger
-   * @param {string} operation operation name
+   * @param {'find' | 'find-one' | 'count' | 'update-one' | 'insert-one' | 'remove-one' | 'aggregate'} operation operation name
    * @param {string} database database name
    * @param {string} collection collection name
    * @param {string} data
    */
   call(operation, database, collection, data) {
-    let result;
-
     this.triggers.forEach((trigger) => {
       if (
         operation == trigger.operation &&
         database == trigger.database &&
-        collection == trigger.collection
+        collection == trigger.collection &&
+        trigger.callback
       )
-        result = trigger.callback(data.input, data.output);
+        trigger.callback(data);
     });
-
-    return result;
   }
 
   static get instance() {

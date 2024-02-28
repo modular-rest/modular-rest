@@ -19,6 +19,7 @@ export function createPagination(
   if (page <= 1) from = 0;
 
   const result = {
+    total: count,
     pages: totalPages,
     page: page,
     from: from,

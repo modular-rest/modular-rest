@@ -5,6 +5,8 @@ import GlobalOptions from "./class/global_options";
 
 export * as Types from "./types/types";
 
+export { createPagination } from "./helper/list";
+
 const authentication = Authentication.getInstance();
 const dataProvider = DataProvider.getInstance();
 const fileProvider = FileProvider.getInstance();

@@ -1,42 +1,57 @@
 class User {
-    /**
-     * Registered email
-     */
+  /**
+   * Registered email
+   */
+  email?: string;
+  /**
+   * Registered phone
+   */
+  phone?: string;
+  /**
+   * Unique generated id for the user
+   */
+  id: string;
+  /**
+   * permission type
+   */
+  type: string;
+  private permissionGroup: any;
+
+  constructor(detail: {
     email?: string;
-    /**
-     * Registered phone
-     */
     phone?: string;
-    /**
-     * Unique generated id for the user 
-     */
     id: string;
-    /**
-     * permission type
-     */
+    permissionGroup: any;
     type: string;
-    private permission: any;
+  }) {
+    if (detail.email) this.email = detail.email;
+    if (detail.phone) this.phone = detail.phone;
 
-    constructor(detail: { email?: string, phone?: string, id: string, permission: any }) {
-        if (detail.email)
-            this.email = detail.email;
-        if (detail.phone)
-            this.phone = detail.phone;
+    this.id = detail.id;
+    this.permissionGroup = detail.permissionGroup;
+    this.type = detail.type;
+  }
 
-        this.id = detail.id;
-        this.permission = detail.permission;
-        this.type = detail.permission.title;
+  /**
+   * Check whether or not the user has access to an specific permission.
+   * @param permissionField permission name
+   */
+  hasAccess(permissionField: string) {
+    if (this.permissionGroup == null) return false;
+
+    let key = false;
+
+    for (let i = 0; i < this.permissionGroup.validPermissionTypes.length; i++) {
+      const userPermissionType = this.permissionGroup.validPermissionTypes[i];
+
+      if (userPermissionType == permissionField) {
+        key = true;
+        break;
+      }
     }
 
-    /**
-     * Check whether or not the user has access to an specific permission.
-     * @param permissionName permission name
-     */
-    hasAccess(permissionName: string) {
-        if (this.permission[permissionName] != undefined)
-            return this.permission[permissionName];
-        else return false;
-    }
+    return key;
+  }
 }
 
 export default User;

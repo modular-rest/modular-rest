@@ -14,9 +14,9 @@ class CollectionDefinition {
    * @param {string} option.collection - Collection name
    * @param {Object} option.schema - Mongoose schema
    * @param {Array<Permission>} option.permissions - A list of permissions for this collection
-   * @param {Array<DatabaseTrigger>=} option.trigger - A database trigger
+   * @param {Array<DatabaseTrigger>=} option.triggers - A database trigger
    */
-  constructor({ db, collection, schema, permissions, trigger }) {
+  constructor({ db, collection, schema, permissions, triggers }) {
     // string
     this.database = db;
     // string
@@ -26,7 +26,7 @@ class CollectionDefinition {
     // a list of Permission for this collection
     this.permissions = permissions;
 
-    this.trigger = trigger;
+    this.triggers = triggers;
   }
 }
 

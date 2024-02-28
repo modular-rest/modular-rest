@@ -17,7 +17,7 @@ class AccessDefinition {
 }
 
 /**
- * @typedef {('god_access'|'user_access'|'upload_file_access'|'remove_file_access'|'anonymous_access')} PermissionType
+ * @typedef {('user_access'|'upload_file_access'|'remove_file_access'|'anonymous_access'|'advanced_settings')} PermissionType
  */
 
 /**
@@ -54,23 +54,19 @@ class Permission {
  */
 class PermissionTypes {
   /**
-   * Create permission types.
-   * Each property represents a specific type of permission.
-   */
-  constructor() {
-    this.god_access = "god_access"; // Represents god access permission type
-    this.user_access = "user_access"; // Represents user access permission type
-    this.upload_file_access = "upload_file_access"; // Represents upload file access permission type
-    this.remove_file_access = "remove_file_access"; // Represents remove file access permission type
-    this.anonymous_access = "anonymous_access"; // Represents anonymous access permission type
-  }
-
-  /**
    * Get the string representing god access permission type.
    * @return {string} The god access permission type.
    */
   static get god_access() {
     return "god_access";
+  }
+
+  /**
+   * Get the string representing advanced settings permission type.
+   * @return {string} The advanced settings permission type.
+   */
+  static get advanced_settings() {
+    return "advanced_settings";
   }
 
   /**
@@ -96,13 +92,31 @@ class PermissionTypes {
   static get remove_file_access() {
     return "remove_file_access";
   }
+}
 
+class PermissionGroup {
   /**
-   * Get the string representing anonymous access permission type.
-   * @return {string} The anonymous access permission type.
+   * Create a permission group.
+   * @param {Object} options - The options for the permission group.
+   * @param {string} options.title - The title of the permission group.
+   * @param {boolean} [options.isDefault=false] - If true, the permission group is the default permission group.
+   * @param {boolean} [options.isAnonymous=false] - If true, the permission group is the anonymous permission group.
+   * @param {Array.<PermissionType>} [options.validPermissionTypes=[]] - The valid permission types of the permission group.
+   * @return {PermissionGroup} The created permission group.
    */
-  static get anonymous_access() {
-    return "anonymous_access";
+  constructor({
+    title,
+    isDefault = false,
+    isAnonymous = false,
+    validPermissionTypes = [],
+  }) {
+    //
+    this.title = title;
+
+    this.isDefault = isDefault;
+    this.isAnonymous = isAnonymous;
+
+    this.validPermissionTypes = validPermissionTypes;
   }
 }
 
@@ -122,5 +136,6 @@ module.exports = {
   AccessDefinition,
   Permission,
   PermissionTypes,
+  PermissionGroup,
   AccessTypes,
 };

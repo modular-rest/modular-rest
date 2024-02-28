@@ -25,7 +25,17 @@ export default defineConfig({
           { text: "Configuration", link: "/server-client/configuration" },
           { text: "Database", link: "/server-client/database" },
           { text: "Utilities", link: "/server-client/utilities" },
-          { text: "Custom Route", link: "/server-client/custom-route" },
+
+          {
+            text: "Advanced Topics",
+            items: [
+              { text: "Cors", link: "/server-client/advanced-topics/cors" },
+              {
+                text: "Custom Route",
+                link: "/server-client/advanced-topics/custom-route",
+              },
+            ],
+          },
         ],
       },
       {
