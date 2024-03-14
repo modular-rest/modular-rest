@@ -193,7 +193,7 @@ function checkAccess(db, collection, operationType, queryOrDoc, user) {
     } else if (operationType == AccessTypes.read && permission.read) {
       key = user.hasPermission(collectionPermissionType);
     } else if (operationType == AccessTypes.write && permission.write) {
-      key = user.permission[collectionPermissionType];
+      key = user.hasPermission(collectionPermissionType);
     }
   });
 

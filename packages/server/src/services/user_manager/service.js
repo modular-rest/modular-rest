@@ -1,7 +1,12 @@
-let User = require("../../class/user");
+const User = require("../../class/user");
 const DataProvider = require("../data_provider/service");
 const JWT = require("../jwt/service");
 const { getDefaultPermissionGroups } = require("./permissionManager");
+
+/**
+ * import user type
+ * @typedef {import('../../class/user')} User
+ */
 
 class UserManager {
   constructor() {
@@ -93,8 +98,9 @@ class UserManager {
    * @param {string} token - The token of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
    */
-  getUserByToken(token) {
-    return JWT.main.verify(token);
+  async getUserByToken(token) {
+    const { id } = await JWT.main.verify(token);
+    return this.getUserById(id);
   }
 
   /**
@@ -311,7 +317,9 @@ class UserManager {
   registerUser(detail) {
     return new Promise(async (done, reject) => {
       // get default permission
-      detail.permissionGroup = getDefaultPermissionGroups().title;
+      if (!detail.permissionGroup) {
+        detail.permissionGroup = getDefaultPermissionGroups().title;
+      }
 
       if (!detail.permissionGroup) {
         reject("default permission group not found");

@@ -4,6 +4,8 @@ const {
   getDefaultAdministratorPermissionGroup,
 } = require("../services/user_manager/permissionManager");
 
+const userManager = require("../services/user_manager/service");
+
 async function createAdminUser({ email, password }) {
   let authModel = DataProvider.getCollection("cms", "auth");
 
@@ -17,13 +19,20 @@ async function createAdminUser({ email, password }) {
       .exec();
 
     if (isAnonymousExisted == 0) {
-      await new authModel({
-        permission: getDefaultAnonymousPermissionGroup().title,
+      await userManager.main.registerUser({
+        permissionGroup: getDefaultAnonymousPermissionGroup().title,
         email: "",
         phone: "",
         password: "",
         type: "anonymous",
-      }).save();
+      });
+      // await new authModel({
+      //   permission: getDefaultAnonymousPermissionGroup().title,
+      //   email: "",
+      //   phone: "",
+      //   password: "",
+      //   type: "anonymous",
+      // }).save();
     }
 
     if (isAdministratorExisted == 0) {
@@ -31,12 +40,19 @@ async function createAdminUser({ email, password }) {
         return Promise.reject("Invalid email or password for admin user.");
       }
 
-      await new authModel({
-        permission: getDefaultAdministratorPermissionGroup().title,
+      await userManager.main.registerUser({
+        permissionGroup: getDefaultAdministratorPermissionGroup().title,
         email: email,
         password: password,
         type: "user",
-      }).save();
+      });
+
+      // await new authModel({
+      //   permission: getDefaultAdministratorPermissionGroup().title,
+      //   email: email,
+      //   password: password,
+      //   type: "user",
+      // }).save();
     }
   } catch (e) {
     return Promise.reject(e);
