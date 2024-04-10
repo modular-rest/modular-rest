@@ -35,7 +35,6 @@ function connectToDatabaseByCollectionDefinitionList(
     colog.info(`- Connecting to database ${connectionString}`);
 
     let connection = Mongoose.createConnection(connectionString, {
-      ...mongoOption,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     });
