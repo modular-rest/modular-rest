@@ -24,6 +24,7 @@ const { config, setConfig } = require("./config");
  * @param {{
  *   cors?: Cors; // CORS options.
  *   modulesPath?: string; // Root directory of your router.js/db.js files.
+ *   uploadDirectory?: string; // Root directory of your uploaded files.
  *   staticPath?: {
  *      rootDir?: string; // Root directory of your static files.
  *      rootPath?: string; // Root path of your static files.
