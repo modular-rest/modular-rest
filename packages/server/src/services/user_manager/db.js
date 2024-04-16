@@ -6,13 +6,16 @@ let { Permission, PermissionTypes } = require("../../class/security");
 const { config } = require("../../config");
 const triggerOperator = require("./../../class/trigger_operator");
 
-let authSchema = new Schema({
-  permissionGroup: String,
-  email: String,
-  phone: String,
-  password: String,
-  type: { type: String, default: "user", enum: ["user", "anonymous"] },
-});
+let authSchema = new Schema(
+  {
+    permissionGroup: String,
+    email: String,
+    phone: String,
+    password: String,
+    type: { type: String, default: "user", enum: ["user", "anonymous"] },
+  },
+  { timestamps: true }
+);
 
 authSchema.index({ email: 1 }, { unique: true });
 authSchema.pre(["save", "updateOne"], function (next) {
