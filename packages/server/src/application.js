@@ -112,11 +112,11 @@ async function createRest(options) {
    * - Setting up default services
    */
 
-  // Plug in default routes
+  // 1. Plug in default routes
   await Combination.combineRoutesByFilePath(path.join(defaultServiceRoot), app);
 
   // Collect default databaseDefinitions
-  let defaultDatabaseDefinitionList =
+  const defaultDatabaseDefinitionList =
     await Combination.combineModulesByFilePath({
       rootDirectory: defaultServiceRoot,
       filename: {
@@ -126,13 +126,13 @@ async function createRest(options) {
       combineWithRoot: true,
     });
 
-  // Plug in default databaseDefinitions
+  // 2. Plug in default databaseDefinitions
   await DataProvider.addCollectionDefinitionByList({
     list: defaultDatabaseDefinitionList,
     mongoOption: config.mongo,
   });
 
-  // Setting up default services
+  // 3. Setting up default services
   try {
     await require("./helper/presetup_services").setup(options);
   } catch (e) {
@@ -176,6 +176,15 @@ async function createRest(options) {
         config.verificationCodeGeneratorMethod
       );
     }
+
+    // 4. plug in modular functions
+    await Combination.combineFunctionsByFilePath({
+      rootDirectory: config.modulesPath,
+      filename: {
+        name: "functions",
+        extension: ".js",
+      },
+    });
   }
 
   /**

@@ -7,6 +7,7 @@ const paginator = require("./class/paginator");
 const reply = require("./class/reply");
 const validator = require("./class/validator");
 const { getCollection } = require("./services/data_provider/service");
+const { defineFunction } = require("./services/functions/service");
 const TypeCasters = require("./services/data_provider/typeCasters");
 
 // Base class
@@ -28,6 +29,7 @@ module.exports = {
 
   // Service utilities
   getCollection,
+  defineFunction,
 
   // Database
   CollectionDefinition,

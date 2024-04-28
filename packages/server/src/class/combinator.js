@@ -1,5 +1,6 @@
-let Router = require("koa-router");
-let directory = require("./directory.js");
+const Router = require("koa-router");
+const directory = require("./directory.js");
+const { addFunction } = require("./../services/functions/service.js");
 
 class Combinator {
   async combineRoutesByFilePath(rootDirectory, app) {
@@ -42,8 +43,8 @@ class Combinator {
   }) {
     // find route paths
     let rootObject_temp;
-    let option = { name: filename.name, filter: [filename.extension] };
-    let modulesPath = await directory
+    const option = { name: filename.name, filter: [filename.extension] };
+    const modulesPath = await directory
       .find(rootDirectory, option)
       .then()
       .catch((e) => {
@@ -52,9 +53,9 @@ class Combinator {
 
     // create and combine routes into the app
     for (let i = 0; i < modulesPath.length; i++) {
-      let moduleObject = require(modulesPath[i]);
+      const moduleObject = require(modulesPath[i]);
 
-      //act by otherOption
+      // act by otherOption
       if (combineWithRoot) {
         if (moduleObject.name) delete moduleObject.name;
 
@@ -69,7 +70,7 @@ class Combinator {
       }
       // default act
       else {
-        let name = moduleObject.name;
+        const name = moduleObject.name;
         rootObject_temp[name] = moduleObject;
       }
     }
@@ -82,6 +83,37 @@ class Combinator {
 
     // set result to main rootObject
     return rootObject_temp;
+  }
+
+  async combineFunctionsByFilePath({ rootDirectory, filename }) {
+    // find route paths
+    const option = { name: filename.name, filter: [filename.extension] };
+    const functionsPaths = await directory
+      .find(rootDirectory, option)
+      .then()
+      .catch((e) => {
+        console.log(e);
+      });
+
+    // create and combine routes into the app
+    for (let i = 0; i < functionsPaths.length; i++) {
+      const modularFunctions = require(functionsPaths[i]);
+
+      if (!modularFunctions.functions) {
+        throw new Error(
+          `Module file ${functionsPaths[i]} does not have functions property.`
+        );
+      }
+
+      // if array
+      if (modularFunctions.functions.length) {
+        for (const moduleFunction of modularFunctions.functions) {
+          addFunction(moduleFunction);
+        }
+      } else {
+        addFunction(modularFunctions.functions);
+      }
+    }
   }
 
   extendObj(obj, src) {
