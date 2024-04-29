@@ -13,7 +13,10 @@ functionRouter.use("/", middleware.auth, async (ctx, next) => {
 
   // fields validation
   if (!bodyValidated.isValid) {
-    ctx.throw(412, JSON.stringify(reply("e", { e: bodyValidated.requires })));
+    ctx.throw(
+      412,
+      JSON.stringify(reply("e", { error: bodyValidated.requires }))
+    );
   }
 
   await next();
@@ -26,7 +29,7 @@ functionRouter.post(`/run`, middleware.auth, async (ctx) => {
     const result = await service.runFunction(name, args, ctx.state.user);
     ctx.body = JSON.stringify(reply("s", { data: result }));
   } catch (e) {
-    ctx.throw(400, JSON.stringify(reply("e", { e: e.message })));
+    ctx.throw(400, JSON.stringify(reply("e", { error: e.message })));
   }
 });
 

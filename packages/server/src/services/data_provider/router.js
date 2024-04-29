@@ -19,7 +19,10 @@ dataProvider.use("/", middleware.auth, async (ctx, next) => {
 
   // fields validation
   if (!bodyValidated.isValid) {
-    ctx.throw(412, JSON.stringify(reply("e", { e: bodyValidated.requires })));
+    ctx.throw(
+      412,
+      JSON.stringify(reply("e", { error: bodyValidated.requires }))
+    );
   }
 
   // type caster
@@ -57,7 +60,10 @@ dataProvider.post("/find", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(412, JSON.stringify(reply("e", { e: bodyValidate.requires })));
+    ctx.throw(
+      412,
+      JSON.stringify(reply("e", { error: bodyValidate.requires }))
+    );
   }
 
   // access validation
@@ -79,7 +85,7 @@ dataProvider.post("/find", async (ctx) => {
   if (collection == null) {
     ctx.throw(
       412,
-      JSON.stringify(reply("e", { e: "wrong database or collection" }))
+      JSON.stringify(reply("e", { error: "wrong database or collection" }))
     );
   }
 
@@ -125,7 +131,10 @@ dataProvider.post("/find-one", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -142,7 +151,7 @@ dataProvider.post("/find-one", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -194,7 +203,10 @@ dataProvider.post("/count", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -211,7 +223,7 @@ dataProvider.post("/count", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -241,7 +253,10 @@ dataProvider.post("/update-one", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -258,7 +273,7 @@ dataProvider.post("/update-one", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -291,7 +306,10 @@ dataProvider.post("/insert-one", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -312,7 +330,7 @@ dataProvider.post("/insert-one", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -341,7 +359,10 @@ dataProvider.post("/remove-one", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -358,7 +379,7 @@ dataProvider.post("/remove-one", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -391,7 +412,10 @@ dataProvider.post("/aggregate", async (ctx) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -408,7 +432,7 @@ dataProvider.post("/aggregate", async (ctx) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
@@ -438,7 +462,10 @@ dataProvider.post("/findByIds", async (ctx, next) => {
 
   // fields validation
   if (!bodyValidate.isValid) {
-    ctx.throw(JSON.stringify(reply("e", { e: bodyValidate.requires })), 412);
+    ctx.throw(
+      JSON.stringify(reply("e", { error: bodyValidate.requires })),
+      412
+    );
   }
 
   // access validation
@@ -455,7 +482,7 @@ dataProvider.post("/findByIds", async (ctx, next) => {
   let collection = service.getCollection(body.database, body.collection);
   if (collection == null) {
     ctx.throw(
-      JSON.stringify(reply("e", { e: "wrong database or collection" })),
+      JSON.stringify(reply("e", { error: "wrong database or collection" })),
       412
     );
   }
