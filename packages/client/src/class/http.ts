@@ -69,8 +69,8 @@ class HTTPClient {
       .catch((error) => {
         let result;
 
-        if (error.response) {
-          result = error.response.data;
+        if (error.response && error.response.data) {
+          result = error.response.data.error || error.message.data;
         } else {
           result = error.message;
         }

@@ -1,6 +1,6 @@
 {
   "name": "@modular-rest/client",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "This is a browser library for using modular-rest server abilities on client side.",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
