@@ -46,11 +46,13 @@ function runFunction(name, args, user) {
 
     if (!!hasPermission) {
       reject(
-        new Error(`User does not have permission to run function ${name}`)
+        new Error(`User does not have permission to run function ${name}:
+        Function permissions: ${func.permissionTypes}
+        User permissions: ${
+          user.permissionGroup().permissionGroup.validPermissionTypes
+        }
+        `)
       );
-
-      console.log("Function permissions", func.permissionTypes);
-      console.log("User permissions", user.permissionGroup);
     } else {
       try {
         resolve(func.callback(args));
