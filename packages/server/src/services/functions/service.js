@@ -49,7 +49,7 @@ function runFunction(name, args, user) {
         new Error(`User does not have permission to run function ${name}:
         Function permissions: ${func.permissionTypes}
         User permissions: ${
-          user.permissionGroup().permissionGroup.validPermissionTypes
+          user.getBrief().permissionGroup.validPermissionTypes
         }
         `)
       );
