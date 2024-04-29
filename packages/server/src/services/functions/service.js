@@ -44,7 +44,7 @@ function runFunction(name, args, user) {
       user.hasPermission(permissionType)
     );
 
-    if (!!hasPermission) {
+    if (hasPermission == false) {
       reject(
         new Error(`User does not have permission to run function ${name}:
         Function permissions: ${func.permissionTypes}
