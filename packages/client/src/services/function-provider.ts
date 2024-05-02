@@ -1,6 +1,7 @@
 import HttpClient from "../class/http";
-
+import { BaseResponseType } from "../types/base-response";
 import { bus, tokenReceivedEvent } from "../class/event-bus";
+import { FunctionResponseType } from "../types/function-provider";
 
 class FunctionProvider {
   private static instance: FunctionProvider;
@@ -23,8 +24,10 @@ class FunctionProvider {
     return FunctionProvider.instance;
   }
 
-  run(options: { name: string; args: any }) {
-    return this.http.post<ResponseType>("/function/run", options);
+  run<T>(options: { name: string; args: any }) {
+    return this.http
+      .post<FunctionResponseType<T>>("/function/run", options)
+      .then((response) => response.data);
   }
 }
 
