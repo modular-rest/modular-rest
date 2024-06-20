@@ -9,14 +9,21 @@ const validator = require("./class/validator");
 const { getCollection } = require("./services/data_provider/service");
 const { defineFunction } = require("./services/functions/service");
 const TypeCasters = require("./services/data_provider/typeCasters");
+const userManager = require("./services/user_manager/service");
+const {
+  getFile,
+  getFileLink,
+  removeFile,
+  storeFile,
+} = require("./services/file/service");
 
 // Base class
 const CollectionDefinition = require("./class/collection_definition");
 const Schemas = require("./class/db_schemas");
 const DatabaseTrigger = require("./class/database_trigger");
+const CmsTrigger = require("./class/cms_trigger");
 const SecurityClass = require("./class/security");
 const middleware = require("./middlewares");
-const userManager = require("./services/user_manager/service");
 
 module.exports = {
   createRest,
@@ -36,7 +43,14 @@ module.exports = {
   Schemas,
   Schema,
   DatabaseTrigger,
+  CmsTrigger,
   ...SecurityClass,
+
+  // file
+  getFile,
+  getFileLink,
+  removeFile,
+  storeFile,
 
   // Middlewares
   middleware,

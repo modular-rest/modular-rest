@@ -25,7 +25,11 @@ class FileProvider {
     return FileProvider.instance;
   }
 
-  uploadFile(file: string | Blob, onProgress: OnProgressCallback, tag: string) {
+  uploadFile(
+    file: string | Blob,
+    onProgress: OnProgressCallback,
+    tag: string = "untagged"
+  ) {
     const path = "/file";
     return this.http
       .uploadFile(path, file, { tag }, onProgress)
@@ -49,10 +53,16 @@ class FileProvider {
 
   getFileLink(
     fileDoc: { fileName: string; format: string; tag: String },
-    overrideUrl?: string
+    overrideUrl?: string,
+    rootPath: string = "assets"
   ) {
+    // remove / from the rootPath
+    if (rootPath.endsWith("/")) {
+      rootPath = rootPath.slice(0, -1);
+    }
+
     const url = GlobalOptions.getUrl(
-      "/assets/" + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName,
+      `/${rootPath}/` + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName,
       overrideUrl
     );
     return url;

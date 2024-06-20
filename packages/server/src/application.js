@@ -13,8 +13,8 @@ const defaultServiceRoot = __dirname + "/services";
  * @typedef {import('koa')} Koa
  * @typedef {import('http').Server} server
  * @typedef {import('@koa/cors').Options} Cors
- * @typedef {import('./class/security').PermissionGroup} PermissionGroup
- * @typedef {import('./class/database_trigger.js')} DatabaseTrigger
+ * @typedef {import('./class/security.js').PermissionGroup} PermissionGroup
+ * @typedef {import('./class/cms_trigger.js')} CmsTrigger
  */
 
 const { config, setConfig } = require("./config");
@@ -57,7 +57,8 @@ const { config, setConfig } = require("./config");
  *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
  *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
  *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
- *   authTriggers?: DatabaseTrigger[]; // An array of additional database triggers for the auth collection.
+ *   authTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
+ *   fileTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
  * }} options
  * @returns {Promise<{app: Koa, server: Server}>}
  */
