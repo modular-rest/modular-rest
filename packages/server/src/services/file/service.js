@@ -1,9 +1,8 @@
-const fs = require('file-system');
-const pathModule = require('path');
-const DataProvider = require('./../data_provider/service')
+const fs = require("file-system");
+const pathModule = require("path");
+const DataProvider = require("./../data_provider/service");
 
 class FileService {
-
   constructor() {
     this.directory = null;
   }
@@ -13,9 +12,9 @@ class FileService {
   }
 
   /**
-   * 
-   * @param {string} fileType 
-   * 
+   *
+   * @param {string} fileType
+   *
    * @returns storedFile
    * @returns storedFile.fileName
    * @returns storedFile.directory
@@ -23,119 +22,114 @@ class FileService {
    * @returns storedFile.fileFormat
    */
   createStoredDetail(fileType, tag) {
-
     let time = new Date().getTime();
-    let fileFormat = fileType.split('/')[1];
+    let fileFormat = fileType.split("/")[1];
     let fileName = `${time}.${fileFormat}`;
     let fullPath = pathModule.join(this.directory, fileFormat, tag, fileName);
 
     return { fileName, fullPath, fileFormat };
   }
 
-
   /**
-   * 
+   *
    * @param args
    * @param {file} args.file file object
    * @param {string} args.ownerId file object
    */
   storeFile({ file, ownerId, tag }) {
-
-    if (!this.directory)
-      throw 'upload directory has not been set.'
+    if (!this.directory) throw "upload directory has not been set.";
 
     let storedFile;
 
-    return new Promise(async (done, reject) =>
-  /**
-   * Store file and remove temp file
-   */ {
+    return (
+      new Promise(async (done, reject) => /**
+       * Store file and remove temp file
+       */ {
+        storedFile = this.createStoredDetail(file.type, tag);
 
-      storedFile = this.createStoredDetail(file.type, tag);
+        fs.copyFile(file.path, storedFile.fullPath, {
+          done: (err) => {
+            if (err) reject(err);
+            else done();
 
-      fs.copyFile(file.path, storedFile.fullPath, {
-        done: (err) => {
-          if (err) reject(err);
-          else done();
-
-          // remove temp file
-          fs.fs.unlinkSync(file.path);
-        }
-      });
-    })
-      /**
-       * Submit file detail into database
-       */
-      .then(() => {
-
-        // Get collection model for access to relative collection
-        let CollectionModel = DataProvider.getCollection('cms', 'file');
-
-        // Create new document
-        let doc = new CollectionModel({
-          owner: ownerId,
-          fileName: storedFile.fileName,
-          originalName: file.name,
-          format: storedFile.fileFormat,
-          tag,
+            // remove temp file
+            fs.fs.unlinkSync(file.path);
+          },
         });
-
-        return doc.save().then(() => doc);
-
-      }).catch(err => {
-
-        // remove stored file 
-        fs.fs.unlinkSync(storedFile.fullPath);
-
-        throw err;
       })
+        /**
+         * Submit file detail into database
+         */
+        .then(() => {
+          // Get collection model for access to relative collection
+          let CollectionModel = DataProvider.getCollection("cms", "file");
+
+          // Create new document
+          let doc = new CollectionModel({
+            owner: ownerId,
+            fileName: storedFile.fileName,
+            originalName: file.name,
+            format: storedFile.fileFormat,
+            tag,
+            size: file.size,
+          });
+
+          return doc.save().then(() => doc);
+        })
+        .catch((err) => {
+          // remove stored file
+          fs.fs.unlinkSync(storedFile.fullPath);
+
+          throw err;
+        })
+    );
   }
 
   removeFromDisc(path) {
     return new Promise((done, reject) => {
       fs.fs.unlink(path, (err) => {
-        if (err) reject()
-        else done()
+        if (err) reject();
+        else done();
       });
-    })
+    });
   }
 
   removeFile(fileId) {
-
-    if (!this.directory)
-      throw 'upload directory has not been set.'
+    if (!this.directory) throw "upload directory has not been set.";
 
     return new Promise(async (done, reject) => {
-      let CollectionModel = DataProvider.getCollection('cms', 'file');
+      let CollectionModel = DataProvider.getCollection("cms", "file");
       let fileDoc = await CollectionModel.findOne({ _id: fileId }).exec();
 
       if (!fileDoc) {
-        reject('file not found');
+        reject("file not found");
         return;
       }
 
-      await CollectionModel.deleteOne({ _id: fileId }).exec()
+      await CollectionModel.deleteOne({ _id: fileId })
+        .exec()
         .then(() => {
-
           // create file path
-          let filePath = pathModule.join(this.directory, fileDoc.format, fileDoc.tag, fileDoc.fileName);
+          let filePath = pathModule.join(
+            this.directory,
+            fileDoc.format,
+            fileDoc.tag,
+            fileDoc.fileName
+          );
 
           // Remove file from disc
-          return this.removeFromDisc(filePath)
-            .catch(async (err) => {
+          return this.removeFromDisc(filePath).catch(async (err) => {
+            // Recreate fileDoc if removing file operation has error
+            await new CollectionModel(fileDoc).save();
 
-              // Recreate fileDoc if removing file operation has error 
-              await new CollectionModel(fileDoc).save();
-
-              throw err;
-            })
-
+            throw err;
+          });
         })
         .then(done)
-        .catch(reject)
-    })
+        .catch(reject);
+    });
   }
 }
 
-FileService.instance = new FileService()
+FileService.instance = new FileService();
 module.exports = FileService.instance;

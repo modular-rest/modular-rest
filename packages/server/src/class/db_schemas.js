@@ -11,6 +11,7 @@ module.exports = {
       // Tag being used as the parent dir for files
       // uploadDir/$format/$tag/timestamp.format
       tag: String,
+      size: Number,
     },
     { timestamps: true }
   ),

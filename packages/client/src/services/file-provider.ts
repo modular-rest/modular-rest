@@ -1,7 +1,8 @@
 import HttpClient from "../class/http";
 import GlobalOptions from "../class/global_options";
 import { bus, tokenReceivedEvent } from "../class/event-bus";
-import { FileDocument } from "../types/types";
+import { FileDocument, OnProgressCallback } from "../types/types";
+import { dataProvider } from "..";
 
 class FileProvider {
   private static instance: FileProvider;
@@ -24,7 +25,7 @@ class FileProvider {
     return FileProvider.instance;
   }
 
-  uploadFile(file: string | Blob, onProgress: Function, tag: string) {
+  uploadFile(file: string | Blob, onProgress: OnProgressCallback, tag: string) {
     const path = "/file";
     return this.http
       .uploadFile(path, file, { tag }, onProgress)
@@ -35,7 +36,7 @@ class FileProvider {
     url: string,
     file: string | Blob,
     body: any = {},
-    onProgress: Function,
+    onProgress: OnProgressCallback,
     tag: string
   ) {
     return this.http.uploadFile(url, file, body, onProgress);
@@ -55,6 +56,22 @@ class FileProvider {
       overrideUrl
     );
     return url;
+  }
+
+  getFileDoc(id: string, userId: string) {
+    return dataProvider.findOne<FileDocument>({
+      database: "cms",
+      collection: "file",
+      query: { id: id, owner: userId },
+    });
+  }
+
+  getFileDocsByTag(tag: string, userId: string) {
+    return dataProvider.find<FileDocument>({
+      database: "cms",
+      collection: "file",
+      query: { owner: userId, tag: tag },
+    });
   }
 }
 

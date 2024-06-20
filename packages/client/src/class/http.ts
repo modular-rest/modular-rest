@@ -1,4 +1,5 @@
 import { BaseResponseType } from "../types/base-response";
+import { OnProgressCallback } from "../types/types";
 import GlobalOptions from "./global_options";
 import axios from "axios";
 
@@ -90,7 +91,7 @@ class HTTPClient {
     url: string | "",
     file: string | Blob,
     body: any,
-    onProgress: Function
+    onProgress: OnProgressCallback
   ) {
     let urlObject: string;
 
@@ -115,8 +116,8 @@ class HTTPClient {
         "content-type": "multipart/form-data",
       },
       data: form,
-      onUploadProgress: (progressEvent) => {
-        if (onProgress) onProgress(progressEvent.loaded);
+      onUploadProgress: (progressEvent: ProgressEvent) => {
+        if (onProgress) onProgress(progressEvent);
       },
     })
       .then((body) => body.data)

@@ -8,7 +8,10 @@ export interface FileDocument {
   originalName: String;
   fileName: String;
   owner: String;
+  size: Number;
 }
+
+export type OnProgressCallback = (progressEvent: ProgressEvent) => void;
 
 export * from "./data-provider";
 export * from "./auth";
