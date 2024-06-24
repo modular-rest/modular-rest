@@ -10,6 +10,7 @@
  * @typedef {{
  *   cors?: Cors; // CORS options.
  *   modulesPath?: string; // Root directory of your router.js/db.js files.
+ *   koaBodyOptions?: object; // Options for koa-body.
  *   staticPath?: {
  *      rootDir?: string; // Root directory of your static files.
  *      rootPath?: string; // Root path of your static files.

@@ -13,6 +13,7 @@ const userManager = require("./services/user_manager/service");
 const {
   getFile,
   getFileLink,
+  getFilePath,
   removeFile,
   storeFile,
 } = require("./services/file/service");
@@ -49,6 +50,7 @@ module.exports = {
   // file
   getFile,
   getFileLink,
+  getFilePath,
   removeFile,
   storeFile,
 
