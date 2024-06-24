@@ -72,7 +72,7 @@ class FileProvider {
     return dataProvider.findOne<FileDocument>({
       database: "cms",
       collection: "file",
-      query: { id: id, owner: userId },
+      query: { _id: id, owner: userId },
     });
   }
 
