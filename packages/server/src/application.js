@@ -1,7 +1,8 @@
 const koa = require("koa");
 const cors = require("@koa/cors");
 const koaBody = require("koa-body");
-const koaStatic = require("koa-static-server");
+const koaStatic = require("koa-static");
+const mount = require("koa-mount");
 const path = require("path");
 const Combination = require("./class/combinator");
 const DataProvider = require("./services/data_provider/service");
@@ -26,18 +27,18 @@ const { config, setConfig } = require("./config");
  *   modulesPath?: string; // Root directory of your router.js/db.js files.
  *   uploadDirectory?: string; // Root directory of your uploaded files.
  *   koaBodyOptions?: object; // Options for koa-body.
- *   staticPath?: {
- *      rootDir?: string; // Root directory of your static files.
- *      rootPath?: string; // Root path of your static files.
- *      notFoundFile?: string; // Not found file.
- *      log?: boolean; // Log requests to console.
- *      last?: boolean; // Don't execute any downstream middleware.
- *      maxage?: number; // Browser cache max-age in milliseconds.
- *      hidden?: boolean; // Allow transfer of hidden files.
- *      gzip?: boolean; // Try to serve the gzipped version of a file automatically when gzip is supported by a client and if the requested file exists.
- *      brotli?: boolean; // Try to serve the brotli version of a file automatically when brotli is supported by a client and if the requested file exists.
- *      index?: string; // Index file.
- *   };
+ *    staticPath?: {
+ *        rootDir: string; // Root directory of your static files.
+ *        rootPath: string; // Root path of your static files, defaults to '/assets'.
+ *        maxage?: number; // Browser cache max-age in milliseconds. Defaults to 0.
+ *        hidden?: boolean; // Allow transfer of hidden files. Defaults to false.
+ *        index?: string; // Default file name. Defaults to 'index.html'.
+ *        defer?: boolean; // If true, serves after return next(), allowing any downstream middleware to respond first. Defaults to false.
+ *        gzip?: boolean; // Try to serve the gzipped version of a file automatically when gzip is supported by a client and if the requested file with .gz extension exists. Defaults to true.
+ *        br?: boolean; // Try to serve the brotli version of a file automatically when brotli is supported by a client and if the requested file with .br extension exists. Note that brotli is only accepted over https. Defaults to false.
+ *        setHeaders?: Function; // Function to set custom headers on response.
+ *        extensions?: boolean|Array; // Try to match extensions from passed array to search for file when no extension is suffixed in URL. First found is served. Defaults to false.
+ *    };
  *   onBeforeInit?: (koaApp:Koa) => void; // A callback called before initializing the Koa server.
  *   onAfterInit?: (koaApp:Koa) => void; // A callback called after server initialization.
  *   port?: number; // Server port.
@@ -100,7 +101,18 @@ async function createRest(options) {
    * Plug In KoaStatic
    */
   if (config.staticPath) {
-    app.use(koaStatic(config.staticPath));
+    const defaultStaticPath = config.staticPath.rootDir;
+    const defaultStaticRootPath = config.staticPath.rootPath || "/assets";
+
+    delete config.staticPath.rootDir;
+    delete config.staticPath.rootPath;
+
+    app.use(
+      mount(
+        defaultStaticRootPath,
+        koaStatic(defaultStaticPath, config.staticPath)
+      )
+    );
   }
 
   /**
