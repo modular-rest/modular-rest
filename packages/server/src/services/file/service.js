@@ -25,11 +25,11 @@ class FileService {
    * @returns storedFile.fileFormat
    */
   createStoredDetail(fileType, tag) {
-    const time = new Date().getTime();
-    const fileName = `${time}.${fileFormat}`;
-
     const typeParts = fileType.split("/");
     const fileFormat = typeParts[1] || typeParts[0] || "unknown";
+
+    const time = new Date().getTime();
+    const fileName = `${time}.${fileFormat}`;
 
     const fullPath = pathModule.join(
       FileService.instance.directory,
