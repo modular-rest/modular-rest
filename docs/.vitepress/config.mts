@@ -25,7 +25,7 @@ export default defineConfig({
           { text: "Configuration", link: "/server-client/configuration" },
           { text: "Database", link: "/server-client/database" },
           { text: "Utilities", link: "/server-client/utilities" },
-
+          { text: "Functions", link: "/server-client/functions" },
           {
             text: "Advanced Topics",
             items: [

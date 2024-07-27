@@ -20,7 +20,7 @@ const app = createRest({
 | ------------------------------------------------------------------------- | ---------- | -------- | --------------------------------------------- |
 | [cors](./advanced-topics/cors.md)                                         | `Cors`     | Yes      | CORS options.                                 |
 | modulesPath                                                               | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
-| staticPath                                                                | `Object`   | Yes      | Configuration for serving static files.       |
+| [staticPath](#static-files)                                               | `Object`   | Yes      | Configuration for serving static files.       |
 | onBeforeInit                                                              | `Function` | Yes      | Callback before Koa server initialization.    |
 | onAfterInit                                                               | `Function` | Yes      | Callback after Koa server initialization.     |
 | port                                                                      | `number`   | Yes      | Server port number.                           |
@@ -39,10 +39,24 @@ const app = createRest({
 - **`port`**: Specifies the port number on which the server will listen for requests.
 - **`dontListen`**: If set to `true`, the server setup is done but it won't start listening. This is useful for cases where you want to perform tests or when integrating with another server.
 
-## Static Files and Modules Path
-
+## Modules Path
 - **`modulesPath`**: The directory path where your module files (`router.js`, `db.js`) are located.
+
+## Static Files
 - **`staticPath`**: Provides detailed options for serving static files from your server, such as the root directory, caching options, and whether to serve gzipped content.
+  
+| Property     | Type                        | Description                                                                                                                                                                                     | Default Value  |
+| ------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `rootDir`    | `string`                    | Root directory of your static files.                                                                                                                                                            |                |
+| `rootPath`   | `string`                    | Root path of your static files, defaults to '/assets'.                                                                                                                                          | `'/assets'`    |
+| `maxage`     | `number` (optional)         | Browser cache max-age in milliseconds.                                                                                                                                                          | `0`            |
+| `hidden`     | `boolean` (optional)        | Allow transfer of hidden files.                                                                                                                                                                 | `false`        |
+| `index`      | `string` (optional)         | Default file name.                                                                                                                                                                              | `'index.html'` |
+| `defer`      | `boolean` (optional)        | If true, serves after return next(), allowing any downstream middleware to respond first.                                                                                                       | `false`        |
+| `gzip`       | `boolean` (optional)        | Try to serve the gzipped version of a file automatically when gzip is supported by a client and if the requested file with .gz extension exists.                                                | `true`         |
+| `br`         | `boolean` (optional)        | Try to serve the brotli version of a file automatically when brotli is supported by a client and if the requested file with .br extension exists. Note that brotli is only accepted over https. | `false`        |
+| `setHeaders` | `Function` (optional)       | Function to set custom headers on response.                                                                                                                                                     |                |
+| `extensions` | `boolean\|Array` (optional) | Try to match extensions from passed array to search for file when no extension is suffixed in URL. First found is served.                                                                       | `false`        |
 
 ## Initialization Hooks
 
