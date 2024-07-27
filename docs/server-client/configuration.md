@@ -18,7 +18,7 @@ const app = createRest({
 
 | Property                                                                  | Type       | Optional | Description                                   |
 | ------------------------------------------------------------------------- | ---------- | -------- | --------------------------------------------- |
-| [cors](./advanced-topics/cors.md)                                         | `Cors`     | Yes      | CORS options.                                 |
+| [cors](./advanced/cors.md)                                                | `Cors`     | Yes      | CORS options.                                 |
 | modulesPath                                                               | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
 | [staticPath](#static-files)                                               | `Object`   | Yes      | Configuration for serving static files.       |
 | onBeforeInit                                                              | `Function` | Yes      | Callback before Koa server initialization.    |

@@ -52,6 +52,7 @@ const userSchema = new Schema({
 Permissions are used to define access control for your collection. you can define which kind of permissions type user must have to access your collection. to define permissions you just need to passing an array of `Permission` objects to `permissions` property of `CollectionDefinition` class.
 
 
+### Permission Types table
 | Permission Type      | Description                                             |
 | -------------------- | ------------------------------------------------------- |
 | `god_access`         | A flag that give should be used for super admin access. |

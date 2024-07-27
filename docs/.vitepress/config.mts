@@ -21,19 +21,31 @@ export default defineConfig({
       {
         text: "Server",
         items: [
-          { text: "Install", link: "/server-client/install" },
+          { text: "Installation", link: "/server-client/setup" },
           { text: "Configuration", link: "/server-client/configuration" },
-          { text: "Database", link: "/server-client/database" },
-          { text: "Utilities", link: "/server-client/utilities" },
-          { text: "Functions", link: "/server-client/functions" },
+          { text: "Key Concepts", link: "/server-client/key-concepts" },
+          {
+            text: "Models",
+            items: [
+              { text: "Intro", link: "/server-client/modules/intro" },
+              { text: "Database", link: "/server-client/modules/database" },
+              { text: "Functions", link: "/server-client/modules/functions" },
+              {
+                text: "Custom Route",
+                link: "/server-client/modules/custom-route",
+              },
+            ],
+          },
+          {
+            text: "Utilities",
+            items: [
+              { text: "Utilities", link: "/server-client/utilities/index" },
+            ],
+          },
           {
             text: "Advanced Topics",
             items: [
               { text: "Cors", link: "/server-client/advanced-topics/cors" },
-              {
-                text: "Custom Route",
-                link: "/server-client/advanced-topics/custom-route",
-              },
             ],
           },
         ],
