@@ -8,10 +8,7 @@ export default defineConfig({
   base: "/modular-rest/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    nav: [
-      { text: "Home", link: "/" },
-      { text: "Examples", link: "/markdown-examples" },
-    ],
+    nav: [{ text: "Home", link: "/" }],
 
     sidebar: [
       {
@@ -72,6 +69,10 @@ export default defineConfig({
         items: [{ text: "Intro", link: "/http-api/intro" }],
       },
     ],
+
+    search: {
+      provider: "local",
+    },
 
     socialLinks: [
       { icon: "github", link: "https://github.com/navidshad/modular-rest" },

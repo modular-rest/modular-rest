@@ -1,22 +1,22 @@
 ---
 next:
   text: 'Install Server Library'
-  link: '/server/install'
+  link: '/server-client/setup'
 ---
 
-# Streamlining Full Stack Development with Modular-Rest
-In the dynamic world of full stack development, juggling both frontend and backend tasks can be a daunting challenge. Frequently, developers find themselves repeatedly implementing fundamental backend features such as authentication, authorization, and database access. This repetitive coding can be both time-consuming and error-prone. This is where Modular-Rest steps in to transform your development process.
+# Introduction
 
-Modular-Rest stands as a powerful headless CMS, poised to accelerate your backend development while promoting modularity. With Modular-Rest, all you need to do is initialize a single file app and define your data schema. In return, you receive a fully functional backend, equipped with all the essential features required for common web applications.
+In full stack development, managing both frontend and backend tasks can be challenging. Developers often find themselves repeatedly coding backend essentials like authentication, authorization, and database access. This repetitive work is time-consuming and prone to errors. Modular-Rest aims to simplify this process.
 
-What sets Modular-Rest apart is its flexibility. It's not confined to a rigid framework; instead, it empowers you to seamlessly expand your backend with custom modules and features tailored to your specific needs.
+## What is `Modular-Rest`?
+Modular-Rest is a headless CMS designed to speed up backend development and enhance modularity. Simply initialize a single file app and define your data schema, and Modular-Rest provides a fully functional backend with all the necessary features for common web applications.
 
-Moreover, Modular-Rest simplifies the REST communication between your frontend and backend. It offers a client library that effortlessly facilitates communication between the two, eliminating the need for you to manage intricate communication protocols manually.
+**Key Features:**
+- **Flexibility:** Expand your backend with custom modules and features as needed.
+- **Simplified REST Communication:** A client library that facilitates easy communication between frontend and backend.
 
-In essence, Modular-Rest is your all-in-one solution for enhancing efficiency, reducing redundancy, and accelerating the development of robust web applications. Say goodbye to reinventing the wheel, and say hello to a more streamlined and productive development process with Modular-Rest.
+**Benefits:**
+- **Enhanced Efficiency:** Reduces redundancy and accelerates web application development.
+- **Streamlined Process:** Eliminates the need to manage complex communication protocols manually.
 
-
-# Packages
-
-### JS Server Library
-### JS Client Library
+Modular-Rest is your solution for a more efficient, less redundant, and faster development process. Embrace a streamlined and productive workflow with Modular-Rest.
