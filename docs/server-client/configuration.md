@@ -20,6 +20,7 @@ const app = createRest({
 | ------------------------------------------------------------------------- | ---------- | -------- | --------------------------------------------- |
 | [cors](./advanced/cors.md)                                                | `Cors`     | Yes      | CORS options.                                 |
 | modulesPath                                                               | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
+| uploadDirectory                                                           | `string`   | Yes      | Root directory of your uploaded files.        |
 | [staticPath](#static-files)                                               | `Object`   | Yes      | Configuration for serving static files.       |
 | onBeforeInit                                                              | `Function` | Yes      | Callback before Koa server initialization.    |
 | onAfterInit                                                               | `Function` | Yes      | Callback after Koa server initialization.     |
@@ -32,6 +33,7 @@ const app = createRest({
 | [collectionDefinitions](/server-client/database.html#define-a-collection) | `Array`    | No       | Additional collection definitions.            |
 | permissionGroups                                                          | `Array`    | No       | Additional permission groups.                 |
 | [authTriggers](/server-client/database.html#triggers)                     | `Array`    | No       | Database triggers for the auth collection.    |
+| fileTriggers                                                              | `Array`    | No       | Database triggers for the file collection.    |
 
 ## Server and Middleware Configuration
 
@@ -39,8 +41,9 @@ const app = createRest({
 - **`port`**: Specifies the port number on which the server will listen for requests.
 - **`dontListen`**: If set to `true`, the server setup is done but it won't start listening. This is useful for cases where you want to perform tests or when integrating with another server.
 
-## Modules Path
+## Modules and Upload Directory
 - **`modulesPath`**: The directory path where your module files (`router.js`, `db.js`) are located.
+- **`uploadDirectory`**: The root directory where uploaded files are stored, you can mount this directory to a CDN or a cloud storage service.
 
 ## Static Files
 - **`staticPath`**: Provides detailed options for serving static files from your server, such as the root directory, caching options, and whether to serve gzipped content.

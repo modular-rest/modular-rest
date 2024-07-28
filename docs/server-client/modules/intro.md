@@ -1,6 +1,15 @@
 # Modules
 Modules are the building blocks your logics on top of modular-rest. each module has a specific directory and all relevant files and data structure are placed in that directory. hence you can add unlimited modules to your project and scale it as much as you want.
 
+## Structure
+All modules should be placed in the `modules` directory that you define and [introduce in the configuration object](./../configuration.md#modules-path). Each module should have its own directory with the following structure, and all files should be placed in that directory but none of theme are required.
+
+- `db.js`: to define the database models and their relationships.
+- `functions`: to define functions that you want to be invoked by client library.
+- `router.js`: to define the routes and their handlers.
+
+You can add more files and directories to your module based on your needs, but the above files are be recognized by modular-rest and will be imported to the server logic automatically on startup.
+
 ## Use Cases
 Let's see some examples to understand the concept of modules better.
 
@@ -28,12 +37,5 @@ To modularize this project, you can create three modules:
 - `media-library`: to manage media files like videos, images, and audio files.
 - `editor-engine`: to manage the video editing process, like trimming, cropping, and adding effects to the videos.
 
-## Structure
-All modules should be placed in the `modules` directory that you define and [introduce in the configuration object](./../configuration.md#modules-path). Each module should have its own directory with the following structure, and all files should be placed in that directory but none of theme are required.
 
-- `router.js`: to define the routes and their handlers.
-- `db.js`: to define the database models and their relationships.
-- `functions`: to define functions that you want to be invoked by client library.
-
-You can add more files and directories to your module based on your needs, but the above files are be recognized by modular-rest and will be imported to the server logic automatically on startup.
 

@@ -33,7 +33,7 @@ const userSchema = new Schema({
 ### File Schema
 Modular-rest has a predefined file schema that you it is necessary to use this schema if your collection needs to store files.
 
-**Note**: Modular-rest does not put the file in database. it just put the file in the `upload directory` and put the file information in database. 
+**Note**: Modular-rest does not store the file directly in the database. Instead, it places the file in the [upload directory](../configuration.md#modules-and-upload-directory) specified in the [config object](../configuration.md#configuration-summary-table). The file information is then recorded in the database.
 
 ```js
 const { Schemas } = require('@modular-rest/server');

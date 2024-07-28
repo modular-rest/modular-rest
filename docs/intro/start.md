@@ -14,3 +14,9 @@ What sets Modular-Rest apart is its flexibility. It's not confined to a rigid fr
 Moreover, Modular-Rest simplifies the REST communication between your frontend and backend. It offers a client library that effortlessly facilitates communication between the two, eliminating the need for you to manage intricate communication protocols manually.
 
 In essence, Modular-Rest is your all-in-one solution for enhancing efficiency, reducing redundancy, and accelerating the development of robust web applications. Say goodbye to reinventing the wheel, and say hello to a more streamlined and productive development process with Modular-Rest.
+
+
+# Packages
+
+### JS Server Library
+### JS Client Library

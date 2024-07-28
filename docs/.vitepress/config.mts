@@ -22,8 +22,8 @@ export default defineConfig({
         text: "Server",
         items: [
           { text: "Installation", link: "/server-client/setup" },
-          { text: "Configuration", link: "/server-client/configuration" },
           { text: "Key Concepts", link: "/server-client/key-concepts" },
+          { text: "Configuration", link: "/server-client/configuration" },
           {
             text: "Models",
             items: [
@@ -44,9 +44,7 @@ export default defineConfig({
           },
           {
             text: "Advanced Topics",
-            items: [
-              { text: "Cors", link: "/server-client/advanced-topics/cors" },
-            ],
+            items: [{ text: "Cors", link: "/server-client/advanced/cors" }],
           },
         ],
       },
