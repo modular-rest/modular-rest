@@ -47,8 +47,8 @@ features:
   --vp-home-hero-name-color: transparent !important;
   --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff) !important;
 
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(189, 52, 254, 0.2) 50%, rgba(71, 202, 255, 0.2) 50%) !important;
-  --vp-home-hero-image-filter: blur(44px) !important;
+  /* --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(189, 52, 254, 0.2) 50%, rgba(71, 202, 255, 0.2) 50%) !important;
+  --vp-home-hero-image-filter: blur(44px) !important; */
 
 }
 
