@@ -14,18 +14,21 @@ class UserManager {
   }
 
   /**
-   * Set a custom method for generating verification codes.
-   * @param {function} method - A method that returns a random verification code.
+   * Sets a custom method for generating verification codes.
+   *
+   * @param {Function} generatorMethod - A function that returns a random verification code.
+   * @returns {void}
    */
-  setCustomVerificationCodeGeneratorMethod(method) {
+  setCustomVerificationCodeGeneratorMethod(generatorMethod) {
     this.verificationCodeGeneratorMethod = method;
   }
 
   /**
-   * Generate a verification code.
-   * @param {string} id - The ID for which to generate the verification code.
-   * @param {string} idType - The type of the ID.
-   * @returns {string} The generated verification code.
+   * Get a user by their ID.
+   *
+   * @param {string} id - The ID of the user.
+   * @returns {Promise<User>} A promise that resolves to the user.
+   * @throws {Error} If the user is not found.
    */
   generateVerificationCode(id, idType) {
     if (this.verificationCodeGeneratorMethod)
@@ -37,6 +40,7 @@ class UserManager {
 
   /**
    * Get a user by their ID.
+   *
    * @param {string} id - The ID of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
    * @throws {string} If the user is not found.
@@ -63,6 +67,7 @@ class UserManager {
 
   /**
    * Get a user by their identity.
+   *
    * @param {string} id - The identity of the user.
    * @param {string} idType - The type of the identity (phone or email).
    * @returns {Promise<User>} A promise that resolves to the user.
@@ -95,6 +100,7 @@ class UserManager {
 
   /**
    * Get a user by their token.
+   *
    * @param {string} token - The token of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
    */
@@ -105,6 +111,7 @@ class UserManager {
 
   /**
    * Check if a verification code is valid.
+   *
    * @param {string} id - The ID of the user.
    * @param {string} code - The verification code.
    * @returns {boolean} Whether the verification code is valid.
@@ -123,6 +130,7 @@ class UserManager {
 
   /**
    * Login a user and return their token.
+   *
    * @param {string} id - The ID of the user.
    * @param {string} idType - The type of the ID (phone or email).
    * @param {string} password - The password of the user.
@@ -172,6 +180,7 @@ class UserManager {
 
   /**
    * Issue a token for a user.
+   *
    * @param {string} email - The email of the user.
    * @returns {Promise<string>} A promise that resolves to the token of the user.
    * @throws {string} If the user is not found.
@@ -199,6 +208,7 @@ class UserManager {
 
   /**
    * Login as an anonymous user.
+   *
    * @returns {Promise<string>} A promise that resolves to the token of the anonymous user.
    * @throws {string} If the anonymous user is not found.
    */
@@ -245,6 +255,7 @@ class UserManager {
 
   /**
    * Register a temporary ID.
+   *
    * @param {string} id - The ID to register.
    * @param {string} type - The type of the ID.
    * @param {string} code - The verification code.
@@ -255,6 +266,7 @@ class UserManager {
 
   /**
    * Submit a password for a temporary ID.
+   *
    * @param {string} id - The ID.
    * @param {string} password - The password.
    * @param {string} code - The verification code.
@@ -285,6 +297,7 @@ class UserManager {
 
   /**
    * Change the password for a temporary ID.
+   *
    * @param {string} id - The ID.
    * @param {string} password - The new password.
    * @param {string} code - The verification code.
@@ -310,6 +323,7 @@ class UserManager {
 
   /**
    * Register a user.
+   *
    * @param {Object} detail - The details of the user.
    * @returns {Promise<string>} A promise that resolves to the ID of the new user.
    * @throws {string} If the user could not be registered.
@@ -342,6 +356,7 @@ class UserManager {
 
   /**
    * Change the password of a user.
+   *
    * @param {Object} query - The query to find the user.
    * @param {string} newPass - The new password.
    * @returns {Promise<void>} A promise that resolves when the operation is complete.

@@ -37,9 +37,15 @@ export default defineConfig({
             ],
           },
           {
-            text: "Utilities",
+            text: "Utility",
             items: [
-              { text: "Utilities", link: "/server-client/utilities/index" },
+              { text: "Database", link: "/server-client/utility/database" },
+              { text: "Router", link: "/server-client/utility/router" },
+              { text: "File", link: "/server-client/utility/file" },
+              {
+                text: "UserManager",
+                link: "/server-client/utility/user-manager",
+              },
             ],
           },
           {
