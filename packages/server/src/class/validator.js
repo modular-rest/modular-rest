@@ -8,13 +8,13 @@
 function validate(obj, requiredFields) {
     /*
         this method could validate an Object by given field's name list and return bool.
-        - requiredFields: is a string that contains keys being spareted by " ".
+        - requiredFields: is a string that contains keys being spared by " ".
     */
     let type = typeof requiredFields;
     let result;
 
     if (type == 'string')
-        result = ckeckSimple(obj, requiredFields);
+        result = checkSimple(obj, requiredFields);
     else if (type == 'object')
         result = checkComplex(obj, requiredFields);
 
@@ -25,7 +25,7 @@ function validate(obj, requiredFields) {
 
 module.exports = validate;
 
-function ckeckSimple(obj, requiredFields = '') {
+function checkSimple(obj, requiredFields = '') {
     let isValide = false;
     let requires = requiredFields.split(' ');
 

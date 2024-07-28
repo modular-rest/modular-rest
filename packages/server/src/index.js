@@ -29,16 +29,6 @@ const middleware = require("./middlewares");
 module.exports = {
   createRest,
 
-  // Route utilities
-  reply,
-  TypeCasters,
-  paginator,
-  validator,
-
-  // Service utilities
-  getCollection,
-  defineFunction,
-
   // Database
   CollectionDefinition,
   Schemas,
@@ -47,14 +37,30 @@ module.exports = {
   CmsTrigger,
   ...SecurityClass,
 
-  // file
+  // Function
+  defineFunction,
+
+  // Private utilities
+  TypeCasters,
+  validator,
+
+  // Route utilities
+  reply,
+  paginator,
+
+  // Database utilities
+  getCollection,
+
+  // File Utilities
   getFile,
   getFileLink,
   getFilePath,
   removeFile,
   storeFile,
 
-  // Middlewares
+  // Middleware utilities
   middleware,
+
+  // User utilities
   userManager: userManager.main,
 };

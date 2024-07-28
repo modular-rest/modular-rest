@@ -6,8 +6,9 @@
  * @returns {Object} - An object containing pagination information.
  */
 function create(count, perPage, page) {
-  let totalPgaes = Math.ceil(count / perPage);
-  if (page > totalPgaes) page = 1;
+  const totalPages = Math.ceil(count / perPage);
+  
+  if (page > totalPages) page = 1;
 
   let from = 0;
   if (perPage == 1) from = page - 1;
@@ -16,7 +17,7 @@ function create(count, perPage, page) {
   if (page <= 1) from = 0;
 
   let result = {
-    'pages': totalPgaes,
+    'pages': totalPages,
     'page': page,
     'from': from,
     'to': perPage

@@ -9,7 +9,7 @@ function create(status, detail = {}) {
 
     let result = detail || {};
 
-    // defin status
+    // define status
     switch (status) {
         case 's':
             result['status'] = 'success';
