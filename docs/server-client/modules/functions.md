@@ -7,11 +7,11 @@ To define a function you need to create a `functions.js` in each module of your 
 The `defineFunction` method serves as a core utility for creating custom functions dynamically. This method allows you to specify various parameters, including the name of the function, the permissions required for access, and the corresponding logic that should be executed when the function is invoked.
 
 ### Parameters
-| **Property**      | **Type**   | **Description**                                                                                                                                                      |
-| ----------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`            | `string`   | The name of the function to be defined, which serves as an identifier.                                                                                               |
-| `permissionTypes` | `Array`    | An array of [permission types](/server-client/database.html#permission-types-table) that are required to access the function. This allows for secure access control. |
-| `callback`        | `Function` | The logic to be executed when the function is called, allowing for dynamic behavior based on user input.                                                             |
+| **Property**      | **Type**   | **Description**                                                                                                                                         |
+| ----------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`            | `string`   | The name of the function to be defined, which serves as an identifier.                                                                                  |
+| `permissionTypes` | `Array`    | An array of [permission types](./database.html#permission-types-table) that are required to access the function. This allows for secure access control. |
+| `callback`        | `Function` | The logic to be executed when the function is called, allowing for dynamic behavior based on user input.                                                |
 
 ## Usage Example
 
