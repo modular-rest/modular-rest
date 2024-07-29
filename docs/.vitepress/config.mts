@@ -14,6 +14,9 @@ export default defineConfig({
     lastmodDateOnly: true,
   },
 
+  // https://vitepress.dev/guide/mpa-mode#mpa-mode
+  mpa: true,
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [{ text: "Home", link: "/" }],
