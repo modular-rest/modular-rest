@@ -1,8 +1,4 @@
----
-next:
-  text: 'Install Server Library'
-  link: '/server-client/setup'
----
+
 
 # Introduction
 

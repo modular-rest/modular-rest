@@ -3,9 +3,17 @@ import { defineConfig } from "vitepress";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Modular Rest",
+
   description:
     "A set of libraries to bring database access into client side (web/mobile) except bother yourself by developing backend side. ",
+
   base: "/modular-rest/",
+
+  sitemap: {
+    hostname: "https://navidshad.github.io/modular-rest/",
+    lastmodDateOnly: true,
+  },
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [{ text: "Home", link: "/" }],
@@ -13,7 +21,16 @@ export default defineConfig({
     sidebar: [
       {
         text: "Introduction",
-        items: [{ text: "Get Started", link: "/intro/start" }],
+        items: [
+          {
+            text: "What is Modular Rest?",
+            link: "/intro/what-is-modular-rest.md",
+          },
+          {
+            text: "Getting Started",
+            link: "/intro/getting-started.md",
+          },
+        ],
       },
       {
         text: "Server",

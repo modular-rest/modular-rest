@@ -12,7 +12,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /intro/start
+      link: /intro/what-is-modular-rest.md
     - theme: alt
       text: Install
       link: /server-client/setup.md
