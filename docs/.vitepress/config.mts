@@ -72,7 +72,7 @@ export default defineConfig({
         ],
       },
       {
-        text: "JS Client",
+        text: "Client",
         items: [
           { text: "Install", link: "/js-client/install" },
           { text: "Authentication", link: "/js-client/authentication" },
@@ -80,14 +80,14 @@ export default defineConfig({
           { text: "file Provider", link: "/js-client/file-provider" },
         ],
       },
-      {
-        text: "Flutter Client",
-        items: [{ text: "Install", link: "/flutter-client/install" }],
-      },
-      {
-        text: "Http Api",
-        items: [{ text: "Intro", link: "/http-api/intro" }],
-      },
+      // {
+      //   text: "Flutter Client",
+      //   items: [{ text: "Install", link: "/flutter-client/install" }],
+      // },
+      // {
+      //   text: "Http Api",
+      //   items: [{ text: "Intro", link: "/http-api/intro" }],
+      // },
     ],
 
     search: {
