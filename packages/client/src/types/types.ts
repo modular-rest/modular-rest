@@ -13,5 +13,5 @@ export interface FileDocument {
 
 export type OnProgressCallback = (progressEvent: ProgressEvent) => void;
 
-export * from "./data-provider";
-export * from "./auth";
+export * from "./data-provider.type";
+export * from "./auth.type";

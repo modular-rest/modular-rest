@@ -1,4 +1,4 @@
-import { BaseResponseType } from "../types/base-response";
+import { BaseResponseType } from "../types/base-response.type";
 import { OnProgressCallback } from "../types/types";
 import GlobalOptions from "./global_options";
 import axios from "axios";

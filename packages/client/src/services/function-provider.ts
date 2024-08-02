@@ -1,7 +1,7 @@
 import HttpClient from "../class/http";
-import { BaseResponseType } from "../types/base-response";
+import { BaseResponseType } from "../types/base-response.type";
 import { bus, tokenReceivedEvent } from "../class/event-bus";
-import { FunctionResponseType } from "../types/function-provider";
+import { FunctionResponseType } from "../types/function-provider.type";
 
 class FunctionProvider {
   private static instance: FunctionProvider;

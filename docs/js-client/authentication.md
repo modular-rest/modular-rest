@@ -2,7 +2,7 @@
 The `AuthService` class handles the authentication process, including login, token management, and user session handling.
 
 ## Importing the Service
-To use the `AuthService`, you need to import it as follows:
+To use the `AuthService` service, import it as follows:
 ```typescript
 import { authentication } from '@modular-rest/client';
 ```
@@ -17,19 +17,21 @@ import { authentication } from '@modular-rest/client';
 ## `login()`
 Logs in the user with the provided credentials.
 
+### Arguments
+
 | Argument   | Type               | Description                                         |
 | ---------- | ------------------ | --------------------------------------------------- |
 | `identity` | `IdentityType`     | The identity of the user (e.g., username or email). |
 | `password` | `string`           | The user's password.                                |
 | `options`  | `LoginOptionsType` | Additional login options.                           |
 
-Return and Throw:
+### Return and Throw
 | Returns                      | Description                 |
 | ---------------------------- | --------------------------- |
 | `Promise<LoginResponseType>` | The login response data.    |
 | Throws                       | `Error` if the login fails. |
 
-Example:
+### Example
 ```typescript
 authentication.login('user@example.com', 'password123', { rememberMe: true })
     .then(response => {
@@ -44,18 +46,20 @@ authentication.login('user@example.com', 'password123', { rememberMe: true })
 Logs in with the last session if you pass `allowSave=true` in the last login.
 
 
+### Arguments
+
 | Argument | Type     | Description                                |
 | -------- | -------- | ------------------------------------------ |
 | `token`  | `string` | The token for the last session (optional). |
 
-Return and Throw:
+### Return and Throw
 
 | Returns         | Description                 |
 | --------------- | --------------------------- |
 | `Promise<User>` | The logged-in user data.    |
 | Throws          | `Error` if the login fails. |
 
-Example:
+### Example
 ```typescript
 authentication.loginWithLastSession()
     .then(user => {
@@ -76,7 +80,7 @@ Return and Throw Table:
 | `Promise<LoginResponseType>` | The login response data containing the token. |
 | Throws                       | `Error` if the login fails.                   |
 
-Example:
+### Example
 ```typescript
 authService.loginAsAnonymous()
     .then(response => {
@@ -90,13 +94,13 @@ authService.loginAsAnonymous()
 ## `logout()`
 Logs out the current user and clears the session.
 
-Return and Throw:
+### Return and Throw
 | Returns | Description      |
 | ------- | ---------------- |
 | `void`  | No return value. |
 | Throws  | None             |
 
-Example:
+### Example
 ```typescript
 authentication.logout();
 ```
@@ -104,17 +108,19 @@ authentication.logout();
 ## `verifyToken()`
 Verifies the provided token.
 
+### Arguments
+
 | Argument | Type     | Description          |
 | -------- | -------- | -------------------- |
 | `token`  | `string` | The token to verify. |
 
-Return and Throw:
+### Return and Throw
 | Returns                            | Description                              |
 | ---------------------------------- | ---------------------------------------- |
 | `Promise<VerifyTokenResponseType>` | The token verification response data.    |
 | Throws                             | `Error` if the token verification fails. |
 
-Example:
+### Example
 ```typescript
 authentication.verifyToken('some-jwt-token')
     .then(response => {
@@ -129,18 +135,20 @@ authentication.verifyToken('some-jwt-token')
 Registers a user identity, the first step for creating a new account.
 
 
+### Arguments
+
 | Argument   | Type           | Description               |
 | ---------- | -------------- | ------------------------- |
 | `identity` | `IdentityType` | The identity of the user. |
 
-Return and Throw:
+### Return and Throw
 
 | Returns                     | Description                        |
 | --------------------------- | ---------------------------------- |
 | `Promise<BaseResponseType>` | The registration response data.    |
 | Throws                      | `Error` if the registration fails. |
 
-Example:
+### Example
 ```typescript
 authentication.registerIdentity({ idType: 'email', id: 'user@example.com' })
     .then(response => {
@@ -154,17 +162,19 @@ authentication.registerIdentity({ idType: 'email', id: 'user@example.com' })
 ## `validateCode()`
 Validates the provided code.
 
+### Arguments
+
 | Argument | Type     | Description           |
 | -------- | -------- | --------------------- |
 | `code`   | `string` | The code to validate. |
 
-Return and Throw:
+### Return and Throw
 | Returns                             | Description                      |
 | ----------------------------------- | -------------------------------- |
 | `Promise<ValidateCodeResponseType>` | The validation response data.    |
 | Throws                              | `Error` if the validation fails. |
 
-Example:
+### Example
 ```typescript
 authentication.validateCode('123456')
     .then(response => {
@@ -179,6 +189,8 @@ authentication.validateCode('123456')
 Submits a password, the third step for creating a new account.
 
 
+### Arguments
+
 | Argument           | Type     | Description                      |
 | ------------------ | -------- | -------------------------------- |
 | `options`          | `object` | The password submission options. |
@@ -186,14 +198,14 @@ Submits a password, the third step for creating a new account.
 | `options.password` | `string` | The user's password.             |
 | `options.code`     | `string` | The verification code.           |
 
-Return and Throw:
+### Return and Throw
 
 | Returns                     | Description                            |
 | --------------------------- | -------------------------------------- |
 | `Promise<BaseResponseType>` | The password submission response data. |
 | Throws                      | `Error` if the submission fails.       |
 
-Example:
+### Example
 ```typescript
 authentication.submitPassword({ id: 'user@example.com', password: 'newpassword', code: '123456' })
     .then(response => {
@@ -208,6 +220,8 @@ authentication.submitPassword({ id: 'user@example.com', password: 'newpassword',
 Changes the user's password.
 
 
+### Arguments
+
 | Argument           | Type     | Description                  |
 | ------------------ | -------- | ---------------------------- |
 | `options`          | `object` | The password change options. |
@@ -215,14 +229,14 @@ Changes the user's password.
 | `options.password` | `string` | The new password.            |
 | `options.code`     | `string` | The verification code.       |
 
-Return and Throw:
+### Return and Throw
 
 | Returns                     | Description                        |
 | --------------------------- | ---------------------------------- |
 | `Promise<BaseResponseType>` | The password change response data. |
 | Throws                      | `Error` if the change fails.       |
 
-Example:
+### Example
 ```typescript
 authentication.changePassword({ id: 'user@example.com', password: 'newpassword', code: '123456' })
     .then(response => {

@@ -1,4 +1,4 @@
-import { PaginationType } from "../types/data-provider";
+import { PaginationType } from "../types/data-provider.type";
 
 export function createPagination(
   count: number,

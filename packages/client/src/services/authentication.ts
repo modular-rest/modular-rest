@@ -9,7 +9,7 @@ import {
   ValidateCodeResponseType,
   VerifyTokenResponseType,
   BaseResponseType,
-} from "../types/auth";
+} from "../types/auth.type";
 
 class AuthService {
   private static instance: AuthService;

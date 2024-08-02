@@ -1,4 +1,4 @@
-import { BaseResponseType } from "./base-response";
+import { BaseResponseType } from "./base-response.type";
 
 export interface BaseRequestType {
   database: string;

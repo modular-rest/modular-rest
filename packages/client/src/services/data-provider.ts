@@ -10,7 +10,7 @@ import {
   AggregateQueryType,
   ResponseType,
   PaginatedResponseType,
-} from "../types/data-provider";
+} from "../types/data-provider.type";
 
 import { createPagination } from "../helper/list";
 
