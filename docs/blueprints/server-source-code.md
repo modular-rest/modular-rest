@@ -1,6 +1,6 @@
-# Source Code Blueprint of `./packages/server`
 
-### package.json
+
+# package.json
 
 ```json
 {
@@ -53,9 +53,34 @@
 
 ```
 
-### src/index.js
 
-```js
+
+# src/events.js
+
+```javascript
+const eventCallbacks = [];
+/**
+ * onBeforeInit: (koaApp:Koa) => void; // A callback called before initializing the Koa server.
+ * onAfterInit: (koaApp:Koa) => void; // A callback called after server initialization.
+ * onNewUser:
+ */
+
+function registerEventCallback(event, callback) {
+  if (typeof event !== "string") throw new Error("Event must be a string");
+
+  if (typeof callback !== "function")
+    throw new Error("Callback must be a function");
+
+  eventCallbacks.push({ event, callback });
+}
+
+```
+
+
+
+# src/index.js
+
+```javascript
 // Application
 const createRest = require("./application");
 const Schema = require("mongoose").Schema;
@@ -125,9 +150,137 @@ module.exports = {
 
 ```
 
-### src/application.js
 
-```js
+
+# src/config.js
+
+```javascript
+/**
+ * @typedef {import('koa')} Koa
+ * @typedef {import('@koa/cors').Options} Cors
+ * @typedef {import('./class/collection_definition.js')} CollectionDefinition
+ * @typedef {import('./class/security.js').PermissionGroup} PermissionGroup
+ * @typedef {import('./class/cms_trigger.js')} CmsTrigger
+ */
+
+/**
+ * @typedef {{
+ *   cors?: Cors; // CORS options.
+ *   modulesPath?: string; // Root directory of your router.js/db.js files.
+ *   koaBodyOptions?: object; // Options for koa-body.
+ *    staticPath?: {
+ *        rootDir: string; // Root directory of your static files.
+ *        rootPath: string; // Root path of your static files, defaults to '/assets'.
+ *        maxage?: number; // Browser cache max-age in milliseconds. Defaults to 0.
+ *        hidden?: boolean; // Allow transfer of hidden files. Defaults to false.
+ *        index?: string; // Default file name. Defaults to 'index.html'.
+ *        defer?: boolean; // If true, serves after return next(), allowing any downstream middleware to respond first. Defaults to false.
+ *        gzip?: boolean; // Try to serve the gzipped version of a file automatically when gzip is supported by a client and if the requested file with .gz extension exists. Defaults to true.
+ *        br?: boolean; // Try to serve the brotli version of a file automatically when brotli is supported by a client and if the requested file with .br extension exists. Note that brotli is only accepted over https. Defaults to false.
+ *        setHeaders?: Function; // Function to set custom headers on response.
+ *        extensions?: boolean|Array; // Try to match extensions from passed array to search for file when no extension is suffixed in URL. First found is served. Defaults to false.
+ *    };
+ *   onBeforeInit?: (koaApp:Koa) => void; // A callback called before initializing the Koa server.
+ *   onAfterInit?: (koaApp:Koa) => void; // A callback called after server initialization.
+ *   port?: number; // Server port.
+ *   dontListen?: boolean; // If true, the server will not run and will only return the Koa app object.
+ *   mongo?: {
+ *     dbPrefix: string; // A prefix for your database name.
+ *     mongoBaseAddress: string; // The address of your MongoDB server without any database specification.
+ *     addressMap?: string; // Specific addresses for each database.
+ *   };
+ *   keypair?: {
+ *     private: string; // Private key for RSA authentication.
+ *     public: string; // Public key for RSA authentication.
+ *   };
+ *   adminUser?: {
+ *     email: string; // Admin user email.
+ *     password: string; // Admin user password.
+ *   };
+ *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
+ *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
+ *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
+ *   authTriggers?: DatabaseTrigger[]; // An array of additional database triggers for the auth collection.
+ *   fileTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
+ * }} Config
+ * @exports Config
+ */
+
+/**
+ * @type {Config}
+ */
+const config = {};
+
+/**
+ * @param {Config} options
+ */
+function setConfig(options) {
+  Object.assign(config, options);
+}
+
+module.exports = {
+  setConfig,
+  config,
+};
+
+```
+
+
+
+# src/middlewares.js
+
+```javascript
+/**
+ * Validator module
+ * @module class/validator
+ */
+let validateObject = require("./class/validator");
+
+/**
+ * User manager service
+ * @module services/user_manager/service
+ */
+const userManager = require("./services/user_manager/service");
+
+/**
+ * Authentication middleware
+ * It checks if incoming request has a valid token in header.authorization
+ *
+ * @param {Object} ctx - Koa context
+ * @param {Function} next - Koa next function
+ * @returns {Promise<void>}
+ */
+async function auth(ctx, next) {
+  let headers = ctx.header;
+  let headersValidated = validateObject(headers, "authorization");
+
+  if (!headersValidated.isValid) ctx.throw(401, "authentication is required");
+
+  let token = headers.authorization;
+
+  await userManager.main
+    .getUserByToken(token)
+    .then(async (user) => {
+      ctx.state.user = user;
+      await next();
+    })
+    .catch((err) => {
+      console.log(err);
+      ctx.throw(err.status || 412, err.message);
+    });
+}
+
+module.exports = {
+  auth,
+};
+
+```
+
+
+
+# src/application.js
+
+```javascript
 const koa = require("koa");
 const cors = require("@koa/cors");
 const koaBody = require("koa-body");
@@ -367,168 +520,11 @@ module.exports = createRest;
 
 ```
 
-### packages/server/test.js
 
-```js
-const { createRest } = require('.');
-const { PermissionTypes } = require('./src/class/security');
 
-{ createRest } require('./src/application');
-{PermissionTypes} require('./src/class/security');
+# src/class/security.js
 
-createRest({
-    uploadDirectory: 'uploads',
-    port: '3001'
-});
-
-```
-
-### packages/server/src/events.js
-
-```js
-const eventCallbacks = [];
-/**
- * onBeforeInit: (koaApp:Koa) => void; // A callback called before initializing the Koa server.
- * onAfterInit: (koaApp:Koa) => void; // A callback called after server initialization.
- * onNewUser:
- */
-
-function registerEventCallback(event, callback) {
-  if (typeof event !== "string") throw new Error("Event must be a string");
-
-  if (typeof callback !== "function")
-    throw new Error("Callback must be a function");
-
-  eventCallbacks.push({ event, callback });
-}
-
-```
-
-### packages/server/src/config.js
-
-```js
-/**
- * @typedef {import('koa')} Koa
- * @typedef {import('@koa/cors').Options} Cors
- * @typedef {import('./class/collection_definition.js')} CollectionDefinition
- * @typedef {import('./class/security.js').PermissionGroup} PermissionGroup
- * @typedef {import('./class/cms_trigger.js')} CmsTrigger
- */
-
-/**
- * @typedef {{
- *   cors?: Cors; // CORS options.
- *   modulesPath?: string; // Root directory of your router.js/db.js files.
- *   koaBodyOptions?: object; // Options for koa-body.
- *    staticPath?: {
- *        rootDir: string; // Root directory of your static files.
- *        rootPath: string; // Root path of your static files, defaults to '/assets'.
- *        maxage?: number; // Browser cache max-age in milliseconds. Defaults to 0.
- *        hidden?: boolean; // Allow transfer of hidden files. Defaults to false.
- *        index?: string; // Default file name. Defaults to 'index.html'.
- *        defer?: boolean; // If true, serves after return next(), allowing any downstream middleware to respond first. Defaults to false.
- *        gzip?: boolean; // Try to serve the gzipped version of a file automatically when gzip is supported by a client and if the requested file with .gz extension exists. Defaults to true.
- *        br?: boolean; // Try to serve the brotli version of a file automatically when brotli is supported by a client and if the requested file with .br extension exists. Note that brotli is only accepted over https. Defaults to false.
- *        setHeaders?: Function; // Function to set custom headers on response.
- *        extensions?: boolean|Array; // Try to match extensions from passed array to search for file when no extension is suffixed in URL. First found is served. Defaults to false.
- *    };
- *   onBeforeInit?: (koaApp:Koa) => void; // A callback called before initializing the Koa server.
- *   onAfterInit?: (koaApp:Koa) => void; // A callback called after server initialization.
- *   port?: number; // Server port.
- *   dontListen?: boolean; // If true, the server will not run and will only return the Koa app object.
- *   mongo?: {
- *     dbPrefix: string; // A prefix for your database name.
- *     mongoBaseAddress: string; // The address of your MongoDB server without any database specification.
- *     addressMap?: string; // Specific addresses for each database.
- *   };
- *   keypair?: {
- *     private: string; // Private key for RSA authentication.
- *     public: string; // Public key for RSA authentication.
- *   };
- *   adminUser?: {
- *     email: string; // Admin user email.
- *     password: string; // Admin user password.
- *   };
- *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
- *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
- *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
- *   authTriggers?: DatabaseTrigger[]; // An array of additional database triggers for the auth collection.
- *   fileTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
- * }} Config
- * @exports Config
- */
-
-/**
- * @type {Config}
- */
-const config = {};
-
-/**
- * @param {Config} options
- */
-function setConfig(options) {
-  Object.assign(config, options);
-}
-
-module.exports = {
-  setConfig,
-  config,
-};
-
-```
-
-### packages/server/src/middlewares.js
-
-```js
-/**
- * Validator module
- * @module class/validator
- */
-let validateObject = require("./class/validator");
-
-/**
- * User manager service
- * @module services/user_manager/service
- */
-const userManager = require("./services/user_manager/service");
-
-/**
- * Authentication middleware
- * It checks if incoming request has a valid token in header.authorization
- *
- * @param {Object} ctx - Koa context
- * @param {Function} next - Koa next function
- * @returns {Promise<void>}
- */
-async function auth(ctx, next) {
-  let headers = ctx.header;
-  let headersValidated = validateObject(headers, "authorization");
-
-  if (!headersValidated.isValid) ctx.throw(401, "authentication is required");
-
-  let token = headers.authorization;
-
-  await userManager.main
-    .getUserByToken(token)
-    .then(async (user) => {
-      ctx.state.user = user;
-      await next();
-    })
-    .catch((err) => {
-      console.log(err);
-      ctx.throw(err.status || 412, err.message);
-    });
-}
-
-module.exports = {
-  auth,
-};
-
-```
-
-### packages/server/src/class/security.js
-
-```js
+```javascript
 /**
  * Class representing an access definition.
  */
@@ -673,9 +669,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/class/database_trigger.js
 
-```js
+
+# src/class/database_trigger.js
+
+```javascript
 /**
  * `DatabaseTrigger` is a class that defines a callback to be called on a specific database transaction.
  *
@@ -699,9 +697,11 @@ module.exports = DatabaseTrigger;
 
 ```
 
-### packages/server/src/class/cms_trigger.js
 
-```js
+
+# src/class/cms_trigger.js
+
+```javascript
 /**
  * `CmsTrigger` is a class that defines a callback to be called on a specific database transaction.
  *
@@ -725,9 +725,11 @@ module.exports = CmsTrigger;
 
 ```
 
-### packages/server/src/class/db_schemas.js
 
-```js
+
+# src/class/db_schemas.js
+
+```javascript
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
@@ -749,9 +751,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/class/user.js
 
-```js
+
+# src/class/user.js
+
+```javascript
 const { config } = require("../config");
 let validateObject = require("./validator");
 
@@ -867,9 +871,11 @@ module.exports = class User {
 
 ```
 
-### packages/server/src/class/validator.js
 
-```js
+
+# src/class/validator.js
+
+```javascript
 /**
  * Validates an object by checking if it contains all the required fields.
  * @param {Object} obj - The object to be validated.
@@ -963,9 +969,11 @@ function _returnResult(isValide, notValidKeys) {
 }
 ```
 
-### packages/server/src/class/combinator.js
 
-```js
+
+# src/class/combinator.js
+
+```javascript
 const Router = require("koa-router");
 const directory = require("./directory.js");
 const { addFunction } = require("./../services/functions/service.js");
@@ -1102,9 +1110,11 @@ module.exports = Combinator.instance;
 
 ```
 
-### packages/server/src/class/reply.js
 
-```js
+
+# src/class/reply.js
+
+```javascript
 /**
  * Creates a response object with the given status and detail.
  *
@@ -1144,9 +1154,11 @@ module.exports = {
 }
 ```
 
-### packages/server/src/class/collection_definition.js
 
-```js
+
+# src/class/collection_definition.js
+
+```javascript
 /**
  * @typedef {import('./security.js').Permission} Permission
  * @typedef {import('./database_trigger.js')} DatabaseTrigger
@@ -1183,9 +1195,11 @@ module.exports = CollectionDefinition;
 
 ```
 
-### packages/server/src/class/directory.js
 
-```js
+
+# src/class/directory.js
+
+```javascript
 const fs = require("fs");
 const path = require("path");
 
@@ -1254,9 +1268,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/class/trigger_operator.js
 
-```js
+
+# src/class/trigger_operator.js
+
+```javascript
 class TriggerOperator {
   constructor() {
     this.triggers = [];
@@ -1299,9 +1315,11 @@ module.exports = TriggerOperator.instance;
 
 ```
 
-### packages/server/src/class/paginator.js
 
-```js
+
+# src/class/paginator.js
+
+```javascript
 /**
  * Creates a pagination object based on the given parameters.
  * @param {number} count - The total number of items to paginate.
@@ -1335,9 +1353,11 @@ module.exports = {
 }
 ```
 
-### packages/server/src/helper/presetup_services.js
 
-```js
+
+# src/helper/presetup_services.js
+
+```javascript
 let DataInsertion = require("./data_insertion");
 let JWT = require("../services/jwt/service");
 let FileService = require("../services/file/service");
@@ -1372,9 +1392,11 @@ module.exports.setup = async ({ keypair, adminUser, uploadDirectory }) => {
 
 ```
 
-### packages/server/src/helper/data_insertion.js
 
-```js
+
+# src/helper/data_insertion.js
+
+```javascript
 const DataProvider = require("../services/data_provider/service");
 const {
   getDefaultAnonymousPermissionGroup,
@@ -1442,9 +1464,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/services/jwt/service.js
 
-```js
+
+# src/services/jwt/service.js
+
+```javascript
 const jwt = require("jsonwebtoken");
 
 class JWT {
@@ -1485,9 +1509,11 @@ module.exports.main = new JWT();
 
 ```
 
-### packages/server/src/services/jwt/router.js
 
-```js
+
+# src/services/jwt/router.js
+
+```javascript
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
 let reply = require('../../class/reply').create;
@@ -1560,9 +1586,11 @@ module.exports.name = name;
 module.exports.main = verify;
 ```
 
-### packages/server/src/services/file/service.js
 
-```js
+
+# src/services/file/service.js
+
+```javascript
 const fs = require("file-system");
 const pathModule = require("path");
 const DataProvider = require("./../data_provider/service");
@@ -1797,9 +1825,11 @@ module.exports = FileService.instance;
 
 ```
 
-### packages/server/src/services/file/db.js
 
-```js
+
+# src/services/file/db.js
+
+```javascript
 var mongoose = require("mongoose");
 var Schemas = require("../../class/db_schemas");
 
@@ -1832,9 +1862,11 @@ module.exports = [
 
 ```
 
-### packages/server/src/services/file/router.js
 
-```js
+
+# src/services/file/router.js
+
+```javascript
 let Router = require('koa-router');
 let validateObject = require('../../class/validator');
 let reply = require('../../class/reply').create;
@@ -1929,9 +1961,11 @@ module.exports.name = name;
 module.exports.main = fileRouter;
 ```
 
-### packages/server/src/services/data_provider/service.js
 
-```js
+
+# src/services/data_provider/service.js
+
+```javascript
 let name = "dataProvider";
 const colog = require("colog");
 let { AccessTypes, AccessDefinition } = require("../../class/security");
@@ -2188,9 +2222,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/services/data_provider/router.js
 
-```js
+
+# src/services/data_provider/router.js
+
+```javascript
 let { AccessTypes } = require("./../../class/security");
 let Router = require("koa-router");
 let validateObject = require("../../class/validator");
@@ -2746,9 +2782,11 @@ module.exports.main = dataProvider;
 
 ```
 
-### packages/server/src/services/data_provider/typeCasters.js
 
-```js
+
+# src/services/data_provider/typeCasters.js
+
+```javascript
 const Mongoose = require('mongoose');
 
 module.exports = {
@@ -2761,9 +2799,11 @@ module.exports = {
 }
 ```
 
-### packages/server/src/services/functions/service.js
 
-```js
+
+# src/services/functions/service.js
+
+```javascript
 const functions = [];
 
 /**
@@ -2841,9 +2881,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/services/functions/router.js
 
-```js
+
+# src/services/functions/router.js
+
+```javascript
 const Router = require("koa-router");
 const service = require("./service");
 const middleware = require("../../middlewares");
@@ -2884,9 +2926,11 @@ module.exports.main = functionRouter;
 
 ```
 
-### packages/server/src/services/user_manager/permissionManager.js
 
-```js
+
+# src/services/user_manager/permissionManager.js
+
+```javascript
 const { config } = require("../../config");
 
 function getDefaultPermissionGroups() {
@@ -2933,9 +2977,11 @@ module.exports = {
 
 ```
 
-### packages/server/src/services/user_manager/service.js
 
-```js
+
+# src/services/user_manager/service.js
+
+```javascript
 const User = require("../../class/user");
 const DataProvider = require("../data_provider/service");
 const JWT = require("../jwt/service");
@@ -2952,18 +2998,21 @@ class UserManager {
   }
 
   /**
-   * Set a custom method for generating verification codes.
-   * @param {function} method - A method that returns a random verification code.
+   * Sets a custom method for generating verification codes.
+   *
+   * @param {Function} generatorMethod - A function that returns a random verification code.
+   * @returns {void}
    */
-  setCustomVerificationCodeGeneratorMethod(method) {
+  setCustomVerificationCodeGeneratorMethod(generatorMethod) {
     this.verificationCodeGeneratorMethod = method;
   }
 
   /**
-   * Generate a verification code.
-   * @param {string} id - The ID for which to generate the verification code.
-   * @param {string} idType - The type of the ID.
-   * @returns {string} The generated verification code.
+   * Get a user by their ID.
+   *
+   * @param {string} id - The ID of the user.
+   * @returns {Promise<User>} A promise that resolves to the user.
+   * @throws {Error} If the user is not found.
    */
   generateVerificationCode(id, idType) {
     if (this.verificationCodeGeneratorMethod)
@@ -2975,6 +3024,7 @@ class UserManager {
 
   /**
    * Get a user by their ID.
+   *
    * @param {string} id - The ID of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
    * @throws {string} If the user is not found.
@@ -3001,6 +3051,7 @@ class UserManager {
 
   /**
    * Get a user by their identity.
+   *
    * @param {string} id - The identity of the user.
    * @param {string} idType - The type of the identity (phone or email).
    * @returns {Promise<User>} A promise that resolves to the user.
@@ -3033,6 +3084,7 @@ class UserManager {
 
   /**
    * Get a user by their token.
+   *
    * @param {string} token - The token of the user.
    * @returns {Promise<User>} A promise that resolves to the user.
    */
@@ -3043,6 +3095,7 @@ class UserManager {
 
   /**
    * Check if a verification code is valid.
+   *
    * @param {string} id - The ID of the user.
    * @param {string} code - The verification code.
    * @returns {boolean} Whether the verification code is valid.
@@ -3061,6 +3114,7 @@ class UserManager {
 
   /**
    * Login a user and return their token.
+   *
    * @param {string} id - The ID of the user.
    * @param {string} idType - The type of the ID (phone or email).
    * @param {string} password - The password of the user.
@@ -3110,6 +3164,7 @@ class UserManager {
 
   /**
    * Issue a token for a user.
+   *
    * @param {string} email - The email of the user.
    * @returns {Promise<string>} A promise that resolves to the token of the user.
    * @throws {string} If the user is not found.
@@ -3137,6 +3192,7 @@ class UserManager {
 
   /**
    * Login as an anonymous user.
+   *
    * @returns {Promise<string>} A promise that resolves to the token of the anonymous user.
    * @throws {string} If the anonymous user is not found.
    */
@@ -3183,6 +3239,7 @@ class UserManager {
 
   /**
    * Register a temporary ID.
+   *
    * @param {string} id - The ID to register.
    * @param {string} type - The type of the ID.
    * @param {string} code - The verification code.
@@ -3193,6 +3250,7 @@ class UserManager {
 
   /**
    * Submit a password for a temporary ID.
+   *
    * @param {string} id - The ID.
    * @param {string} password - The password.
    * @param {string} code - The verification code.
@@ -3223,6 +3281,7 @@ class UserManager {
 
   /**
    * Change the password for a temporary ID.
+   *
    * @param {string} id - The ID.
    * @param {string} password - The new password.
    * @param {string} code - The verification code.
@@ -3248,6 +3307,7 @@ class UserManager {
 
   /**
    * Register a user.
+   *
    * @param {Object} detail - The details of the user.
    * @returns {Promise<string>} A promise that resolves to the ID of the new user.
    * @throws {string} If the user could not be registered.
@@ -3280,6 +3340,7 @@ class UserManager {
 
   /**
    * Change the password of a user.
+   *
    * @param {Object} query - The query to find the user.
    * @param {string} newPass - The new password.
    * @returns {Promise<void>} A promise that resolves when the operation is complete.
@@ -3301,9 +3362,11 @@ module.exports.main = UserManager.instance;
 
 ```
 
-### packages/server/src/services/user_manager/db.js
 
-```js
+
+# src/services/user_manager/db.js
+
+```javascript
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
@@ -3390,9 +3453,11 @@ module.exports = [
 
 ```
 
-### packages/server/src/services/user_manager/router.js
 
-```js
+
+# src/services/user_manager/router.js
+
+```javascript
 let Router = require('koa-router');
 let validateObject = require('../../class/validator')
 let reply = require('../../class/reply').create;
@@ -3570,4 +3635,3 @@ userManager.post('/getPermission', async (ctx) => {
 module.exports.name = name;
 module.exports.main = userManager;
 ```
-

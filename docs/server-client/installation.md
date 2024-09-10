@@ -5,9 +5,16 @@ Thank you for choosing `modular-rest` to build your app. You can install the ser
 In this way, you can create a new project with `modular-rest` server app. it will create a new folder with your project name and setup the project for you.
 
 Just use below command:
-```sh
-npm init @modular-rest/server my-project
+::: code-group
+```sh [npm]
+npm create @modular-rest/server@latest my-project
 ```
+
+```sh [yarn]
+yarn create @modular-rest/server my-project
+```
+:::
+
 And now you can start your project with below commands:
 ```sh
 cd my-project

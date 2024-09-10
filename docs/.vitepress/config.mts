@@ -38,11 +38,11 @@ export default defineConfig({
       {
         text: "Server",
         items: [
-          { text: "Installation", link: "/server-client/setup" },
+          { text: "Installation", link: "/server-client/installation" },
           { text: "Key Concepts", link: "/server-client/key-concepts" },
           { text: "Configuration", link: "/server-client/configuration" },
           {
-            text: "Models",
+            text: "Modules",
             items: [
               { text: "Intro", link: "/server-client/modules/intro" },
               { text: "Database", link: "/server-client/modules/database" },
