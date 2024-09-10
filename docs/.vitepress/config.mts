@@ -15,7 +15,7 @@ export default defineConfig({
   },
 
   // https://vitepress.dev/guide/mpa-mode#mpa-mode
-  mpa: true,
+  mpa: false,
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
