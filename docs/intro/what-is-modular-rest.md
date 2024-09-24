@@ -16,13 +16,3 @@ Modular-Rest is a headless CMS designed to speed up backend development and enha
 - **Streamlined Process:** Eliminates the need to manage complex communication protocols manually.
 
 Modular-Rest is your solution for a more efficient, less redundant, and faster development process. Embrace a streamlined and productive workflow with Modular-Rest.
-
-## Here is a minimal example:
-
-on server
-```js
-```
-
-on client side
-```js
-```
