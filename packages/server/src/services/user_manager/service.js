@@ -20,7 +20,7 @@ class UserManager {
    * @returns {void}
    */
   setCustomVerificationCodeGeneratorMethod(generatorMethod) {
-    this.verificationCodeGeneratorMethod = method;
+    this.verificationCodeGeneratorMethod = generatorMethod;
   }
 
   /**
