@@ -10,7 +10,7 @@
   "types": "./types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/navidshad/modular-rest.git"
+    "url": "git+https://github.com/modular-rest/modular-rest.git"
   },
   "keywords": [
     "app",
@@ -21,9 +21,9 @@
   "author": "Navid Shad <navidshad72@gmail.com> (http://navid-shad.ir)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/navidshad/modular-rest/issues"
+    "url": "https://github.com/modular-rest/modular-rest/issues"
   },
-  "homepage": "https://github.com/navidshad/modular-rest#readme",
+  "homepage": "https://github.com/modular-rest/modular-rest#readme",
   "dependencies": {
     "@koa/cors": "^3.1.0",
     "colog": "^1.0.4",

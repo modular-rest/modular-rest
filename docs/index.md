@@ -18,7 +18,7 @@ hero:
       link: /server-client/installation.md
     - theme: alt
       text: GitHub
-      link: https://github.com/navidshad/modular-rest
+      link: https://github.com/modular-rest/modular-rest
 
 features:
   - title: Authentication (JWT)
