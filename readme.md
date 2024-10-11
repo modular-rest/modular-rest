@@ -9,4 +9,4 @@ Moreover, Modular-Rest simplifies the REST communication between your frontend a
 
 In essence, Modular-Rest is your all-in-one solution for enhancing efficiency, reducing redundancy, and accelerating the development of robust web applications. Say goodbye to reinventing the wheel, and say hello to a more streamlined and productive development process with Modular-Rest.
 
-Continue into documentation [here](https://navidshad.github.io/modular-rest/).
+Continue into documentation [here](https://modular-rest.github.io/modular-rest/).
