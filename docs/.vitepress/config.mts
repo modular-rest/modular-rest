@@ -29,16 +29,16 @@ export default defineConfig({
             text: "What is Modular Rest?",
             link: "/intro/what-is-modular-rest.md",
           },
-          {
-            text: "Getting Started",
-            link: "/intro/getting-started.md",
-          },
+          // {
+          //   text: "Getting Started",
+          //   link: "/intro/getting-started.md",
+          // },
         ],
       },
       {
         text: "Server",
         items: [
-          { text: "Installation", link: "/server-client/installation" },
+          { text: "Install", link: "/server-client/install" },
           { text: "Key Concepts", link: "/server-client/key-concepts" },
           { text: "Configuration", link: "/server-client/configuration" },
           {
