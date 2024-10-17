@@ -15,7 +15,7 @@ hero:
       link: /intro/what-is-modular-rest.md
     - theme: alt
       text: Install
-      link: /server-client/installation.md
+      link: /server-client/install.md
     - theme: alt
       text: GitHub
       link: https://github.com/modular-rest/modular-rest
