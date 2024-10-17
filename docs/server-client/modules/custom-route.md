@@ -10,8 +10,8 @@ Note: route system is based on [koa-router](https://github.com/koajs/router/blob
 Assume you have a module named `flowers` and you want to create a list/id route for it. You can create a `router.js` file in the `modules/flowers` directory with the following content:
 
 ```js
-let Router = require('koa-router');
-let name = 'flowers';
+const Router = require('koa-router');
+const name = 'flowers';
 
 const flowerRouter = new Router();
 
