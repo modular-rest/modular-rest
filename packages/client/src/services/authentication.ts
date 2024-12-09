@@ -43,15 +43,22 @@ class AuthService {
     else localStorage.removeItem("token");
   }
 
+  loginWithLastSession() {
+    // Load token
+    this.token = localStorage.getItem("token");
+
+    return this.loginWithToken(this.token || "");
+  }
+
   /**
    * Login with last session if you pass allowSave=true in last login.
    *
    * @return user
    */
-  loginWithLastSession(token?: string) {
+  loginWithToken(token: string) {
     return new Promise<User>((done, reject) => {
       // Load token
-      this.token = token || localStorage.getItem("token");
+      this.token = token;
 
       if (!this.token)
         throw { hasError: true, error: "Token doesn't find on local machine" };
