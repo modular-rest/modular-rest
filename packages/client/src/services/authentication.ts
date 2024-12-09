@@ -39,7 +39,7 @@ class AuthService {
   }
 
   private saveSession() {
-    if (this.token) localStorage.setItem("token", this.token);
+    if (this.token != null) localStorage.setItem("token", this.token);
     else localStorage.removeItem("token");
   }
 
@@ -47,7 +47,7 @@ class AuthService {
     // Load token
     this.token = localStorage.getItem("token");
 
-    return this.loginWithToken(this.token || "");
+    return this.loginWithToken(this.token || "", true);
   }
 
   /**
@@ -55,7 +55,7 @@ class AuthService {
    *
    * @return user
    */
-  loginWithToken(token: string) {
+  loginWithToken(token: string, allowSave?: boolean) {
     return new Promise<User>((done, reject) => {
       // Load token
       this.token = token;
@@ -75,7 +75,7 @@ class AuthService {
             type: user.type,
           });
 
-          localStorage.setItem("token", this.token!);
+          if (allowSave) this.saveSession();
 
           return this.user;
         })
@@ -89,7 +89,6 @@ class AuthService {
 
   logout() {
     this.token = null;
-    localStorage.removeItem("token");
     this.emitToken();
     this.saveSession();
   }
