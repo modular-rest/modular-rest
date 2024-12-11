@@ -31,6 +31,10 @@ class GlobalOptions {
   }
 
   getUrl(path: string, overrideUrl?: string) {
+    if (!path) throw new Error("Path is required to build URL");
+
+    if (path.startsWith("http")) return path;
+
     return join([overrideUrl || this.host, path]);
   }
 }

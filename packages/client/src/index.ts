@@ -12,6 +12,7 @@ const authentication = Authentication.getInstance();
 const dataProvider = DataProvider.getInstance();
 const fileProvider = FileProvider.getInstance();
 const functionProvider = FunctionProvider.getInstance();
+import httpClient from "./class/http";
 
 export {
   GlobalOptions,
@@ -19,4 +20,5 @@ export {
   dataProvider,
   fileProvider,
   functionProvider,
+  httpClient,
 };

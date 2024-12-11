@@ -18,17 +18,33 @@ interface RequestOptionAllProperties extends RequestOption {
   body?: object;
 }
 
+/**
+ * HTTPClient class to handle HTTP requests.
+ */
 class HTTPClient {
   private commonHeaders: Headers;
 
+  /**
+   * Constructs an instance of HTTPClient.
+   */
   constructor(/*options?: HTTPClientOption*/) {
     this.commonHeaders = {};
   }
 
+  /**
+   * Gets the base URL for the HTTP client.
+   * @returns {string} The base URL.
+   */
   get baseurl() {
     return GlobalOptions.host;
   }
 
+  /**
+   * Makes an HTTP request.
+   * @private
+   * @param {RequestOptionAllProperties} options - The request options.
+   * @returns {Promise<{ data: any }>} The response data.
+   */
   private request(options: RequestOptionAllProperties) {
     return new Promise<{ data: any }>((resolve, reject) => {
       if (options.method == "POST") {
@@ -83,10 +99,23 @@ class HTTPClient {
       });
   }
 
+  /**
+   * Sets common headers for all requests in this instance.
+   * Generally called when the user logs in to set the authentication token.
+   * @param {Headers} headers - The headers to set.
+   */
   setCommonHeader(headers: Headers) {
     this.commonHeaders = headers;
   }
 
+  /**
+   * Uploads a file to the specified URL.
+   * @param {string} url - The URL to upload the file to, it can be any url can handle file upload.
+   * @param {string | Blob} file - The file to upload.
+   * @param {any} body - Additional data to send with the file.
+   * @param {OnProgressCallback} onProgress - Callback for progress events.
+   * @returns {Promise<any>} The response data.
+   */
   uploadFile(
     url: string | "",
     file: string | Blob,
@@ -137,11 +166,18 @@ class HTTPClient {
       });
   }
 
-  post<T>(url: string = "", body: object = {}, options: RequestOption = {}) {
+  /**
+   * Makes a POST request to the specified URL.
+   * @param {string} [path=""] - The path to send the request to, it will be appended to module base URL.
+   * @param {object} [body={}] - The request body.
+   * @param {RequestOption} [options={}] - Additional request options.
+   * @returns {Promise<T>} The response data.
+   */
+  post<T>(path: string = "", body: object = {}, options: RequestOption = {}) {
     let urlObject: string;
 
     try {
-      urlObject = GlobalOptions.getUrl(url);
+      urlObject = GlobalOptions.getUrl(path);
     } catch (error) {
       throw error;
     }
@@ -154,11 +190,17 @@ class HTTPClient {
     }).then((data) => data as T);
   }
 
-  delete<T>(url: string = "", options: RequestOption = {}) {
+  /**
+   * Makes a DELETE request to the specified URL.
+   * @param {string} [path=""] - The path to send the request to, it will be appended to module base URL.
+   * @param {RequestOption} [options={}] - Additional request options.
+   * @returns {Promise<T>} The response data.
+   */
+  delete<T>(path: string = "", options: RequestOption = {}) {
     let urlObject: string;
 
     try {
-      urlObject = GlobalOptions.getUrl(url);
+      urlObject = GlobalOptions.getUrl(path);
     } catch (error) {
       throw error;
     }
@@ -170,11 +212,17 @@ class HTTPClient {
     }).then((body) => body as T);
   }
 
-  get<T>(url: string = "", options: RequestOption = {}) {
+  /**
+   * Makes a GET request to the specified URL.
+   * @param {string} [path=""] - The path to send the request to, it will be appended to module base URL.
+   * @param {RequestOption} [options={}] - Additional request options.
+   * @returns {Promise<T>} The response data.
+   */
+  get<T>(path: string = "", options: RequestOption = {}) {
     let urlObject: string;
 
     try {
-      urlObject = GlobalOptions.getUrl(url);
+      urlObject = GlobalOptions.getUrl(path);
     } catch (error) {
       throw error;
     }

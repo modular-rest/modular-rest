@@ -22,6 +22,10 @@ class AuthService {
     return !!this.token;
   }
 
+  get getToken() {
+    return this.token;
+  }
+
   private constructor() {
     this.http = new HttpClient();
   }
