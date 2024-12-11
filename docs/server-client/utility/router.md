@@ -37,6 +37,8 @@ Example:
 
 ## Auth Middleware
 Authentication middleware that checks for a valid token in the Authorization header of incoming requests.
+In case of an invalid token, it returns a 401 Unauthorized response.
+In case of a valid token, it adds the user object to the context object `ctx.state.user`.
 
 | Argument | Description                                        |
 | -------- | -------------------------------------------------- |
@@ -53,5 +55,8 @@ const router = new Router();
 // Example route with auth middleware
 router.post('/protected', auth, async (ctx) => {
   ctx.body = 'This is a protected route';
+
+  // Access the user object
+  console.log(ctx.state.user);
 });
 ```
