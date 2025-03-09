@@ -20,7 +20,7 @@ Here is an example illustrating how to use the `defineFunction` method effective
 ```javascript
 const { defineFunction } = require('@modular-rest/server');
 
-defineFunction({
+const getServerTime = defineFunction({
     name: 'getServerTime',
     permissionTypes: ['anonymous_access'],
     callback: (params) => {
@@ -35,6 +35,10 @@ defineFunction({
         // throw new Error('An error occurred');
     }
 });
+
+module.exports.functions = [
+    getServerTime
+]
 ```
 
 In this example, we define a function named `getServerTime` that requires the `user` permission type to access. When the function is called, it will return a message containing the current server time and the username of the user who invoked the function.
