@@ -24,10 +24,15 @@ defineFunction({
     name: 'getServerTime',
     permissionTypes: ['anonymous_access'],
     callback: (params) => {
+        // return your data only
         return `
             Welcome, ${params.username}! 
             The current server time is ${new Date().toLocaleString()}.
         `;
+
+        // error handling,
+        // client gets error code 400, and the message
+        // throw new Error('An error occurred');
     }
 });
 ```
