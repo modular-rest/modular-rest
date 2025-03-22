@@ -1,6 +1,9 @@
 let name = "dataProvider";
 const colog = require("colog");
-let { AccessTypes, AccessDefinition } = require("../../class/security");
+let {
+  AccessTypes,
+  AccessDefinition
+} = require("../../class/security");
 
 const Mongoose = require("mongoose");
 Mongoose.set("useCreateIndex", true);
@@ -11,7 +14,9 @@ let permissionDefinitions = {};
 
 let triggers = require("../../class/trigger_operator");
 let TypeCasters = require("./typeCasters");
-const { config } = require("../../config");
+const {
+  config
+} = require("../../config");
 
 /**
  *
@@ -30,13 +35,14 @@ function connectToDatabaseByCollectionDefinitionList(
     // Create db connection
     //
     const fullDbName = (mongoOption.dbPrefix || "") + dbName;
-    const connectionString = mongoOption.mongoBaseAddress + "/" + fullDbName;
+    const connectionString = mongoOption.mongoBaseAddress;
 
-    colog.info(`- Connecting to database ${connectionString}`);
+    colog.info(`- Connecting to database: ${fullDbName}`);
 
     let connection = Mongoose.createConnection(connectionString, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
+      dbName: fullDbName,
     });
 
     // Store connection
@@ -94,7 +100,10 @@ function connectToDatabaseByCollectionDefinitionList(
  * @param {string} option.mongoOption.dbPrefix
  * @param {string} option.mongoOption.mongoBaseAddress
  */
-async function addCollectionDefinitionByList({ list, mongoOption }) {
+async function addCollectionDefinitionByList({
+  list,
+  mongoOption
+}) {
   let clusteredByDBName = {};
 
   // cluster list by their database name.

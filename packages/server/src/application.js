@@ -18,7 +18,10 @@ const defaultServiceRoot = __dirname + "/services";
  * @typedef {import('./class/cms_trigger.js')} CmsTrigger
  */
 
-const { config, setConfig } = require("./config");
+const {
+  config,
+  setConfig
+} = require("./config");
 
 /**
  * Create a modular REST instance with Koa and MongoDB support.
@@ -147,17 +150,10 @@ async function createRest(options) {
     mongoOption: config.mongo,
   });
 
-  // 3. Setting up default services
-  try {
-    await require("./helper/presetup_services").setup(options);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-
   /**
    * User Services
    *
-   * Plug in routes and database
+   * 3. Plug in routes and database
    */
   if (config.modulesPath) {
     // Plug in user routes
@@ -200,6 +196,13 @@ async function createRest(options) {
         extension: ".js",
       },
     });
+  }
+
+  // 4. Setting up default services
+  try {
+    await require("./helper/presetup_services").setup(options);
+  } catch (e) {
+    return Promise.reject(e);
   }
 
   /**
