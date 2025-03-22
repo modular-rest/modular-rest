@@ -7,63 +7,75 @@ let verify = new Router();
 
 let service = require('./service').main;
 
-verify.post('/token', async (ctx) => 
-{
+verify.post('/token', async (ctx) => {
 	let body = ctx.request.body;
 
 	// validate result
 	let bodyValidate = validateObject(body, 'token');
 
 	// fields validation
-    if(!bodyValidate.isValid)
-    {	
-    	ctx.status = 412;
-        ctx.body = reply('e', {'e': bodyValidate.requires});
-        return;
-    }
+	if (!bodyValidate.isValid) {
+		ctx.status = 412;
+		ctx.body = reply('e', {
+			'e': bodyValidate.requires
+		});
+		return;
+	}
 
 	await service.verify(body.token)
-    	.then((payload) => ctx.body = reply('s', {'user': payload}))
-    	.catch(err => {
-    		ctx.status = 412;
-        	ctx.body = reply('e', {'e': err});
-    	});
+		.then((payload) => ctx.body = reply('s', {
+			'user': payload
+		}))
+		.catch(err => {
+			ctx.status = 412;
+			ctx.body = reply('e', {
+				'e': err
+			});
+		});
 });
 
-verify.post('/checkAccess', async (ctx) => 
-{
+verify.post('/checkAccess', async (ctx) => {
 	let body = ctx.request.body;
 
 	// validate result
 	let bodyValidate = validateObject(body, 'token permissionField');
 
 	// fields validation
-    if(!bodyValidate.isValid)
-    {	
-    	ctx.status = 412;
-        ctx.body = reply('e', {'e': bodyValidate.requires});
-        return;
+	if (!bodyValidate.isValid) {
+		ctx.status = 412;
+		ctx.body = reply('e', {
+			'e': bodyValidate.requires
+		});
+		return;
 	}
-	
+
 	let payload = await service.verify(body.token)
 		.catch(err => {
-            console.log(err);
-            ctx.throw(412, err.message);
-        });
-    	
-		
+			console.log(err);
+			ctx.throw(412, err.message);
+		});
+
+
 	let userid = payload.id;
-	
+
 	await global.services.userManager.main.getUserById(userid)
-		.then((user) => 
-		{
+		.then((user) => {
 			let key = user.hasPermission(body.permissionField);
-			ctx.body = reply('s', {'access': key});
+			ctx.body = reply('s', {
+				'access': key
+			});
 		})
 		.catch(err => {
 			ctx.status = 412;
-			ctx.body = reply('e', {'e': err});
+			ctx.body = reply('e', {
+				'e': err
+			});
 		});
+});
+
+verify.get('/ready', async (ctx) => {
+	// it's health check, so return success
+	ctx.body = reply('s', {});
 });
 
 module.exports.name = name;

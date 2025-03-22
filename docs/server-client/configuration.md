@@ -14,6 +14,13 @@ const app = createRest({
 });
 ```
 
+### Health Chek
+You may need to check the server health, just request to below endpoint:
+```bash
+GET:[base_url]/verify/ready
+# {"status":"success"}
+```
+
 ## Configuration Summary Table
 
 | Property                                                             | Type       | Optional | Description                                   |
