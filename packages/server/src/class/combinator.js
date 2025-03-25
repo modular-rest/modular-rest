@@ -1,11 +1,16 @@
 const Router = require("koa-router");
 const directory = require("./directory.js");
-const { addFunction } = require("./../services/functions/service.js");
+const {
+  addFunction
+} = require("./../services/functions/service.js");
 
 class Combinator {
   async combineRoutesByFilePath(rootDirectory, app) {
     // find route paths
-    let option = { name: "router", filter: [".js"] };
+    let option = {
+      name: "router",
+      filter: [".js"]
+    };
     let routerPaths = await directory
       .find(rootDirectory, option)
       .then()
@@ -43,7 +48,10 @@ class Combinator {
   }) {
     // find route paths
     let rootObject_temp;
-    const option = { name: filename.name, filter: [filename.extension] };
+    const option = {
+      name: filename.name,
+      filter: [filename.extension]
+    };
     const modulesPath = await directory
       .find(rootDirectory, option)
       .then()
@@ -85,9 +93,15 @@ class Combinator {
     return rootObject_temp;
   }
 
-  async combineFunctionsByFilePath({ rootDirectory, filename }) {
+  async combineFunctionsByFilePath({
+    rootDirectory,
+    filename
+  }) {
     // find route paths
-    const option = { name: filename.name, filter: [filename.extension] };
+    const option = {
+      name: filename.name,
+      filter: [filename.extension]
+    };
     const functionsPaths = await directory
       .find(rootDirectory, option)
       .then()
@@ -113,6 +127,12 @@ class Combinator {
       } else {
         addFunction(modularFunctions.functions);
       }
+    }
+  }
+
+  addFunctionsByArray(functionList) {
+    for (const functionItem of functionList) {
+      addFunction(functionItem);
     }
   }
 

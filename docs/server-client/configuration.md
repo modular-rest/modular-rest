@@ -3,19 +3,22 @@
 This guide provides an overview and detailed explanation of the configuration options available for `@modular-rest/server`.
 
 ## Quick Start
+
 To get started, you need to require `@modular-rest/server` and call `createRest` with your configuration object:
 
 ```javascript
-const { createRest } = require('@modular-rest/server');
+const { createRest } = require("@modular-rest/server");
 
 const app = createRest({
-    port: '80',
-    // Additional configuration options...
+  port: "80",
+  // Additional configuration options...
 });
 ```
 
 ### Health Chek
+
 You may need to check the server health, just request to below endpoint:
+
 ```bash
 GET:[base_url]/verify/ready
 # {"status":"success"}
@@ -23,24 +26,25 @@ GET:[base_url]/verify/ready
 
 ## Configuration Summary Table
 
-| Property                                                             | Type       | Optional | Description                                   |
-| -------------------------------------------------------------------- | ---------- | -------- | --------------------------------------------- |
-| [cors](./advanced/cors.md)                                           | `Cors`     | Yes      | CORS options.                                 |
-| modulesPath                                                          | `string`   | Yes      | Root directory for `router.js`/`db.js` files. |
-| uploadDirectory                                                      | `string`   | Yes      | Root directory of your uploaded files.        |
-| [staticPath](#static-files)                                          | `Object`   | Yes      | Configuration for serving static files.       |
-| onBeforeInit                                                         | `Function` | Yes      | Callback before Koa server initialization.    |
-| onAfterInit                                                          | `Function` | Yes      | Callback after Koa server initialization.     |
-| port                                                                 | `number`   | Yes      | Server port number.                           |
-| dontListen                                                           | `boolean`  | Yes      | If `true`, doesn't start the server.          |
-| mongo                                                                | `Object`   | No       | MongoDB configuration.                        |
-| keypair                                                              | `Object`   | No       | RSA keypair for authentication.               |
-| adminUser                                                            | `Object`   | No       | Admin user credentials.                       |
-| verificationCodeGeneratorMethod                                      | `Function` | No       | Method to generate a verification code.       |
-| [collectionDefinitions](./modules/database.html#define-a-collection) | `Array`    | No       | Additional collection definitions.            |
-| permissionGroups                                                     | `Array`    | No       | Additional permission groups.                 |
-| [authTriggers](./modules/database.html#triggers)                     | `Array`    | No       | Database triggers for the auth collection.    |
-| fileTriggers                                                         | `Array`    | No       | Database triggers for the file collection.    |
+| Property                                                             | Type       | Optional | Description                                                                          |
+| -------------------------------------------------------------------- | ---------- | -------- | ------------------------------------------------------------------------------------ |
+| [cors](./advanced/cors.md)                                           | `Cors`     | Yes      | CORS options.                                                                        |
+| modulesPath                                                          | `string`   | Yes      | Root directory for `router.js`/`db.js` files.                                        |
+| uploadDirectory                                                      | `string`   | Yes      | Root directory of your uploaded files.                                               |
+| [staticPath](#static-files)                                          | `Object`   | Yes      | Configuration for serving static files.                                              |
+| onBeforeInit                                                         | `Function` | Yes      | Callback before Koa server initialization.                                           |
+| onAfterInit                                                          | `Function` | Yes      | Callback after Koa server initialization.                                            |
+| port                                                                 | `number`   | Yes      | Server port number.                                                                  |
+| dontListen                                                           | `boolean`  | Yes      | If `true`, doesn't start the server.                                                 |
+| mongo                                                                | `Object`   | Yes      | MongoDB configuration.                                                               |
+| keypair                                                              | `Object`   | Yes      | RSA keypair for authentication.                                                      |
+| adminUser                                                            | `Object`   | No       | Admin user credentials.                                                              |
+| verificationCodeGeneratorMethod                                      | `Function` | Yes      | Method to generate a verification code.                                              |
+| [collectionDefinitions](./modules/database.html#define-a-collection) | `Array`    | Yes      | Additional collection definitions.                                                   |
+| permissionGroups                                                     | `Array`    | No       | Additional permission groups.                                                        |
+| [authTriggers](./modules/database.html#triggers)                     | `Array`    | Yes      | Database triggers for the auth collection.                                           |
+| fileTriggers                                                         | `Array`    | Yes      | Database triggers for the file collection.                                           |
+| functions                                                            | `Array`    | Yes      | An array of additional defined functions, use `defineFunction` to define a function. |
 
 ## Server and Middleware Configuration
 
@@ -49,12 +53,14 @@ GET:[base_url]/verify/ready
 - **`dontListen`**: If set to `true`, the server setup is done but it won't start listening. This is useful for cases where you want to perform tests or when integrating with another server.
 
 ## Modules and Upload Directory
+
 - **`modulesPath`**: The directory path where your module files (`router.js`, `db.js`) are located.
 - **`uploadDirectory`**: The root directory where uploaded files are stored, you can mount this directory to a CDN or a cloud storage service.
 
 ## Static Files
+
 - **`staticPath`**: Provides detailed options for serving static files from your server, such as the root directory, caching options, and whether to serve gzipped content.
-  
+
 | Property     | Type                        | Description                                                                                                                                                                                     | Default Value  |
 | ------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | `rootDir`    | `string`                    | Root directory of your static files.                                                                                                                                                            |                |
@@ -84,12 +90,11 @@ GET:[base_url]/verify/ready
 
 ## Customization and Extensions
 
-- **`verificationCodeGeneratorMethod`**, 
-- **`collectionDefinitions`**, 
-- **`permissionGroups`**, 
+- **`verificationCodeGeneratorMethod`**,
+- **`collectionDefinitions`**,
+- **`permissionGroups`**,
 - **`authTriggers`**
 
- 
 These properties allow for extending the functionality of `@modular-rest/server` by adding custom verification code generation logic, defining additional database collections, setting up permission groups, and specifying triggers for database operations.
 
 ## Example Configuration
@@ -97,28 +102,28 @@ These properties allow for extending the functionality of `@modular-rest/server`
 Here's an example demonstrating how to configure some of these properties:
 
 ```javascript
-const { createRest } = require('@modular-rest/server');
+const { createRest } = require("@modular-rest/server");
 
 const app = createRest({
-    port: 3000,
-    modulesPath: './modules',
-    staticPath: {
-        rootDir: './public',
-        notFoundFile: '404.html',
-        log: true,
-    },
-    mongo: {
-        mongoBaseAddress: 'mongodb://localhost:27017',
-        dbPrefix: 'myApp_'
-    },
-    onBeforeInit: (koaApp) => {
-        // Custom middleware
-        koaApp.use(customMiddleware());
-    },
-    adminUser: {
-        email: 'admin@example.com',
-        password: 'securepassword'
-    }
+  port: 3000,
+  modulesPath: "./modules",
+  staticPath: {
+    rootDir: "./public",
+    notFoundFile: "404.html",
+    log: true,
+  },
+  mongo: {
+    mongoBaseAddress: "mongodb://localhost:27017",
+    dbPrefix: "myApp_",
+  },
+  onBeforeInit: (koaApp) => {
+    // Custom middleware
+    koaApp.use(customMiddleware());
+  },
+  adminUser: {
+    email: "admin@example.com",
+    password: "securepassword",
+  },
 });
 ```
 

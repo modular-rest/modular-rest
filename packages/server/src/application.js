@@ -16,6 +16,7 @@ const defaultServiceRoot = __dirname + "/services";
  * @typedef {import('@koa/cors').Options} Cors
  * @typedef {import('./class/security.js').PermissionGroup} PermissionGroup
  * @typedef {import('./class/cms_trigger.js')} CmsTrigger
+ * @typedef {import('./services/functions/service.js').DefinedFunction} DefinedFunction
  */
 
 const {
@@ -59,11 +60,12 @@ const {
  *     email: string; // Admin user email.
  *     password: string; // Admin user password.
  *   };
- *   verificationCodeGeneratorMethod: () => string; // A method to return a verification code when registering a new user.
+ *   verificationCodeGeneratorMethod?: () => string; // A method to return a verification code when registering a new user.
  *   collectionDefinitions?: CollectionDefinition[]; // An array of additional collection definitions.
- *   permissionGroups?: PermissionGroup[]; // An array of additional permission groups.
+ *   permissionGroups: PermissionGroup[]; // An array of permission groups.
  *   authTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
  *   fileTriggers?: CmsTrigger[]; // An array of additional database triggers for the auth collection.
+ *   functions?: DefinedFunction[]; // An array of additional defined functions, use `defineFunction` to define a function.
  * }} options
  * @returns {Promise<{app: Koa, server: Server}>}
  */
@@ -196,6 +198,11 @@ async function createRest(options) {
         extension: ".js",
       },
     });
+
+    // 5. Plug in additional defined functions
+    if (config.functions) {
+      Combination.addFunctionsByArray(config.functions);
+    }
   }
 
   // 4. Setting up default services

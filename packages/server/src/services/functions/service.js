@@ -5,14 +5,26 @@ const functions = [];
  */
 
 /**
+ * @typedef {Object} DefinedFunction
+ * @property {string} name - The name of the function
+ * @property {[PermissionType]} permissionTypes - Array of permission types required to execute the function
+ * @property {Function} callback - The callback function to be executed
+ */
+
+/**
  * Defines a function with a given name, permission types, and callback.
  *
  * @param {Object} params - The parameters for the function.
  * @param {string} params.name - The name of the function.
  * @param {[PermissionType]} params.permissionTypes - The permission types for the function.
  * @param {Function} params.callback - The callback to be executed by the function.
+ * @returns {DefinedFunction} The defined function object
  */
-function defineFunction({ name, permissionTypes, callback }) {
+function defineFunction({
+  name,
+  permissionTypes,
+  callback
+}) {
   // Check if the function already exists
   const existingFunction = functions.find((f) => f.name === name);
   if (existingFunction) {
@@ -30,7 +42,11 @@ function defineFunction({ name, permissionTypes, callback }) {
   }
 
   // Add the function to the list of functions
-  return { name, permissionTypes, callback };
+  return {
+    name,
+    permissionTypes,
+    callback
+  };
 }
 
 function runFunction(name, args, user) {
