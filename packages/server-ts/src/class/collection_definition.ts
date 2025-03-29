@@ -1,9 +1,9 @@
-import { Schema } from "mongoose";
-import { Permission } from "./security";
-import { DatabaseTrigger } from "./database_trigger";
+import { Schema } from 'mongoose';
+import { Permission } from './security';
+import { DatabaseTrigger } from './database_trigger';
 
 interface CollectionDefinitionOptions {
-  db: string;
+  database: string;
   collection: string;
   schema: Schema;
   permissions: Permission[];
@@ -27,14 +27,14 @@ export class CollectionDefinition {
    * @param options - Configuration options
    */
   constructor({
-    db,
+    database,
     collection,
     schema,
     permissions,
     triggers,
   }: CollectionDefinitionOptions) {
     // string
-    this.database = db;
+    this.database = database;
     // string
     this.collection = collection;
     // schema object of mongoose

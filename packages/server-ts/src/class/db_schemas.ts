@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 /**
@@ -18,22 +18,27 @@ export interface IFile {
 }
 
 /**
+ * File schema
+ */
+export const fileSchema = new Schema<IFile>(
+  {
+    originalName: String,
+    fileName: String,
+    owner: String,
+    format: String,
+    // Tag being used as the parent dir for files
+    // uploadDir/$format/$tag/timestamp.format
+    tag: String,
+    size: Number,
+  },
+  { timestamps: true }
+);
+
+/**
  * Schema definitions
  */
 const schemas = {
-  file: new Schema<IFile>(
-    {
-      originalName: String,
-      fileName: String,
-      owner: String,
-      format: String,
-      // Tag being used as the parent dir for files
-      // uploadDir/$format/$tag/timestamp.format
-      tag: String,
-      size: Number,
-    },
-    { timestamps: true }
-  ),
+  file: fileSchema,
 };
 
 export default schemas;

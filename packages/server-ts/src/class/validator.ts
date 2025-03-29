@@ -116,3 +116,8 @@ function _returnResult(isValid: boolean, notValidKeys: string[]): ValidationResu
     requires: notValidKeys,
   };
 }
+
+/**
+ * Return the validator function to maintain compatibility with the JavaScript version
+ */
+export const validateObject = validator;

@@ -58,7 +58,8 @@ class Combinator {
     convertToArray,
   }: ModuleOptions): Promise<any> {
     // find route paths
-    let rootObject_temp: any = {};
+    let rootObject_temp: any;
+
     const option = {
       name: filename.name,
       filter: [filename.extension],

@@ -36,6 +36,9 @@ export async function setup({ keypair, adminUser, uploadDirectory }: SetupOption
 
   JWT.main.setKies(keyPairToUse.private, keyPairToUse.public);
 
+  if (!adminUser) {
+    throw new Error('Admin user is not supported in TypeScript version');
+  }
   /**
    * Data Insertion
    *

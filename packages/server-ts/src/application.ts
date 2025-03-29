@@ -5,7 +5,7 @@ import koaStatic from 'koa-static';
 import mount from 'koa-mount';
 import path from 'path';
 import { Server } from 'http';
-import * as Combination from './class/combinator';
+import Combination from './class/combinator';
 import * as DataProvider from './services/data_provider/service';
 import { MongoOption } from './services/data_provider/service';
 import * as UserService from './services/user_manager/service';
@@ -14,6 +14,7 @@ import { PermissionGroup } from './class/security';
 import { CmsTrigger } from './class/cms_trigger';
 import { DefinedFunction } from './services/functions/service';
 import { config, setConfig } from './config';
+import { permissionGroups as defaultPermissionGroups } from './defult-permissions';
 
 const defaultServiceRoot = __dirname + '/services';
 
@@ -82,6 +83,10 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
     },
     ...options,
   });
+
+  if (config.permissionGroups === undefined) {
+    config.permissionGroups = defaultPermissionGroups;
+  }
 
   const app = new Koa();
 
