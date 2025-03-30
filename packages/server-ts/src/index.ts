@@ -27,47 +27,130 @@ import {
 } from './class/security';
 import * as middleware from './middlewares';
 
-export {
-  createRest,
+/**
+ * @description Creates a new REST API instance
+ * @example
+ * ```typescript
+ * const rest = createRest();
+ * ```
+ * @returns A new REST API instance
+ */
+export { createRest };
 
-  // Database
-  CollectionDefinition,
-  Schemas,
-  Schema,
-  DatabaseTrigger,
-  CmsTrigger,
+/**
+ * @description Defines collection structure and behavior
+ * @example
+ * ```typescript
+ * const collection = new CollectionDefinition({
+ *   db: 'users',
+ *   name: 'info'
+ * });
+ * ```
+ */
+export { CollectionDefinition };
 
-  // Security
-  AccessDefinition,
-  Permission,
-  PermissionTypes,
-  PermissionGroup,
-  AccessTypes,
+/**
+ * @description Provides predefined database schemas
+ * @example
+ * ```typescript
+ * const userSchema = new Schema({
+ *   name: String,
+ *   avatar: Schemas.file
+ * });
+ * ```
+ */
+export { Schemas };
 
-  // Function
-  defineFunction,
+/**
+ * @description Mongoose Schema class for defining data models
+ */
+export { Schema };
 
-  // Private utilities
-  TypeCasters,
-  validator,
+/**
+ * @description Handles database triggers and events
+ * @example
+ * ```typescript
+ * const trigger = new DatabaseTrigger('insert-one', (data) => {
+ *   // Handle insert event
+ * });
+ * ```
+ */
+export { DatabaseTrigger };
 
-  // Route utilities
-  reply,
-  paginator,
+/**
+ * @description Handles CMS triggers and events
+ */
+export { CmsTrigger };
 
-  // Database utilities
-  getCollection,
+/**
+ * @description Security and access control definitions
+ * @example
+ * ```typescript
+ * const permission = new Permission({
+ *   type: 'user_access',
+ *   read: true,
+ *   write: true
+ * });
+ * ```
+ */
+export { AccessDefinition, Permission, PermissionTypes, PermissionGroup, AccessTypes };
 
-  // File Utilities
-  getFile,
-  getFileLink,
-  getFilePath,
-  removeFile,
-  storeFile,
+/**
+ * @description Defines custom functions for the API
+ * @example
+ * ```typescript
+ * defineFunction('sendEmail', async (data) => {
+ *   // Send email logic
+ * });
+ * ```
+ */
+export { defineFunction };
 
-  // Middleware utilities
-  middleware,
+/**
+ * @description Type casting utilities for data transformation
+ */
+export { TypeCasters };
 
-  // User utilities
-  userManager,
-};
+/**
+ * @description Input validation utilities
+ */
+export { validator };
+
+/**
+ * @description Response handling utilities
+ */
+export { reply };
+
+/**
+ * @description Pagination utilities
+ */
+export { paginator };
+
+/**
+ * @description Database collection access utilities
+ */
+export { getCollection };
+
+/**
+ * @description File handling utilities
+ * @example
+ * ```typescript
+ * const file = await getFile('fileId');
+ * const link = getFileLink('fileId');
+ * ```
+ */
+export { getFile, getFileLink, getFilePath, removeFile, storeFile };
+
+/**
+ * @description Middleware utilities
+ */
+export { middleware };
+
+/**
+ * @description User management utilities
+ * @example
+ * ```typescript
+ * const user = await userManager.getUserById('userId');
+ * ```
+ */
+export { userManager };

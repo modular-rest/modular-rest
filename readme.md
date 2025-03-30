@@ -1,12 +1,109 @@
-# Streamlining Full Stack Development with Modular-Rest
-In the dynamic world of full stack development, juggling both frontend and backend tasks can be a daunting challenge. Frequently, developers find themselves repeatedly implementing fundamental backend features such as authentication, authorization, and database access. This repetitive coding can be both time-consuming and error-prone. This is where Modular-Rest steps in to transform your development process.
+# Modular Rest Documentation Generator
 
-Modular-Rest stands as a powerful headless CMS, poised to accelerate your backend development while promoting modularity. With Modular-Rest, all you need to do is initialize a single file app and define your data schema. In return, you receive a fully functional backend, equipped with all the essential features required for common web applications.
+This tool generates documentation for the Modular Rest TypeScript library by analyzing the source code and TSDoc comments.
 
-What sets Modular-Rest apart is its flexibility. It's not confined to a rigid framework; instead, it empowers you to seamlessly expand your backend with custom modules and features tailored to your specific needs.
+## Installation
 
-Moreover, Modular-Rest simplifies the REST communication between your frontend and backend. It offers a client library that effortlessly facilitates communication between the two, eliminating the need for you to manage intricate communication protocols manually.
+```bash
+npm install
+```
 
-In essence, Modular-Rest is your all-in-one solution for enhancing efficiency, reducing redundancy, and accelerating the development of robust web applications. Say goodbye to reinventing the wheel, and say hello to a more streamlined and productive development process with Modular-Rest.
+## Usage
 
-Continue into documentation [here](https://modular-rest.github.io/modular-rest/).
+1. Add TSDoc comments to your code in the following format:
+
+```typescript
+/**
+ * @description Creates a new REST API instance
+ * @example
+ * ```typescript
+ * const rest = createRest();
+ * ```
+ * @param options - Configuration options
+ * @returns A new REST API instance
+ * @note This is the main entry point for the library
+ */
+export function createRest(options?: RestOptions): RestInstance {
+  // Implementation
+}
+```
+
+2. Run the documentation generator:
+
+```bash
+npm run generate
+```
+
+This will:
+- Parse the source code from `../packages/server-ts/src/index.ts`
+- Extract TSDoc comments and code structure
+- Generate markdown documentation in `./docs/server-client-ts/`
+- Maintain the existing documentation structure
+
+## Documentation Structure
+
+The generated documentation will follow the existing structure:
+
+```
+docs/server-client-ts/
+├── key-concepts.md
+├── configuration.md
+├── install.md
+├── modules/
+│   ├── database.md
+│   ├── functions.md
+│   ├── custom-route.md
+│   └── intro.md
+└── utility/
+    ├── router.md
+    ├── user-manager.md
+    ├── database.md
+    └── file.md
+```
+
+## TSDoc Tags
+
+The generator supports the following TSDoc tags:
+
+- `@description` - Main description of the export
+- `@example` - Code examples
+- `@param` - Parameter documentation
+- `@returns` - Return type documentation
+- `@note` - Additional notes or warnings
+
+## Development
+
+```bash
+# Build the project
+npm run build
+
+# Watch mode for development
+npm run dev
+```
+
+## Configuration
+
+The documentation generator can be configured in `src/index.ts`:
+
+```typescript
+const config: DocConfig = {
+  sourcePath: "../packages/server-ts/src/index.ts",
+  outputPath: "./docs/server-client-ts",
+  structure: {
+    modules: ["database", "functions", "custom-route", "intro"],
+    utility: ["router", "user-manager", "database", "file"],
+    root: ["key-concepts", "configuration", "install"]
+  }
+};
+```
+
+## Category Detection
+
+The generator automatically categorizes exports based on their names:
+
+- Database related: `collection`, `schema`, `database`
+- Function related: `function`, `definefunction`
+- Router related: `router`, `route`
+- User management: `user`, `auth`
+- File related: `file`, `upload`
+- Core: All other exports
