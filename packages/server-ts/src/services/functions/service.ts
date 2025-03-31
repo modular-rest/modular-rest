@@ -2,7 +2,25 @@ import { PermissionType } from '../../class/security';
 import { User } from '../../class/user';
 
 /**
- * Defined function interface
+ * Service name constant
+ * @constant {string}
+ */
+export const name = 'functions';
+
+/**
+ * Interface for defined functions
+ * @interface DefinedFunction
+ * @property {string} name - Unique name of the function
+ * @property {PermissionType[]} permissionTypes - List of permission types required to run the function
+ * @property {(args: any) => any} callback - The actual function implementation
+ * @example
+ * ```typescript
+ * const myFunction: DefinedFunction = {
+ *   name: 'calculateTotal',
+ *   permissionTypes: ['user_access'],
+ *   callback: (args) => args.items.reduce((sum, item) => sum + item.price, 0)
+ * };
+ * ```
  */
 export interface DefinedFunction {
   name: string;
@@ -12,14 +30,34 @@ export interface DefinedFunction {
 
 /**
  * Storage for registered functions
+ * @private
  */
 const functions: DefinedFunction[] = [];
 
 /**
- * Defines a function with a given name, permission types, and callback.
+ * Defines a function with a given name, permission types, and callback
+ * @param {Object} params - Function definition parameters
+ * @param {string} params.name - Unique name for the function
+ * @param {PermissionType[]} params.permissionTypes - List of required permission types
+ * @param {(args: any) => any} params.callback - Function implementation
+ * @returns {DefinedFunction} The defined function object
+ * @throws {Error} If function name already exists, permission types are missing, or callback is invalid
+ * @example
+ * ```typescript
+ * const calculateTotal = defineFunction({
+ *   name: 'calculateTotal',
+ *   permissionTypes: ['user_access'],
+ *   callback: (args) => {
+ *     if (!Array.isArray(args.items)) {
+ *       throw new Error('Items must be an array');
+ *     }
+ *     return args.items.reduce((sum, item) => sum + item.price, 0);
+ *   }
+ * });
  *
- * @param params - The parameters for the function.
- * @returns The defined function object
+ * // Add to registry
+ * addFunction(calculateTotal);
+ * ```
  */
 export function defineFunction({
   name,
@@ -55,12 +93,26 @@ export function defineFunction({
 }
 
 /**
- * Run a function by name with arguments and user
- *
- * @param name - Function name
- * @param args - Arguments to pass to the function
- * @param user - User attempting to run the function
- * @returns Promise resolving to function result
+ * Runs a function by name with arguments and user context
+ * @param {string} name - Name of the function to run
+ * @param {any} args - Arguments to pass to the function
+ * @param {User} user - User attempting to run the function
+ * @returns {Promise<any>} Promise resolving to function result
+ * @throws {Error} If function not found or user lacks required permissions
+ * @example
+ * ```typescript
+ * try {
+ *   const result = await runFunction('calculateTotal', {
+ *     items: [
+ *       { price: 10 },
+ *       { price: 20 }
+ *     ]
+ *   }, currentUser);
+ *   console.log('Total:', result); // 30
+ * } catch (error) {
+ *   console.error('Function execution failed:', error);
+ * }
+ * ```
  */
 export function runFunction(name: string, args: any, user: User): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -97,9 +149,26 @@ export function runFunction(name: string, args: any, user: User): Promise<any> {
 }
 
 /**
- * Add a function to the registry
- * @param func - Function to add
+ * Adds a function to the registry
+ * @param {DefinedFunction} func - Function to add
+ * @throws {Error} If function name already exists
+ * @example
+ * ```typescript
+ * const myFunction = defineFunction({
+ *   name: 'myFunction',
+ *   permissionTypes: ['user_access'],
+ *   callback: (args) => args.value * 2
+ * });
+ *
+ * addFunction(myFunction);
+ * ```
  */
 export function addFunction(func: DefinedFunction): void {
+  // Check if the function already exists
+  const existingFunction = functions.find(f => f.name === func.name);
+  if (existingFunction) {
+    throw new Error(`Function with name ${func.name} already exists`);
+  }
+
   functions.push(func);
 }

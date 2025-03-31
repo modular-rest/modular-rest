@@ -2,6 +2,15 @@ import { Schema } from 'mongoose';
 import { Permission } from './security';
 import { DatabaseTrigger } from './database_trigger';
 
+/**
+ * Configuration options for creating a collection definition
+ * @interface CollectionDefinitionOptions
+ * @property {string} database - The name of the database
+ * @property {string} collection - The name of the collection
+ * @property {Schema} schema - Mongoose schema definition
+ * @property {Permission[]} permissions - List of permissions for the collection
+ * @property {DatabaseTrigger[]} [triggers] - Optional database triggers
+ */
 interface CollectionDefinitionOptions {
   database: string;
   collection: string;
@@ -11,8 +20,39 @@ interface CollectionDefinitionOptions {
 }
 
 /**
- * This class helps to create a mongoose collection
- * associated with permissions and triggers.
+ * Defines a MongoDB collection with associated permissions and triggers
+ * @class CollectionDefinition
+ * @property {string} database - The name of the database
+ * @property {string} collection - The name of the collection
+ * @property {Schema} schema - Mongoose schema definition
+ * @property {Permission[]} permissions - List of permissions for the collection
+ * @property {DatabaseTrigger[]} [triggers] - Optional database triggers
+ * @example
+ * ```typescript
+ * const userSchema = new Schema({
+ *   name: String,
+ *   email: String,
+ *   age: Number
+ * });
+ *
+ * const collection = new CollectionDefinition({
+ *   database: 'myapp',
+ *   collection: 'users',
+ *   schema: userSchema,
+ *   permissions: [
+ *     new Permission({
+ *       type: 'user_access',
+ *       read: true,
+ *       write: true
+ *     })
+ *   ],
+ *   triggers: [
+ *     new DatabaseTrigger('insert-one', (data) => {
+ *       console.log('New user created:', data);
+ *     })
+ *   ]
+ * });
+ * ```
  */
 export class CollectionDefinition {
   database: string;
@@ -23,8 +63,7 @@ export class CollectionDefinition {
 
   /**
    * Creates a new CollectionDefinition instance
-   *
-   * @param options - Configuration options
+   * @param {CollectionDefinitionOptions} options - Configuration options
    */
   constructor({
     database,

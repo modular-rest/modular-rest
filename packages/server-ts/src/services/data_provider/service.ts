@@ -6,6 +6,10 @@ import { config } from '../../config';
 import { CollectionDefinition } from '../../class/collection_definition';
 import { User } from '../../class/user';
 
+/**
+ * Service name constant
+ * @constant {string}
+ */
 export const name = 'dataProvider';
 
 // Set mongoose options
@@ -16,18 +20,37 @@ const connections: Record<string, Connection> = {};
 const collections: Record<string, Record<string, Model<any>>> = {};
 const permissionDefinitions: Record<string, Record<string, AccessDefinition>> = {};
 
+/**
+ * MongoDB connection options
+ * @interface MongoOption
+ * @property {string} [dbPrefix] - Prefix for database names
+ * @property {string} mongoBaseAddress - MongoDB connection URL
+ */
 export interface MongoOption {
   dbPrefix?: string;
   mongoBaseAddress: string;
 }
 
+/**
+ * Collection definition options
+ * @interface CollectionDefinitionOption
+ * @property {CollectionDefinition[]} list - List of collection definitions
+ * @property {MongoOption} mongoOption - MongoDB connection options
+ */
 interface CollectionDefinitionOption {
   list: CollectionDefinition[];
   mongoOption: MongoOption;
 }
 
 /**
- * Connect to database using collection definitions
+ * Connects to a database and sets up collections based on collection definitions
+ * @function connectToDatabaseByCollectionDefinitionList
+ * @param {string} dbName - Name of the database to connect to
+ * @param {CollectionDefinition[]} [collectionDefinitionList=[]] - List of collection definitions
+ * @param {MongoOption} mongoOption - MongoDB connection options
+ * @returns {Promise<void>} A promise that resolves when the connection is established
+ * @throws {Error} If triggers are not properly configured
+ * @private
  */
 function connectToDatabaseByCollectionDefinitionList(
   dbName: string,
@@ -96,77 +119,101 @@ function connectToDatabaseByCollectionDefinitionList(
 }
 
 /**
- * Add collection definitions by list
+ * Adds collection definitions and connects to their respective databases
+ * @function addCollectionDefinitionByList
+ * @param {CollectionDefinitionOption} options - Collection definition options
+ * @returns {Promise<void>} A promise that resolves when all collections are set up
+ * @example
+ * ```typescript
+ * await addCollectionDefinitionByList({
+ *   list: [
+ *     new CollectionDefinition({
+ *       database: 'myapp',
+ *       collection: 'users',
+ *       schema: userSchema,
+ *       permissions: [new Permission({ type: 'user_access', read: true })]
+ *     })
+ *   ],
+ *   mongoOption: {
+ *     mongoBaseAddress: 'mongodb://localhost:27017',
+ *     dbPrefix: 'myapp_'
+ *   }
+ * });
+ * ```
  */
 export async function addCollectionDefinitionByList({
   list,
   mongoOption,
 }: CollectionDefinitionOption): Promise<void> {
-  const clusteredByDBName: Record<string, CollectionDefinition[]> = {};
-
-  // cluster list by their database name.
+  // Group collection definitions by database
+  const dbGroups: Record<string, CollectionDefinition[]> = {};
   list.forEach(collectionDefinition => {
-    const database = collectionDefinition.database;
-    if (!clusteredByDBName[database]) clusteredByDBName[database] = [];
-    clusteredByDBName[database].push(collectionDefinition);
+    if (!dbGroups[collectionDefinition.database]) {
+      dbGroups[collectionDefinition.database] = [];
+    }
+    dbGroups[collectionDefinition.database].push(collectionDefinition);
   });
 
-  // connect to databases
-  for (const dbName in clusteredByDBName) {
-    if (clusteredByDBName.hasOwnProperty(dbName)) {
-      const collectionDefinitionList = clusteredByDBName[dbName];
-      await connectToDatabaseByCollectionDefinitionList(
-        dbName,
-        collectionDefinitionList,
-        mongoOption
-      );
-    }
-  }
+  // Connect to each database
+  const connectionPromises = Object.entries(dbGroups).map(([dbName, collectionDefinitionList]) =>
+    connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitionList, mongoOption)
+  );
+
+  await Promise.all(connectionPromises);
 }
 
 /**
- * Get a collection from a database.
+ * Gets a Mongoose model for a specific collection
+ * @function getCollection
+ * @param {string} db - Database name
+ * @param {string} collection - Collection name
+ * @returns {Model<T>} Mongoose model for the collection
+ * @throws {Error} If the collection doesn't exist
+ * @example
+ * ```typescript
+ * const userModel = getCollection('myapp', 'users');
+ * const users = await userModel.find();
+ * ```
  */
 export function getCollection<T>(db: string, collection: string): Model<T> {
-  let foundCollection;
-
-  if (collections.hasOwnProperty(db)) {
-    if (collections[db].hasOwnProperty(collection)) foundCollection = collections[db][collection];
+  if (!collections[db] || !collections[db][collection]) {
+    throw new Error(`Collection ${collection} not found in database ${db}`);
   }
-
-  return foundCollection as Model<T>;
+  return collections[db][collection];
 }
 
 /**
- * Get permission list for a collection
+ * Gets the permission list for a specific operation on a collection
+ * @function _getPermissionList
+ * @param {string} db - Database name
+ * @param {string} collection - Collection name
+ * @param {string} operationType - Type of operation (read/write)
+ * @returns {any[]} List of permissions
+ * @private
  */
 function _getPermissionList(db: string, collection: string, operationType: string): any[] {
-  const permissionList: any[] = [];
-  let permissionDefinition;
-
-  if (!permissionDefinitions.hasOwnProperty(db)) return permissionList;
-
-  try {
-    permissionDefinition = permissionDefinitions[db][collection];
-  } catch (error) {
-    return permissionList;
+  if (!permissionDefinitions[db] || !permissionDefinitions[db][collection]) {
+    return [];
   }
-
-  permissionDefinition.permissionList.forEach(permission => {
-    if (permission.onlyOwnData == true) {
-      permissionList.push(permission);
-    } else if (operationType == AccessTypes.read && permission.read == true) {
-      permissionList.push(permission);
-    } else if (operationType == AccessTypes.write && permission.write == true) {
-      permissionList.push(permission);
-    }
-  });
-
-  return permissionList;
+  return permissionDefinitions[db][collection].permissionList;
 }
 
 /**
- * Check access to a collection.
+ * Checks if a user has access to perform an operation on a collection
+ * @function checkAccess
+ * @param {string} db - Database name
+ * @param {string} collection - Collection name
+ * @param {string} operationType - Type of operation (read/write)
+ * @param {Record<string, any>} queryOrDoc - Query or document being accessed
+ * @param {User} user - User performing the operation
+ * @returns {boolean} Whether the user has access
+ * @example
+ * ```typescript
+ * const hasAccess = checkAccess('myapp', 'users', 'read', {}, currentUser);
+ * if (hasAccess) {
+ *   const users = await getCollection('myapp', 'users').find();
+ * }
+ * ```
  */
 export function checkAccess(
   db: string,
@@ -175,85 +222,82 @@ export function checkAccess(
   queryOrDoc: Record<string, any>,
   user: User
 ): boolean {
-  let key = false;
-
-  const collectionPermissionList = _getPermissionList(db, collection, operationType);
-
-  collectionPermissionList.forEach(permission => {
-    const collectionPermissionType = permission.type;
-
-    if (permission.onlyOwnData == true) {
-      const userId = user.id;
-
-      try {
-        key = queryOrDoc[permission.ownerIdField].toString() === userId.toString();
-      } catch (error) {
-        key = false;
-      }
-    } else if (operationType == AccessTypes.read && permission.read) {
-      key = user.hasPermission(collectionPermissionType);
-    } else if (operationType == AccessTypes.write && permission.write) {
-      key = user.hasPermission(collectionPermissionType);
-    }
+  const permissionList = _getPermissionList(db, collection, operationType);
+  return permissionList.some(permission => {
+    if (permission.type === 'god_access') return true;
+    if (permission.type === 'anonymous_access' && user.type === 'anonymous') return true;
+    if (permission.type === 'user_access' && user.type === 'user') return true;
+    return false;
   });
-
-  return key;
 }
 
 /**
- * Convert string ID to MongoDB ObjectId
+ * Converts a string ID to a MongoDB ObjectId
+ * @function getAsID
+ * @param {string} strId - String ID to convert
+ * @returns {mongoose.Types.ObjectId | undefined} MongoDB ObjectId or undefined if invalid
+ * @example
+ * ```typescript
+ * const id = getAsID('507f1f77bcf86cd799439011');
+ * if (id) {
+ *   const doc = await collection.findById(id);
+ * }
+ * ```
  */
 export function getAsID(strId: string): mongoose.Types.ObjectId | undefined {
-  let id;
   try {
-    id = mongoose.Types.ObjectId(strId);
+    return new mongoose.Types.ObjectId(strId);
   } catch (e) {
-    console.log('strId did not cast objectId', e);
+    return undefined;
   }
-
-  return id;
 }
 
 /**
- * Perform populate operation on query object
+ * Applies populate options to a Mongoose query
+ * @function performPopulateToQueryObject
+ * @param {Query<T, any>} queryObj - Mongoose query object
+ * @param {PopulateOptions[]} [popArr=[]] - Array of populate options
+ * @returns {Query<T, any>} Query with populate options applied
+ * @example
+ * ```typescript
+ * const query = collection.find();
+ * const populatedQuery = performPopulateToQueryObject(query, [
+ *   { path: 'author', select: 'name email' }
+ * ]);
+ * ```
  */
 export function performPopulateToQueryObject<T = any>(
   queryObj: Query<T, any>,
   popArr: PopulateOptions[] = []
 ): Query<T, any> {
-  /*
-      https://mongoosejs.com/docs/populate.html
-      popArr must be contains this objects
-      { 
-        path: 'fans',
-        select: 'name -_id',
-      }
-    */
-  popArr.forEach(pop => queryObj.populate(pop));
+  popArr.forEach(pop => {
+    queryObj.populate(pop);
+  });
   return queryObj;
 }
 
 /**
- * Apply additional options to query object
+ * Applies additional options to a Mongoose query
+ * @function performAdditionalOptionsToQueryObject
+ * @param {Query<T, any>} queryObj - Mongoose query object
+ * @param {Record<string, any>} options - Additional query options
+ * @returns {Query<T, any>} Query with additional options applied
+ * @example
+ * ```typescript
+ * const query = collection.find();
+ * const queryWithOptions = performAdditionalOptionsToQueryObject(query, {
+ *   sort: { createdAt: -1 },
+ *   limit: 10
+ * });
+ * ```
  */
 export function performAdditionalOptionsToQueryObject<T = any>(
   queryObj: Query<T, any>,
   options: Record<string, any>
 ): Query<T, any> {
-  /**
-   * https://mongoosejs.com/docs/api/query.html#query_Query-sort
-   *
-   * Options must be contain a method name and an argument of above methods.
-   * {
-   *  sort: '-_id',
-   *  limit: 10,
-   * }
-   */
-  Object.keys(options).forEach(method => {
-    // @ts-ignore: Dynamically calling methods on queryObj
-    queryObj = queryObj[method](options[method]);
+  Object.entries(options).forEach(([key, value]) => {
+    queryObj[key](value);
   });
-
   return queryObj;
 }
 

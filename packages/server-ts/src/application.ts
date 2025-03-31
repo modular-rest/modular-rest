@@ -18,6 +18,20 @@ import { permissionGroups as defaultPermissionGroups } from './defult-permission
 
 const defaultServiceRoot = __dirname + '/services';
 
+/**
+ * Options for configuring static file serving
+ * @interface StaticPathOptions
+ * @property {string} rootDir - The root directory to serve static files from
+ * @property {string} [rootPath] - The URL path to serve static files from
+ * @property {number} [maxage] - Cache control max-age in milliseconds
+ * @property {boolean} [hidden] - Allow transfer of hidden files
+ * @property {string} [index] - Default file name, defaults to 'index.html'
+ * @property {boolean} [defer] - If true, serves after return next()
+ * @property {boolean} [gzip] - Try to serve the gzipped version of a file
+ * @property {boolean} [br] - Try to serve the brotli version of a file
+ * @property {Function} [setHeaders] - Set custom headers on response
+ * @property {string[]} [extensions] - Try to match extensions from passed array to search for file
+ */
 interface StaticPathOptions {
   rootDir: string;
   rootPath?: string;
@@ -31,17 +45,52 @@ interface StaticPathOptions {
   extensions?: false | string[];
 }
 
+/**
+ * MongoDB connection options
+ * @interface MongoOptions
+ * @property {string} dbPrefix - Prefix for database names
+ * @property {string} mongoBaseAddress - MongoDB connection URL
+ * @property {string} [addressMap] - Optional address mapping configuration
+ */
 interface MongoOptions {
   dbPrefix: string;
   mongoBaseAddress: string;
   addressMap?: string;
 }
 
+/**
+ * Admin user configuration
+ * @interface AdminUser
+ * @property {string} email - Admin user email
+ * @property {string} password - Admin user password
+ */
 interface AdminUser {
   email: string;
   password: string;
 }
 
+/**
+ * Configuration options for creating a REST API instance
+ * @interface RestOptions
+ * @property {cors.Options} [cors] - CORS configuration options
+ * @property {string} [modulesPath] - Path to custom modules directory
+ * @property {string} [uploadDirectory] - Directory for file uploads
+ * @property {any} [koaBodyOptions] - Options for koa-body middleware
+ * @property {StaticPathOptions} [staticPath] - Static file serving options
+ * @property {Function} [onBeforeInit] - Hook called before initialization
+ * @property {Function} [onAfterInit] - Hook called after initialization
+ * @property {number} [port] - Port to listen on
+ * @property {boolean} [dontListen] - Don't start the server
+ * @property {MongoOptions} [mongo] - MongoDB connection options
+ * @property {Object} [keypair] - JWT keypair for authentication
+ * @property {AdminUser} [adminUser] - Admin user configuration
+ * @property {Function} [verificationCodeGeneratorMethod] - Custom verification code generator
+ * @property {CollectionDefinition[]} [collectionDefinitions] - Custom collection definitions
+ * @property {PermissionGroup[]} [permissionGroups] - Custom permission groups
+ * @property {CmsTrigger[]} [authTriggers] - Authentication triggers
+ * @property {CmsTrigger[]} [fileTriggers] - File handling triggers
+ * @property {DefinedFunction[]} [functions] - Custom API functions
+ */
 interface RestOptions {
   cors?: cors.Options;
   modulesPath?: string;
