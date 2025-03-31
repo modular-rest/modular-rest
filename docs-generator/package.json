@@ -1,31 +1,20 @@
 {
-	"name": "@modular-rest/docs-generator",
-	"version": "1.0.0",
-	"description": "Documentation generator for Modular Rest TypeScript library",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
-		"generate": "ts-node src/index.ts",
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"keywords": [
-		"documentation",
-		"typescript",
-		"tsdoc",
-		"markdown"
-	],
-	"author": "Navid Shad <navidshad72@gmail.com>",
-	"license": "MIT",
-	"devDependencies": {
-		"@microsoft/tsdoc": "^0.15.1",
-		"@types/markdown-it": "^14.1.2",
-		"@types/node": "^20.10.0",
-		"handlebars": "^4.7.8",
-		"markdown-it": "^14.1.0",
-		"ts-morph": "^25.0.1",
-		"ts-node": "^10.9.1",
-		"typescript": "^5.3.3"
-	}
+  "name": "docs-generator",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "generate": "ts-node src/index.ts",
+    "start": "yarn generate"
+  },
+  "dependencies": {
+    "@microsoft/tsdoc": "^0.15.1",
+    "@types/node": "^22.13.14",
+    "handlebars": "^4.7.8",
+    "markdown-it": "^14.1.0",
+    "ts-morph": "^25.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
 }
