@@ -3,13 +3,19 @@ import { Permission } from './security';
 import { DatabaseTrigger } from './database_trigger';
 
 /**
- * Configuration options for creating a collection definition
- * @interface CollectionDefinitionOptions
- * @property {string} database - The name of the database
- * @property {string} collection - The name of the collection
- * @property {Schema} schema - Mongoose schema definition
- * @property {Permission[]} permissions - List of permissions for the collection
- * @property {DatabaseTrigger[]} [triggers] - Optional database triggers
+ * Configuration options for creating a collection definition.
+ *
+ * @remarks
+ * This interface defines the structure for configuring MongoDB collections with their associated
+ * schemas, permissions, and triggers.
+ *
+ * @param database - The name of the database where the collection resides
+ * @param collection - The name of the collection to be configured
+ * @param schema - Mongoose schema definition for the collection
+ * @param permissions - List of permissions controlling access to the collection
+ * @param triggers - Optional database triggers for custom operations
+ *
+ * @beta
  */
 interface CollectionDefinitionOptions {
   database: string;
@@ -20,13 +26,12 @@ interface CollectionDefinitionOptions {
 }
 
 /**
- * Defines a MongoDB collection with associated permissions and triggers
- * @class CollectionDefinition
- * @property {string} database - The name of the database
- * @property {string} collection - The name of the collection
- * @property {Schema} schema - Mongoose schema definition
- * @property {Permission[]} permissions - List of permissions for the collection
- * @property {DatabaseTrigger[]} [triggers] - Optional database triggers
+ * A class that represents a MongoDB collection configuration.
+ *
+ * @remarks
+ * Provides full support for schema validation, access control through permissions,
+ * and custom triggers for various database operations.
+ *
  * @example
  * ```typescript
  * const userSchema = new Schema({
@@ -53,17 +58,32 @@ interface CollectionDefinitionOptions {
  *   ]
  * });
  * ```
+ *
+ * @public
  */
 export class CollectionDefinition {
+  /** @readonly The name of the database */
   database: string;
+
+  /** @readonly The name of the collection */
   collection: string;
+
+  /** @readonly Mongoose schema definition */
   schema: Schema;
+
+  /** @readonly List of permissions for the collection */
   permissions: Permission[];
+
+  /** @readonly Optional database triggers */
   triggers?: DatabaseTrigger[];
 
   /**
    * Creates a new CollectionDefinition instance
-   * @param {CollectionDefinitionOptions} options - Configuration options
+   *
+   * @param options - Configuration options for the collection
+   * @returns A new instance of CollectionDefinition
+   *
+   * @beta
    */
   constructor({
     database,
@@ -72,15 +92,10 @@ export class CollectionDefinition {
     permissions,
     triggers,
   }: CollectionDefinitionOptions) {
-    // string
     this.database = database;
-    // string
     this.collection = collection;
-    // schema object of mongoose
     this.schema = schema;
-    // a list of Permission for this collection
     this.permissions = permissions;
-    // optional database triggers
     this.triggers = triggers;
   }
 }
