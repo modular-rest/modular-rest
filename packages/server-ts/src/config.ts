@@ -1,37 +1,32 @@
 import Koa from 'koa';
-import { KoaBodyMiddlewareOptions } from 'koa-body';
-import KoaStaticType from '@koa/cors';
+
 import { CollectionDefinition } from './class/collection_definition';
 import { PermissionGroup } from './class/security';
 import { CmsTrigger } from './class/cms_trigger';
-import { DatabaseTrigger } from './class/database_trigger';
 import { DefinedFunction } from './services/functions/service';
+import cors from '@koa/cors';
+import { Options as KoaStaticOptionsBase } from 'koa-static';
+
+export interface StaticPathOptions extends KoaStaticOptionsBase {
+  /**
+   * The actual path of the static files on your server
+   */
+  actualPath: string;
+  /**
+   * The path you want to serve the static files from
+   */
+  path: string;
+}
 
 /**
- * Options for configuring static file serving
- * @interface StaticPathOptions
- * @property {string} rootDir - The root directory to serve static files from
- * @property {string} [rootPath] - The URL path to serve static files from
- * @property {number} [maxage] - Cache control max-age in milliseconds
- * @property {boolean} [hidden] - Allow transfer of hidden files
- * @property {string} [index] - Default file name, defaults to 'index.html'
- * @property {boolean} [defer] - If true, serves after return next()
- * @property {boolean} [gzip] - Try to serve the gzipped version of a file
- * @property {boolean} [br] - Try to serve the brotli version of a file
- * @property {Function} [setHeaders] - Set custom headers on response
- * @property {string[]} [extensions] - Try to match extensions from passed array to search for file
+ * JWT keypair configuration
+ * @interface KeyPair
+ * @property {string} private - Private key for JWT signing
+ * @property {string} public - Public key for JWT verification
  */
-interface StaticPathOptions {
-  rootDir: string;
-  rootPath?: string;
-  maxage?: number;
-  hidden?: boolean;
-  index?: string;
-  defer?: boolean;
-  gzip?: boolean;
-  br?: boolean;
-  setHeaders?: (res: any, path: string, stats: any) => void;
-  extensions?: false | string[];
+interface KeyPair {
+  private: string;
+  public: string;
 }
 
 /**
@@ -48,17 +43,6 @@ interface MongoOptions {
 }
 
 /**
- * JWT keypair configuration
- * @interface KeyPair
- * @property {string} private - Private key for JWT signing
- * @property {string} public - Public key for JWT verification
- */
-interface KeyPair {
-  private: string;
-  public: string;
-}
-
-/**
  * Admin user configuration
  * @interface AdminUser
  * @property {string} email - Admin user email
@@ -70,32 +54,32 @@ interface AdminUser {
 }
 
 /**
- * Global configuration interface for the REST API
- * @interface Config
- * @property {KoaStaticType.Options} [cors] - CORS configuration options
+ * Configuration options for creating a REST API instance
+ * @interface RestOptions
+ * @property {cors.Options} [cors] - CORS configuration options
  * @property {string} [modulesPath] - Path to custom modules directory
  * @property {string} [uploadDirectory] - Directory for file uploads
- * @property {KoaBodyMiddlewareOptions} [koaBodyOptions] - Options for koa-body middleware
+ * @property {any} [koaBodyOptions] - Options for koa-body middleware
  * @property {StaticPathOptions} [staticPath] - Static file serving options
  * @property {Function} [onBeforeInit] - Hook called before initialization
  * @property {Function} [onAfterInit] - Hook called after initialization
  * @property {number} [port] - Port to listen on
  * @property {boolean} [dontListen] - Don't start the server
  * @property {MongoOptions} [mongo] - MongoDB connection options
- * @property {KeyPair} [keypair] - JWT keypair for authentication
+ * @property {Object} [keypair] - JWT keypair for authentication
  * @property {AdminUser} [adminUser] - Admin user configuration
  * @property {Function} [verificationCodeGeneratorMethod] - Custom verification code generator
  * @property {CollectionDefinition[]} [collectionDefinitions] - Custom collection definitions
  * @property {PermissionGroup[]} [permissionGroups] - Custom permission groups
- * @property {DatabaseTrigger[]} [authTriggers] - Authentication triggers
+ * @property {CmsTrigger[]} [authTriggers] - Authentication triggers
  * @property {CmsTrigger[]} [fileTriggers] - File handling triggers
  * @property {DefinedFunction[]} [functions] - Custom API functions
  */
-export interface Config {
-  cors?: KoaStaticType.Options;
+export interface RestOptions {
+  cors?: cors.Options;
   modulesPath?: string;
   uploadDirectory?: string;
-  koaBodyOptions?: KoaBodyMiddlewareOptions;
+  koaBodyOptions?: any;
   staticPath?: StaticPathOptions;
   onBeforeInit?: (koaApp: Koa) => void;
   onAfterInit?: (koaApp: Koa) => void;
@@ -107,20 +91,20 @@ export interface Config {
   verificationCodeGeneratorMethod?: () => string;
   collectionDefinitions?: CollectionDefinition[];
   permissionGroups?: PermissionGroup[];
-  authTriggers?: DatabaseTrigger[];
+  authTriggers?: CmsTrigger[];
   fileTriggers?: CmsTrigger[];
   functions?: DefinedFunction[];
 }
 
 /**
  * Global configuration object
- * @type {Config}
+ * @type {RestOptions}
  */
-export const config: Config = {};
+export const config: RestOptions = {};
 
 /**
  * Updates the global configuration with new options
- * @param {Config} options - New configuration options to merge
+ * @param {RestOptions} options - New configuration options to merge
  * @example
  * ```typescript
  * setConfig({
@@ -132,6 +116,6 @@ export const config: Config = {};
  * });
  * ```
  */
-export function setConfig(options: Config): void {
+export function setConfig(options: RestOptions): void {
   Object.assign(config, options);
 }

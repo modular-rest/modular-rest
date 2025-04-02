@@ -331,12 +331,12 @@ class FileService {
   async getFileLink(fileId: string): Promise<string> {
     const fileDoc = await FileService.instance.getFile(fileId);
 
-    if (!config.staticPath?.rootPath) {
+    if (!config.staticPath?.actualPath) {
       throw new Error('Static path root is not defined');
     }
 
     const link =
-      config.staticPath.rootPath + `/${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName;
+      config.staticPath.actualPath + `/${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName;
 
     return link;
   }
