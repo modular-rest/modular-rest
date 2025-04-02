@@ -4,7 +4,7 @@ import { create as reply } from '../../class/reply';
 import { Context, Next } from 'koa';
 import { AccessTypes } from './../../class/security';
 import * as DataService from './../data_provider/service';
-import * as service from './service';
+import { main as service } from './service';
 import * as middleware from '../../middlewares';
 
 const name = 'file';

@@ -1,0 +1,40 @@
+export default {
+  plugin: ['typedoc-plugin-missing-exports', 'typedoc-plugin-markdown'],
+
+  disableSources: true,
+  excludeProtected: false,
+  excludeInternal: false,
+  excludePrivate: false,
+  excludeExternals: false,
+
+  //
+  // Formatting `typedoc-plugin-markdown`
+  //
+  hidePageHeader: true,
+  hideBreadcrumbs: true,
+  hidePageTitle: false,
+  hideGroupHeadings: true,
+  indexFormat: 'table',
+  parametersFormat: 'table',
+  interfacePropertiesFormat: 'table',
+  classPropertiesFormat: 'table',
+  typeAliasPropertiesFormat: 'table',
+  enumMembersFormat: 'table',
+  propertyMembersFormat: 'table',
+  typeDeclarationFormat: 'table',
+  //
+  // End formatting `typedoc-plugin-markdown`
+  //
+
+  exclude: ['node_modules', 'dist'],
+
+  publicPath: '/server-client-ts/generative',
+
+  entryPoints: ['src/index.ts'],
+  outputs: [
+    {
+      name: 'markdown',
+      path: './../../docs/server-client-ts/generative',
+    },
+  ],
+};

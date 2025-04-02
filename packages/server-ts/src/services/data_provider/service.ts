@@ -246,7 +246,7 @@ export function checkAccess(
  */
 export function getAsID(strId: string): mongoose.Types.ObjectId | undefined {
   try {
-    return new mongoose.Types.ObjectId(strId);
+    return mongoose.Types.ObjectId(strId);
   } catch (e) {
     return undefined;
   }
@@ -296,6 +296,7 @@ export function performAdditionalOptionsToQueryObject<T = any>(
   options: Record<string, any>
 ): Query<T, any> {
   Object.entries(options).forEach(([key, value]) => {
+    // @ts-ignore
     queryObj[key](value);
   });
   return queryObj;

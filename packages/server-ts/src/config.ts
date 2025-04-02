@@ -1,10 +1,11 @@
 import Koa from 'koa';
-import koaStatic from 'koa-static';
-import { Options as CorsOptions } from '@koa/cors';
+import { KoaBodyMiddlewareOptions } from 'koa-body';
+import KoaStaticType from '@koa/cors';
 import { CollectionDefinition } from './class/collection_definition';
 import { PermissionGroup } from './class/security';
 import { CmsTrigger } from './class/cms_trigger';
 import { DatabaseTrigger } from './class/database_trigger';
+import { DefinedFunction } from './services/functions/service';
 
 /**
  * Options for configuring static file serving
@@ -71,10 +72,10 @@ interface AdminUser {
 /**
  * Global configuration interface for the REST API
  * @interface Config
- * @property {CorsOptions} [cors] - CORS configuration options
+ * @property {KoaStaticType.Options} [cors] - CORS configuration options
  * @property {string} [modulesPath] - Path to custom modules directory
  * @property {string} [uploadDirectory] - Directory for file uploads
- * @property {any} [koaBodyOptions] - Options for koa-body middleware
+ * @property {KoaBodyMiddlewareOptions} [koaBodyOptions] - Options for koa-body middleware
  * @property {StaticPathOptions} [staticPath] - Static file serving options
  * @property {Function} [onBeforeInit] - Hook called before initialization
  * @property {Function} [onAfterInit] - Hook called after initialization
@@ -88,13 +89,13 @@ interface AdminUser {
  * @property {PermissionGroup[]} [permissionGroups] - Custom permission groups
  * @property {DatabaseTrigger[]} [authTriggers] - Authentication triggers
  * @property {CmsTrigger[]} [fileTriggers] - File handling triggers
- * @property {any[]} [functions] - Custom API functions
+ * @property {DefinedFunction[]} [functions] - Custom API functions
  */
 export interface Config {
-  cors?: CorsOptions;
+  cors?: KoaStaticType.Options;
   modulesPath?: string;
   uploadDirectory?: string;
-  koaBodyOptions?: any;
+  koaBodyOptions?: KoaBodyMiddlewareOptions;
   staticPath?: StaticPathOptions;
   onBeforeInit?: (koaApp: Koa) => void;
   onAfterInit?: (koaApp: Koa) => void;
@@ -108,7 +109,7 @@ export interface Config {
   permissionGroups?: PermissionGroup[];
   authTriggers?: DatabaseTrigger[];
   fileTriggers?: CmsTrigger[];
-  functions?: any[];
+  functions?: DefinedFunction[];
 }
 
 /**

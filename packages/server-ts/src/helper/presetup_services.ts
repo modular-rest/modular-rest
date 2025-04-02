@@ -91,6 +91,6 @@ export async function setup({ keypair, adminUser, uploadDirectory }: SetupOption
    * File Service
    */
   if (uploadDirectory) {
-    FileService.setUploadDirectory(uploadDirectory);
+    FileService.main.setUploadDirectory(uploadDirectory);
   }
 }

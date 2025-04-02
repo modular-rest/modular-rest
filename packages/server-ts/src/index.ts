@@ -11,7 +11,7 @@ import { getCollection } from './services/data_provider/service';
 import { defineFunction } from './services/functions/service';
 import TypeCasters from './services/data_provider/typeCasters';
 
-import { getFile, getFileLink, getFilePath, removeFile, storeFile } from './services/file/service';
+import { main as fileService } from './services/file/service';
 
 // Base class
 import CollectionDefinition from './class/collection_definition';
@@ -135,11 +135,11 @@ export { getCollection };
  * @description File handling utilities
  * @example
  * ```typescript
- * const file = await getFile('fileId');
- * const link = getFileLink('fileId');
+ * const file = await fileService.getFile('fileId');
+ * const link = fileService.getFileLink('fileId');
  * ```
  */
-export { getFile, getFileLink, getFilePath, removeFile, storeFile };
+export { fileService };
 
 /**
  * @description Middleware utilities
