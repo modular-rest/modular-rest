@@ -64,14 +64,20 @@
 			"@semantic-release/npm",
 			{
 				"pkgRoot": "packages/client",
-				"tarballDir": "dist"
+				"tarballDir": "dist",
+				"npmPublish": true,
+				"allowSameVersion": false,
+				"force": false
 			}
 		],
 		[
 			"@semantic-release/npm",
 			{
 				"pkgRoot": "packages/server-ts",
-				"tarballDir": "dist"
+				"tarballDir": "dist",
+				"npmPublish": true,
+				"allowSameVersion": false,
+				"force": false
 			}
 		],
 		[
