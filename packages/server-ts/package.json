@@ -8,7 +8,7 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"play": "tsc -p tsconfig.json && node dist/play-test.js",
+		"play-test": "tsc -p tsconfig.json && node dist/play-test.js",
 		"docs": "typedoc --router kind src/index.ts"
 	},
 	"repository": {
