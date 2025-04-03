@@ -34,8 +34,11 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          npx semantic-release
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          cat .npmrc
+          npx semantic-release --debug
