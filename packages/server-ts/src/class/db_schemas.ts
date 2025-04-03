@@ -37,7 +37,7 @@ export const fileSchema = new Schema<IFile>(
 /**
  * Schema definitions
  */
-const schemas = {
+export const schemas = {
   file: fileSchema,
 };
 

@@ -1,10 +1,23 @@
 import { User } from '../../class/user';
 import * as DataProvider from '../data_provider/service';
 import * as JWT from '../jwt/service';
-import { getDefaultPermissionGroups } from './permissionManager';
+import {
+  getDefaultPermissionGroups,
+  getDefaultAnonymousPermissionGroup,
+} from './permissionManager';
+
+/**
+ * Service name constant
+ * @constant {string}
+ */
+export const name = 'userManager';
 
 /**
  * Interface for temporary IDs storage
+ * @interface TemporaryId
+ * @property {string} type - Type of temporary ID (e.g., 'password_reset', 'verification')
+ * @property {string} code - Verification code
+ * @property {number} timestamp - Unix timestamp when the ID was created
  */
 interface TemporaryId {
   type: string;
@@ -14,6 +27,13 @@ interface TemporaryId {
 
 /**
  * User registration details
+ * @interface UserRegistrationDetail
+ * @property {string} [permissionGroup] - User's permission group
+ * @property {string} [phone] - User's phone number
+ * @property {string} [email] - User's email address
+ * @property {string} [password] - User's password (base64 encoded)
+ * @property {'user' | 'anonymous'} [type='user'] - User type
+ * @property {any} [key: string] - Additional user properties
  */
 interface UserRegistrationDetail {
   permissionGroup?: string;
@@ -26,17 +46,41 @@ interface UserRegistrationDetail {
 
 /**
  * User manager class for handling user operations
+
+ * This service provides functionality for managing users, including:
+ * - User registration and authentication
+ * - Password management
+ * - Token generation and verification
+ * - Temporary ID handling for password reset and verification
+ * 
  */
 class UserManager {
+  /**
+   * @hidden
+   */
   private tempIds: Record<string, TemporaryId> = {};
+
+  /**
+   * @hidden
+   */
   private verificationCodeGeneratorMethod?: (id: string, idType: string) => string;
 
+  /**
+   * @hidden
+   */
   constructor() {}
 
   /**
-   * Sets a custom method for generating verification codes.
+   * Sets a custom method for generating verification codes
+   * @param {Function} generatorMethod - Function that generates verification codes
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param generatorMethod - A function that returns a random verification code.
+   * userManager.setCustomVerificationCodeGeneratorMethod((id, type) => {
+   *   return Math.random().toString(36).substring(2, 8).toUpperCase();
+   * });
+   * ```
    */
   setCustomVerificationCodeGeneratorMethod(
     generatorMethod: (id: string, idType: string) => string
@@ -45,11 +89,17 @@ class UserManager {
   }
 
   /**
-   * Generate a verification code for a user
+   * Generates a verification code for a user
+   * @param {string} id - User ID or identifier
+   * @param {string} idType - Type of ID (email, phone)
+   * @returns {string} Verification code
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param id - User ID or identifier
-   * @param idType - Type of ID (email, phone)
-   * @returns Verification code
+   * const code = userManager.generateVerificationCode('user@example.com', 'email');
+   * // Returns: '123' (default) or custom generated code
+   * ```
    */
   generateVerificationCode(id: string, idType: string): string {
     if (this.verificationCodeGeneratorMethod)
@@ -60,11 +110,21 @@ class UserManager {
   }
 
   /**
-   * Get a user by their ID.
+   * Gets a user by their ID
+   * @param {string} id - The ID of the user
+   * @returns {Promise<User>} Promise resolving to the user
+   * @throws {Error} If user model is not found or user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param id - The ID of the user.
-   * @returns Promise resolving to the user.
-   * @throws Error if the user is not found.
+   * try {
+   *   const user = await userManager.getUserById('user123');
+   *   console.log('User details:', user);
+   * } catch (error) {
+   *   console.error('Failed to get user:', error);
+   * }
+   * ```
    */
   getUserById(id: string): Promise<User> {
     return new Promise(async (done, reject) => {
@@ -95,12 +155,21 @@ class UserManager {
   }
 
   /**
-   * Get a user by their identity.
+   * Gets a user by their identity (email or phone)
+   * @param {string} id - The identity of the user
+   * @param {string} idType - The type of the identity (phone or email)
+   * @returns {Promise<User>} Promise resolving to the user
+   * @throws {Error} If user model is not found or user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param id - The identity of the user.
-   * @param idType - The type of the identity (phone or email).
-   * @returns Promise resolving to the user.
-   * @throws Error if the user is not found.
+   * // Get user by email
+   * const user = await userManager.getUserByIdentity('user@example.com', 'email');
+   *
+   * // Get user by phone
+   * const user = await userManager.getUserByIdentity('+1234567890', 'phone');
+   * ```
    */
   getUserByIdentity(id: string, idType: string): Promise<User> {
     return new Promise(async (done, reject) => {
@@ -136,10 +205,21 @@ class UserManager {
   }
 
   /**
-   * Get a user by their token.
+   * Gets a user by their JWT token
+   * @param {string} token - The JWT token of the user
+   * @returns {Promise<User>} Promise resolving to the user
+   * @throws {Error} If token is invalid or user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param token - The token of the user.
-   * @returns Promise resolving to the user.
+   * try {
+   *   const user = await userManager.getUserByToken('jwt.token.here');
+   *   console.log('Authenticated user:', user);
+   * } catch (error) {
+   *   console.error('Invalid token:', error);
+   * }
+   * ```
    */
   async getUserByToken(token: string): Promise<User> {
     const decoded = await JWT.main.verify(token);
@@ -147,29 +227,45 @@ class UserManager {
   }
 
   /**
-   * Check if a verification code is valid.
+   * Checks if a verification code is valid
+   * @param {string} id - The ID of the user
+   * @param {string} code - The verification code
+   * @returns {boolean} Whether the verification code is valid
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param id - The ID of the user.
-   * @param code - The verification code.
-   * @returns Whether the verification code is valid.
+   * const isValid = userManager.isCodeValid('user123', '123');
+   * if (isValid) {
+   *   // Proceed with verification
+   * }
+   * ```
    */
   isCodeValid(id: string, code: string): boolean {
-    let key = false;
-
-    if (this.tempIds.hasOwnProperty(id) && this.tempIds[id].code.toString() === code.toString())
-      key = true;
-
-    return key;
+    return this.tempIds.hasOwnProperty(id) && this.tempIds[id].code.toString() === code.toString();
   }
 
   /**
-   * Login a user and return their token.
+   * Logs in a user and returns their JWT token
+   * @param {string} [id=''] - The ID of the user (email or phone)
+   * @param {string} [idType=''] - The type of the ID (phone or email)
+   * @param {string} [password=''] - The password of the user
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @throws {Error} If user is not found or credentials are invalid
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param id - The ID of the user.
-   * @param idType - The type of the ID (phone or email).
-   * @param password - The password of the user.
-   * @returns Promise resolving to the token of the user.
-   * @throws Error if the user is not found.
+   * try {
+   *   // Login with email
+   *   const token = await userManager.loginUser('user@example.com', 'email', 'password123');
+   *
+   *   // Login with phone
+   *   const token = await userManager.loginUser('+1234567890', 'phone', 'password123');
+   * } catch (error) {
+   *   console.error('Login failed:', error);
+   * }
+   * ```
    */
   loginUser(id: string = '', idType: string = '', password: string = ''): Promise<string> {
     return new Promise(async (done, reject) => {
@@ -221,11 +317,21 @@ class UserManager {
   }
 
   /**
-   * Issue a token for a user.
+   * Issues a JWT token for a user by email
+   * @param {string} email - The email of the user
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @throws {Error} If user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @param email - The email of the user.
-   * @returns Promise resolving to the token of the user.
-   * @throws Error if the user is not found.
+   * try {
+   *   const token = await userManager.issueTokenForUser('user@example.com');
+   *   console.log('Issued token:', token);
+   * } catch (error) {
+   *   console.error('Failed to issue token:', error);
+   * }
+   * ```
    */
   issueTokenForUser(email: string): Promise<string> {
     return new Promise(async (done, reject) => {
@@ -250,10 +356,10 @@ class UserManager {
       }
 
       try {
+        // Load user
         const user = await User.loadFromModel(gottenFromDB);
 
         // Get token payload
-        // This is some information about the user.
         const payload = user.getBrief();
 
         // Generate json web token
@@ -266,49 +372,38 @@ class UserManager {
   }
 
   /**
-   * Login as an anonymous user.
+   * Logs in an anonymous user and returns their JWT token
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
    *
-   * @returns Promise resolving to the token of the anonymous user.
-   * @throws Error if the anonymous user is not found.
+   * const token = await userManager.loginAnonymous();
+   * console.log('Anonymous token:', token);
+   * ```
    */
   loginAnonymous(): Promise<string> {
     return new Promise(async (done, reject) => {
-      // Get user model
       const userModel = DataProvider.getCollection('cms', 'auth');
 
       if (!userModel) {
         return reject(new Error('User model not found'));
       }
 
-      // Setup query
-      const query = { type: 'anonymous' };
-
-      // Get from database
-      let gottenFromDB;
       try {
-        gottenFromDB = await userModel.findOne(query).exec();
-      } catch (error) {
-        return reject(error);
-      }
+        // Create anonymous user document
+        const anonymousUserDoc = await userModel.create({
+          type: 'anonymous',
+          permissionGroup: getDefaultAnonymousPermissionGroup().title,
+          phone: '',
+          email: '',
+          password: '',
+        });
 
-      // Create a new anonymous user if it doesn't exist.
-      // There are only one anonymous user in the database
-      // and every guest token being generated from it.
-      if (!gottenFromDB) {
-        try {
-          const newUserId = await this.registerUser({ type: 'anonymous' });
-          gottenFromDB = await this.getUserById(newUserId);
-        } catch (error) {
-          return reject(error);
-        }
-      }
-
-      try {
-        // load User
-        const user = await User.loadFromModel(gottenFromDB);
+        // Load user from document
+        const user = await User.loadFromModel(anonymousUserDoc);
 
         // Get token payload
-        // This is some information about the user.
         const payload = user.getBrief();
 
         // Generate json web token
@@ -321,122 +416,194 @@ class UserManager {
   }
 
   /**
-   * Register a temporary ID
-   * @param id - User identifier
-   * @param type - ID type
-   * @param code - Verification code
-   * @returns The verification code
+   * Registers a temporary ID for verification or password reset
+   * @param {string} id - The ID to register
+   * @param {string} type - The type of temporary ID
+   * @param {string} code - The verification code
+   * @returns {string} The registered ID
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
+   * const tempId = userManager.registerTemporaryID('user@example.com', 'password_reset', '123456');
+   * ```
    */
   registerTemporaryID(id: string, type: string, code: string): string {
     this.tempIds[id] = {
-      type: type,
-      code: code,
+      type,
+      code,
       timestamp: Date.now(),
     };
-    return code;
+    return id;
   }
 
   /**
-   * Submit password for a temporary ID
-   * @param id - User identifier
-   * @param password - User password
-   * @param code - Verification code
-   * @returns Promise resolving to user ID
+   * Submits a password for a temporary ID
+   * @param {string} id - The temporary ID
+   * @param {string} password - The new password
+   * @param {string} code - The verification code
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @throws {Error} If verification code is invalid or user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
+   * try {
+   *   const token = await userManager.submitPasswordForTemporaryID(
+   *     'user@example.com',
+   *     'newpassword123',
+   *     '123456'
+   *   );
+   *   console.log('Password set successfully');
+   * } catch (error) {
+   *   console.error('Failed to set password:', error);
+   * }
+   * ```
    */
   async submitPasswordForTemporaryID(id: string, password: string, code: string): Promise<string> {
-    return new Promise(async (done, reject) => {
-      // Check validation
-      if (!this.isCodeValid(id, code)) {
-        return reject(new Error('Verification code is not valid'));
-      }
+    if (!this.isCodeValid(id, code)) {
+      throw new Error('Invalid verification code');
+    }
 
-      const idType = this.tempIds[id].type;
+    const userModel = DataProvider.getCollection('cms', 'auth');
+
+    if (!userModel) {
+      throw new Error('User model not found');
+    }
+
+    const query = { email: id };
+
+    // Get from database
+    let gottenFromDB;
+    try {
+      gottenFromDB = await userModel.findOne(query).exec();
+    } catch (error) {
+      throw error;
+    }
+
+    if (!gottenFromDB) {
+      throw new Error('User not found');
+    }
+
+    try {
+      // Load user
+      const user = await User.loadFromModel(gottenFromDB);
+
+      // Update password
+      user.password = Buffer.from(password).toString('base64');
+
+      // Save to database
+      await user.save();
+
+      // Get token payload
+      const payload = user.getBrief();
+
+      // Generate json web token
+      const token = await JWT.main.sign(payload);
+
+      // Remove temporary ID
       delete this.tempIds[id];
 
-      // Create document
-      const userModel = DataProvider.getCollection('cms', 'auth');
-
-      if (!userModel) {
-        return reject(new Error('User model not found'));
-      }
-
-      // Preparing document
-      const detail: Record<string, any> = {
-        permissionGroup: getDefaultPermissionGroups().title,
-        password: Buffer.from(password).toString('base64'),
-        type: 'user',
-      };
-
-      if (idType === 'email') detail.email = id;
-      else if (idType === 'phone') detail.phone = id;
-
-      try {
-        // Check user existence
-        const existingUser = await userModel
-          .findOne({
-            [idType]: id,
-          })
-          .exec();
-
-        if (existingUser) {
-          return reject(new Error('User already exists'));
-        }
-
-        // Register user
-        const newUserId = await this.registerUser(detail);
-        done(newUserId);
-      } catch (error) {
-        reject(error);
-      }
-    });
+      return token;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
-   * Change password for a temporary ID
-   * @param id - User identifier
-   * @param password - New password
-   * @param code - Verification code
-   * @returns Promise resolving to user ID
+   * Changes password for a temporary ID
+   * @param {string} id - The temporary ID
+   * @param {string} password - The new password
+   * @param {string} code - The verification code
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @throws {Error} If verification code is invalid or user is not found
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
+   * try {
+   *   const token = await userManager.changePasswordForTemporaryID(
+   *     'user@example.com',
+   *     'newpassword123',
+   *     '123456'
+   *   );
+   *   console.log('Password changed successfully');
+   * } catch (error) {
+   *   console.error('Failed to change password:', error);
+   * }
+   * ```
    */
   async changePasswordForTemporaryID(id: string, password: string, code: string): Promise<string> {
-    return new Promise(async (done, reject) => {
-      // Check validation
-      if (!this.isCodeValid(id, code)) {
-        return reject(new Error('Verification code is not valid'));
-      }
+    if (!this.isCodeValid(id, code)) {
+      throw new Error('Invalid verification code');
+    }
 
-      const idType = this.tempIds[id].type;
+    const userModel = DataProvider.getCollection('cms', 'auth');
+
+    if (!userModel) {
+      throw new Error('User model not found');
+    }
+
+    const query = { email: id };
+
+    // Get from database
+    let gottenFromDB;
+    try {
+      gottenFromDB = await userModel.findOne(query).exec();
+    } catch (error) {
+      throw error;
+    }
+
+    if (!gottenFromDB) {
+      throw new Error('User not found');
+    }
+
+    try {
+      // Load user
+      const user = await User.loadFromModel(gottenFromDB);
+
+      // Update password
+      user.password = Buffer.from(password).toString('base64');
+
+      // Save to database
+      await user.save();
+
+      // Get token payload
+      const payload = user.getBrief();
+
+      // Generate json web token
+      const token = await JWT.main.sign(payload);
+
+      // Remove temporary ID
       delete this.tempIds[id];
 
-      // Create query
-      const query: Record<string, any> = {};
-      query[idType] = id;
-
-      try {
-        await this.changePassword(query, password);
-        const userModel = DataProvider.getCollection('cms', 'auth');
-
-        if (!userModel) {
-          return reject(new Error('User model not found'));
-        }
-
-        const userDoc = await userModel.findOne(query).exec();
-
-        if (!userDoc) {
-          return reject(new Error('User not found'));
-        }
-
-        done(userDoc._id);
-      } catch (error) {
-        reject(error);
-      }
-    });
+      return token;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
-   * Register a new user
-   * @param detail - User registration details
-   * @returns Promise resolving to user ID
+   * Registers a new user
+   * @param {UserRegistrationDetail} detail - User registration details
+   * @returns {Promise<string>} Promise resolving to the JWT token
+   * @throws {Error} If user model is not found or registration fails
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
+   * try {
+   *   const token = await userManager.registerUser({
+   *     email: 'user@example.com',
+   *     password: 'secure123',
+   *     permissionGroup: 'user',
+   *     phone: '+1234567890'
+   *   });
+   *   console.log('User registered successfully');
+   * } catch (error) {
+   *   console.error('Registration failed:', error);
+   * }
+   * ```
    */
   registerUser(detail: UserRegistrationDetail): Promise<string> {
     return new Promise(async (done, reject) => {
@@ -447,19 +614,25 @@ class UserManager {
       }
 
       try {
-        // Check if it's an anonymous user
-        if (detail.type === 'anonymous') {
-          detail.permissionGroup = getDefaultPermissionGroups().title;
-        }
+        // Create user document
+        const userDoc = await userModel.create({
+          ...detail,
+          type: detail.type || 'user',
+          permissionGroup: detail.permissionGroup || getDefaultPermissionGroups().title,
+          phone: detail.phone || '',
+          email: detail.email || '',
+          password: detail.password ? Buffer.from(detail.password).toString('base64') : '',
+        });
 
-        // Encrypt password
-        if (detail.password) {
-          detail.password = Buffer.from(detail.password).toString('base64');
-        }
+        // Load user from document
+        const user = await User.loadFromModel(userDoc);
 
-        // Create user
-        const userDoc = await userModel.create(detail);
-        done(userDoc._id);
+        // Get token payload
+        const payload = user.getBrief();
+
+        // Generate json web token
+        const token = await JWT.main.sign(payload);
+        done(token);
       } catch (error) {
         reject(error);
       }
@@ -467,10 +640,25 @@ class UserManager {
   }
 
   /**
-   * Change user password
-   * @param query - Query to find user
-   * @param newPass - New password
-   * @returns Promise resolving when password is changed
+   * Changes a user's password
+   * @param {Record<string, any>} query - Query to find the user
+   * @param {string} newPass - The new password
+   * @returns {Promise<void>} Promise resolving when password is changed
+   * @throws {Error} If user is not found or password change fails
+   * @example
+   * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
+   * try {
+   *   await userManager.changePassword(
+   *     { email: 'user@example.com' },
+   *     'newpassword123'
+   *   );
+   *   console.log('Password changed successfully');
+   * } catch (error) {
+   *   console.error('Failed to change password:', error);
+   * }
+   * ```
    */
   async changePassword(query: Record<string, any>, newPass: string): Promise<void> {
     const userModel = DataProvider.getCollection('cms', 'auth');
@@ -479,18 +667,32 @@ class UserManager {
       throw new Error('User model not found');
     }
 
-    await userModel.updateOne(query, { password: Buffer.from(newPass).toString('base64') }).exec();
+    const userDoc = await userModel.findOne(query).exec();
+
+    if (!userDoc) {
+      throw new Error('User not found');
+    }
+
+    const user = await User.loadFromModel(userDoc);
+    user.password = Buffer.from(newPass).toString('base64');
+    await user.save();
   }
 
   /**
-   * Get the singleton instance
+   * Gets the singleton instance of UserManager
+   * @returns {UserManager} The UserManager instance
+   * @hidden
    */
   static get instance(): UserManager {
-    return userManagerInstance;
+    if (!(this as any)._instance) {
+      (this as any)._instance = new UserManager();
+    }
+    return (this as any)._instance;
   }
 }
 
-const userManagerInstance = new UserManager();
-
-export const main = userManagerInstance;
-export const name = 'UserManager';
+/**
+ * Main user manager instance
+ * @constant {UserManager}
+ */
+export const main = UserManager.instance;

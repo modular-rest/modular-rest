@@ -5,17 +5,17 @@ import { Schema } from 'mongoose';
 // Utilities
 import * as paginator from './class/paginator';
 import * as reply from './class/reply';
-import { main as userManager } from './services/user_manager/service';
 import { validator } from './class/validator';
 import { getCollection } from './services/data_provider/service';
 import { defineFunction } from './services/functions/service';
 import TypeCasters from './services/data_provider/typeCasters';
 
-import { getFile, getFileLink, getFilePath, removeFile, storeFile } from './services/file/service';
+import { main as userManager } from './services/user_manager/service';
+import { main as fileService } from './services/file/service';
 
 // Base class
-import CollectionDefinition from './class/collection_definition';
-import Schemas from './class/db_schemas';
+import { CollectionDefinition, defineCollection } from './class/collection_definition';
+import { schemas } from './class/db_schemas';
 import DatabaseTrigger from './class/database_trigger';
 import CmsTrigger from './class/cms_trigger';
 import {
@@ -27,47 +27,120 @@ import {
 } from './class/security';
 import * as middleware from './middlewares';
 
-export {
-  createRest,
+/**
+ * @description Creates a new REST API instance
+ * @example
+ * ```typescript
+ * const rest = createRest();
+ * ```
+ * @returns A new REST API instance
+ */
+export { createRest };
 
-  // Database
-  CollectionDefinition,
-  Schemas,
-  Schema,
-  DatabaseTrigger,
-  CmsTrigger,
+export { CollectionDefinition, defineCollection };
 
-  // Security
-  AccessDefinition,
-  Permission,
-  PermissionTypes,
-  PermissionGroup,
-  AccessTypes,
+/**
+ * @description Provides predefined database schemas
+ * @example
+ * ```typescript
+ * const userSchema = new Schema({
+ *   name: String,
+ *   avatar: Schemas.file
+ * });
+ * ```
+ */
+export { schemas };
 
-  // Function
-  defineFunction,
+/**
+ * @description Mongoose Schema class for defining data models
+ */
+export { Schema };
 
-  // Private utilities
-  TypeCasters,
-  validator,
+/**
+ * @description Handles database triggers and events
+ * @example
+ * ```typescript
+ * const trigger = new DatabaseTrigger('insert-one', (data) => {
+ *   // Handle insert event
+ * });
+ * ```
+ */
+export { DatabaseTrigger };
 
-  // Route utilities
-  reply,
-  paginator,
+/**
+ * @description Handles CMS triggers and events
+ */
+export { CmsTrigger };
 
-  // Database utilities
-  getCollection,
+/**
+ * @description Security and access control definitions
+ * @example
+ * ```typescript
+ * const permission = new Permission({
+ *   type: 'user_access',
+ *   read: true,
+ *   write: true
+ * });
+ * ```
+ */
+export { AccessDefinition, Permission, PermissionTypes, PermissionGroup, AccessTypes };
 
-  // File Utilities
-  getFile,
-  getFileLink,
-  getFilePath,
-  removeFile,
-  storeFile,
+/**
+ * @description Defines custom functions for the API
+ * @example
+ * ```typescript
+ * defineFunction('sendEmail', async (data) => {
+ *   // Send email logic
+ * });
+ * ```
+ */
+export { defineFunction };
 
-  // Middleware utilities
-  middleware,
+/**
+ * @description Type casting utilities for data transformation
+ */
+export { TypeCasters };
 
-  // User utilities
-  userManager,
-};
+/**
+ * @description Input validation utilities
+ */
+export { validator };
+
+/**
+ * @description Response handling utilities
+ */
+export { reply };
+
+/**
+ * @description Pagination utilities
+ */
+export { paginator };
+
+/**
+ * @description Database collection access utilities
+ */
+export { getCollection };
+
+/**
+ * @description File handling utilities
+ * @example
+ * ```typescript
+ * const file = await fileService.getFile('fileId');
+ * const link = fileService.getFileLink('fileId');
+ * ```
+ */
+export { fileService };
+
+/**
+ * @description Middleware utilities
+ */
+export { middleware };
+
+/**
+ * @description User management utilities
+ * @example
+ * ```typescript
+ * const user = await userManager.getUserById('userId');
+ * ```
+ */
+export { userManager };

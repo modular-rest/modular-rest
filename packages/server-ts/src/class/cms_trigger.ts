@@ -1,10 +1,18 @@
 /**
  * Type for CMS operations that can trigger a callback
+ * @typedef {('update-one' | 'insert-one' | 'remove-one')} CmsOperation
+ * @description Supported CMS operations:
+ * - 'update-one': Triggered when updating a single document in the CMS
+ * - 'insert-one': Triggered when inserting a new document in the CMS
+ * - 'remove-one': Triggered when removing a document from the CMS
  */
-export type CmsOperation = "update-one" | "insert-one" | "remove-one";
+export type CmsOperation = 'update-one' | 'insert-one' | 'remove-one';
 
 /**
  * Context interface for CMS trigger callbacks
+ * @interface CmsTriggerContext
+ * @property {Record<string, any>} query - The query parameters used in the CMS operation
+ * @property {any} queryResult - The result of the CMS operation
  */
 export interface CmsTriggerContext {
   query: Record<string, any>;
@@ -12,22 +20,46 @@ export interface CmsTriggerContext {
 }
 
 /**
- * `CmsTrigger` is a class that defines a callback to be called on a specific database transaction.
+ * Defines a callback to be executed on specific CMS operations
+ * @class CmsTrigger
+ * @property {CmsOperation} operation - The CMS operation that triggers the callback
+ * @property {Function} callback - The callback function to be executed
+ * @example
+ * ```typescript
+ * const trigger = new CmsTrigger('insert-one', (context) => {
+ *   console.log('New CMS document inserted:', context.queryResult);
+ *   // Perform additional actions after CMS document insertion
+ * });
+ *
+ * // Use the trigger in RestOptions
+ * const { app } = await createRest({
+ *   authTriggers: [trigger],
+ *   // ... other options
+ * });
+ * ```
  */
 export class CmsTrigger {
   operation: CmsOperation;
   callback: (context: CmsTriggerContext) => void;
 
   /**
-   * Creates a new instance of `CmsTrigger`.
+   * Creates a new CmsTrigger instance
+   * @param {CmsOperation} operation - The CMS operation to trigger on
+   * @param {Function} [callback=() => {}] - The callback function to execute
+   * @example
+   * ```typescript
+   * // Log all CMS updates
+   * const updateTrigger = new CmsTrigger('update-one', (context) => {
+   *   console.log('CMS document updated:', context.queryResult);
+   * });
    *
-   * @param operation - The operation to be triggered.
-   * @param callback - The callback to be called when the operation is executed. The callback function takes an object as parameter with two properties: 'query' and 'queryResult'.
+   * // Track CMS document removals
+   * const removeTrigger = new CmsTrigger('remove-one', (context) => {
+   *   console.log('CMS document removed:', context.queryResult);
+   * });
+   * ```
    */
-  constructor(
-    operation: CmsOperation,
-    callback: (context: CmsTriggerContext) => void = () => {}
-  ) {
+  constructor(operation: CmsOperation, callback: (context: CmsTriggerContext) => void = () => {}) {
     this.operation = operation;
     this.callback = callback;
   }

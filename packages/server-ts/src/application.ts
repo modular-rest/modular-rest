@@ -9,65 +9,32 @@ import Combination from './class/combinator';
 import * as DataProvider from './services/data_provider/service';
 import { MongoOption } from './services/data_provider/service';
 import * as UserService from './services/user_manager/service';
-import { CollectionDefinition } from './class/collection_definition';
-import { PermissionGroup } from './class/security';
-import { CmsTrigger } from './class/cms_trigger';
-import { DefinedFunction } from './services/functions/service';
-import { config, setConfig } from './config';
+import { config, setConfig, RestOptions, StaticPathOptions } from './config';
 import { permissionGroups as defaultPermissionGroups } from './defult-permissions';
 
 const defaultServiceRoot = __dirname + '/services';
 
-interface StaticPathOptions {
-  rootDir: string;
-  rootPath?: string;
-  maxage?: number;
-  hidden?: boolean;
-  index?: string;
-  defer?: boolean;
-  gzip?: boolean;
-  br?: boolean;
-  setHeaders?: (res: any, path: string, stats: any) => void;
-  extensions?: false | string[];
-}
-
-interface MongoOptions {
-  dbPrefix: string;
-  mongoBaseAddress: string;
-  addressMap?: string;
-}
-
-interface AdminUser {
-  email: string;
-  password: string;
-}
-
-interface RestOptions {
-  cors?: cors.Options;
-  modulesPath?: string;
-  uploadDirectory?: string;
-  koaBodyOptions?: any;
-  staticPath?: StaticPathOptions;
-  onBeforeInit?: (koaApp: Koa) => void;
-  onAfterInit?: (koaApp: Koa) => void;
-  port?: number;
-  dontListen?: boolean;
-  mongo?: MongoOptions;
-  keypair?: {
-    private: string;
-    public: string;
-  };
-  adminUser?: AdminUser;
-  verificationCodeGeneratorMethod?: () => string;
-  collectionDefinitions?: CollectionDefinition[];
-  permissionGroups?: PermissionGroup[];
-  authTriggers?: CmsTrigger[];
-  fileTriggers?: CmsTrigger[];
-  functions?: DefinedFunction[];
-}
-
 /**
  * Create a modular REST instance with Koa and MongoDB support.
+ *
+ * @param {RestOptions} options - Options for the REST instance
+ * @expandType RestOptions
+ *
+ * @returns {Promise<{ app: Koa; server?: Server }>} - A promise that resolves to the Koa app and server
+ *
+ * @example
+ * import { createRest } from '@modular-rest/server';
+ *
+ * const app = createRest({
+ *   port: '80',
+ *   mongo: {
+ *     mongoBaseAddress: 'mongodb://localhost:27017',
+ *     dbPrefix: 'mrest_'
+ *   },
+ *   onBeforeInit: (koaApp) => {
+ *     // do something before init with the koa app
+ *   }
+ * })
  */
 export async function createRest(options: RestOptions): Promise<{ app: Koa; server?: Server }> {
   setConfig({
@@ -108,13 +75,13 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
    * Plug In KoaStatic
    */
   if (config.staticPath) {
-    const defaultStaticPath = config.staticPath.rootDir || '';
-    const defaultStaticRootPath = config.staticPath.rootPath || '/assets';
+    const defaultStaticPath = config.staticPath.actualPath || '';
+    const defaultStaticRootPath = config.staticPath.path || '/assets';
 
-    const staticOptions = { ...config.staticPath };
-    // @ts-ignore
-    delete staticOptions.rootDir;
-    delete staticOptions.rootPath;
+    const staticOptions: Partial<StaticPathOptions> = { ...config.staticPath };
+
+    delete staticOptions.actualPath;
+    delete staticOptions.path;
 
     app.use(mount(defaultStaticRootPath, koaStatic(defaultStaticPath, staticOptions)));
   }

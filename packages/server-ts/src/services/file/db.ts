@@ -12,13 +12,13 @@ module.exports = [
     schema: schemas.file as unknown as Schema,
     permissions: [
       new Permission({
-        type: PermissionTypes.upload_file_access,
+        accessType: PermissionTypes.upload_file_access,
         read: true,
         write: true,
         onlyOwnData: false,
       }),
       new Permission({
-        type: PermissionTypes.remove_file_access,
+        accessType: PermissionTypes.remove_file_access,
         read: true,
         write: true,
         onlyOwnData: false,

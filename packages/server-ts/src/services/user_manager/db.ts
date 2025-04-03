@@ -77,7 +77,7 @@ module.exports = [
     schema: authSchema,
     permissions: [
       new Permission({
-        type: PermissionTypes.advanced_settings,
+        accessType: PermissionTypes.advanced_settings,
         read: true,
         write: true,
       }),

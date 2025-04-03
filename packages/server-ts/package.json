@@ -8,7 +8,8 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"play": "tsc -p tsconfig.json && node dist/play-test.js"
+		"play-test": "tsc -p tsconfig.json && node dist/play-test.js",
+		"docs": "typedoc --router kind src/index.ts"
 	},
 	"repository": {
 		"type": "git",
@@ -34,7 +35,7 @@
 		"jsonwebtoken": "^8.5.1",
 		"keypair": "^1.0.4",
 		"koa": "^2.5.3",
-		"koa-body": "^4.2.0",
+		"koa-body": "6.0.1",
 		"koa-mount": "^4.0.0",
 		"koa-router": "^7.4.0",
 		"koa-static": "^5.0.0",
@@ -51,6 +52,9 @@
 		"@types/koa__cors": "^5.0.0",
 		"@types/mongoose": "^5.10.5",
 		"@types/node": "^20.10.0",
+		"typedoc": "^0.28.1",
+		"typedoc-plugin-markdown": "^4.6.0",
+		"typedoc-plugin-missing-exports": "^4.0.0",
 		"typescript": "^5.3.3"
 	}
 }

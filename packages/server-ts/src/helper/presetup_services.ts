@@ -4,7 +4,15 @@ import * as FileService from '../services/file/service';
 import generateKeypair from 'keypair';
 
 /**
- * Setup options interface
+ * Setup options interface for initializing required services
+ * @interface SetupOptions
+ * @property {Object} [keypair] - JWT keypair configuration
+ * @property {string} keypair.private - Private key for JWT signing
+ * @property {string} keypair.public - Public key for JWT verification
+ * @property {Object} adminUser - Admin user configuration
+ * @property {string} adminUser.email - Admin user email address
+ * @property {string} adminUser.password - Admin user password
+ * @property {string} [uploadDirectory] - Directory for file uploads
  */
 interface SetupOptions {
   keypair?: {
@@ -20,7 +28,39 @@ interface SetupOptions {
 
 /**
  * Sets up required services for the application to run
- * @param options - Setup options
+ * @function setup
+ * @param {SetupOptions} options - Setup configuration options
+ * @returns {Promise<void>} A promise that resolves when setup is complete
+ * @throws {Error} If admin user configuration is missing or if setup fails
+ * @description
+ * This function performs the following setup operations:
+ * 1. Configures JWT with provided or generated keypair
+ * 2. Creates default system users (admin and anonymous)
+ * 3. Configures file upload directory if specified
+ *
+ * @example
+ * ```typescript
+ * // Setup with custom keypair
+ * await setup({
+ *   keypair: {
+ *     private: 'your-private-key',
+ *     public: 'your-public-key'
+ *   },
+ *   adminUser: {
+ *     email: 'admin@example.com',
+ *     password: 'secure-password'
+ *   },
+ *   uploadDirectory: './uploads'
+ * });
+ *
+ * // Setup with auto-generated keypair
+ * await setup({
+ *   adminUser: {
+ *     email: 'admin@example.com',
+ *     password: 'secure-password'
+ *   }
+ * });
+ * ```
  */
 export async function setup({ keypair, adminUser, uploadDirectory }: SetupOptions): Promise<void> {
   /**
@@ -51,6 +91,6 @@ export async function setup({ keypair, adminUser, uploadDirectory }: SetupOption
    * File Service
    */
   if (uploadDirectory) {
-    FileService.setUploadDirectory(uploadDirectory);
+    FileService.main.setUploadDirectory(uploadDirectory);
   }
 }
