@@ -2,9 +2,17 @@
 
 TypeScript version of a Node.js module based on Koa.js for developing REST APIs in a modular solution.
 
+## Version 2.0 Breaking Changes
+
+The 2.0 release includes several breaking changes:
+
+- Complete rewrite in TypeScript with full type safety and improved IDE support
+- Auto-generated API documentation using TypeDoc
+- Changed configuration structure for better TypeScript support
+
 ## Migration Status
 
-This is a TypeScript migration of the original [@modular-rest/server](https://github.com/modular-rest/modular-rest) package. The API is compatible with the original JavaScript version.
+This is a TypeScript migration of the original [@modular-rest/server](https://github.com/modular-rest/modular-rest) package. While maintaining compatibility with the JavaScript version, it adds type safety and better developer experience.
 
 ## Installation
 
@@ -52,7 +60,19 @@ createRest({
 
 ## TypeScript Support
 
-This package includes full TypeScript type definitions for all API components.
+This package includes full TypeScript type definitions for all API components. The entire codebase is written in TypeScript, providing:
+
+- IntelliSense and autocompletion in modern IDEs
+- Type safety for all API operations
+- Better compile-time error detection
+- Improved developer experience
+
+## Documentation
+
+The API documentation is automatically generated using TypeDoc. You can access the latest documentation:
+
+- In the `docs` directory of this repository
+- On the [modular-rest documentation site](https://modular-rest.github.io/docs)
 
 ## Development
 
@@ -68,6 +88,12 @@ To run the development build with watch mode:
 yarn dev
 ```
 
+To generate documentation:
+
+```bash
+yarn docs
+```
+
 ## License
 
-MIT 
+MIT
