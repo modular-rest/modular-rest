@@ -1,4 +1,5 @@
 {
+	"extends": "semantic-release-monorepo",
 	"branches": [
 		"main"
 	],
@@ -60,40 +61,12 @@
 				"changelogFile": "CHANGELOG.md"
 			}
 		],
-		[
-			"@semantic-release/npm",
-			{
-				"pkgRoot": "packages/client",
-				"tarballDir": "dist",
-				"npmPublish": true,
-				"allowSameVersion": false,
-				"force": false,
-				"tagFormat": "@modular-rest/client_v${version}"
-			}
-		],
-		[
-			"@semantic-release/npm",
-			{
-				"pkgRoot": "packages/server-ts",
-				"tarballDir": "dist",
-				"npmPublish": true,
-				"allowSameVersion": false,
-				"force": false,
-				"tagFormat": "@modular-rest/server_v${version}"
-			}
-		],
+		"@semantic-release/npm",
 		[
 			"@semantic-release/github",
 			{
 				"assets": [
-					{
-						"path": "packages/client/dist/*.tgz",
-						"label": "Client package"
-					},
-					{
-						"path": "packages/server-ts/dist/*.tgz",
-						"label": "Server package"
-					}
+					"dist/*.tgz"
 				]
 			}
 		],
