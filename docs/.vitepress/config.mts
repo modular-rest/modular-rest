@@ -36,6 +36,54 @@ export default defineConfig({
         ],
       },
       {
+        text: "Server TS",
+        items: [
+          { text: "Install", link: "/server-client-ts/install" },
+          { text: "Quick Start", link: "/server-client-ts/quick-start" },
+          { text: "Key Concepts", link: "/server-client-ts/key-concepts" },
+          {
+            text: "Define Module",
+            items: [
+              { text: "Intro", link: "/server-client-ts/modules/intro" },
+              {
+                text: "Database",
+                link: "/server-client-ts/modules/database",
+              },
+              {
+                text: "Functions",
+                link: "/server-client-ts/modules/functions",
+              },
+              {
+                text: "Custom Route",
+                link: "/server-client-ts/modules/custom-route",
+              },
+            ],
+          },
+          {
+            text: "Toolbox",
+            items: [
+              { text: "Database", link: "/server-client-ts/utility/database" },
+              { text: "Router", link: "/server-client-ts/utility/router" },
+              { text: "File", link: "/server-client-ts/utility/file" },
+              {
+                text: "UserManager",
+                link: "/server-client-ts/utility/user-manager",
+              },
+            ],
+          },
+          {
+            text: "Advanced Topics",
+            items: [
+              { text: "Cors", link: "/server-client-ts/advanced/cors" },
+              {
+                text: "Permission And User Access",
+                link: "/server-client-ts/advanced/permission-and-user-access.md",
+              },
+            ],
+          },
+        ],
+      },
+      {
         text: "Server",
         items: [
           { text: "Install", link: "/server-client/install" },

@@ -1,6 +1,5 @@
 {
-  "folders": [
-    {
+  "folders": [{
       "path": "."
     },
     {
@@ -8,6 +7,9 @@
     },
     {
       "path": "packages/server"
+    },
+    {
+      "path": "packages/server-ts"
     },
     {
       "path": "docs"
