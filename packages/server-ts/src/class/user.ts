@@ -1,5 +1,5 @@
 import { config } from '../config';
-import { PermissionGroup } from './security';
+import { PermissionGroup, AccessType } from './security';
 import { validator as validateObject } from './validator';
 import { Document, Model } from 'mongoose';
 
@@ -18,6 +18,8 @@ interface UserDetail {
 
 /**
  * User class representing a user in the system
+ *
+ * @public
  */
 export class User {
   id: string;
@@ -37,6 +39,8 @@ export class User {
    * @param password - User password
    * @param type - User type
    * @param model - Database model
+   *
+   * @hidden
    */
   constructor(
     id: string,
@@ -92,10 +96,10 @@ export class User {
 
   /**
    * Check if user has a specific permission
-   * @param permissionField - Permission to check
+   * @param accessType - Permission to check
    * @returns True if user has permission, false otherwise
    */
-  hasPermission(permissionField: string): boolean {
+  hasPermission(accessType: string): boolean {
     const permissionGroup = config.permissionGroups?.find(
       group => group.title === this.permissionGroup
     );
@@ -104,11 +108,11 @@ export class User {
 
     let key = false;
 
-    if (permissionGroup.validPermissionTypes) {
-      for (let i = 0; i < permissionGroup.validPermissionTypes.length; i++) {
-        const userPermissionType = permissionGroup.validPermissionTypes[i];
+    if (permissionGroup.allowedAccessTypes) {
+      for (let i = 0; i < permissionGroup.allowedAccessTypes.length; i++) {
+        const userPermissionType = permissionGroup.allowedAccessTypes[i];
 
-        if (userPermissionType === permissionField) {
+        if (userPermissionType === accessType) {
           key = true;
           break;
         }

@@ -1,14 +1,5 @@
 /**
  * Type for database operations that can trigger a callback
- * @typedef {('find' | 'find-one' | 'count' | 'update-one' | 'insert-one' | 'remove-one' | 'aggregate')} DatabaseOperation
- * @description Supported database operations:
- * - 'find': Triggered when finding multiple documents
- * - 'find-one': Triggered when finding a single document
- * - 'count': Triggered when counting documents
- * - 'update-one': Triggered when updating a single document
- * - 'insert-one': Triggered when inserting a new document
- * - 'remove-one': Triggered when removing a document
- * - 'aggregate': Triggered when performing aggregation
  */
 export type DatabaseOperation =
   | 'find'
@@ -31,22 +22,52 @@ export interface DatabaseTriggerContext {
 }
 
 /**
- * Defines a callback to be executed on specific database operations
- * @class DatabaseTrigger
- * @property {DatabaseOperation} operation - The database operation that triggers the callback
- * @property {Function} callback - The callback function to be executed
+ * The callback function to be executed on specific database operations
+ * @param {DatabaseTriggerContext} context - The context of the database operation
  * @example
  * ```typescript
  * const trigger = new DatabaseTrigger('insert-one', (context) => {
  *   console.log('New document inserted:', context.queryResult);
- *   // Perform additional actions after document insertion
+ * });
+ * ```
+ */
+type DatabaseTriggerCallback = (context: DatabaseTriggerContext) => void;
+
+/**
+ * in a complex application, you may need to perform additional actions after a database operation.
+ * this is where DatabaseTrigger comes in. so you can define a callback to be executed on specific database operations for a collection.
+ *
+ * Supported triggers are:
+ *
+ * | Trigger      | Description                                                  |
+ * | ------------ | ------------------------------------------------------------ |
+ * | `find`       | Triggered when a find query is executed on collection.       |
+ * | `find-one`   | Triggered when a find one query is executed on collection.   |
+ * | `count`      | Triggered when a count query is executed on collection.      |
+ * | `update-one` | Triggered when a update one query is executed on collection. |
+ * | `insert-one` | Triggered when a insert one query is executed on collection. |
+ * | `remove-one` | Triggered when a remove one query is executed on collection. |
+ * | `aggregate`  | Triggered when a aggregate query is executed on collection.  |
+ *
+ * @property {DatabaseOperation} operation - The database operation that triggers the callback
+ * @property {DatabaseTriggerCallback} callback - The callback function to be executed
+ *
+ * @example
+ * ```typescript
+ * import { DatabaseTrigger } from '@server-ts/database';
+ *
+ * const trigger = new DatabaseTrigger('insert-one', ({ query, queryResult }) => {
+ *   console.log('New document inserted:', queryResult);
+ *
+ *   try {
+ *     // Perform additional actions after document insertion
+ *   } catch (error) {
+ *     console.error('Error performing additional actions:', error);
+ *   }
  * });
  *
  * // Use the trigger in a collection definition
  * const collection = new CollectionDefinition({
- *   database: 'myapp',
- *   collection: 'users',
- *   schema: userSchema,
  *   triggers: [trigger]
  * });
  * ```
@@ -56,27 +77,20 @@ export class DatabaseTrigger {
   callback: (context: DatabaseTriggerContext) => void;
 
   /**
+   * @hidden
+   *
    * Creates a new DatabaseTrigger instance
    * @param {DatabaseOperation} operation - The database operation to trigger on
-   * @param {Function} [callback=() => {}] - The callback function to execute
+   * @param {DatabaseTriggerCallback} [callback=() => {}] - The callback function to execute
+   *
    * @example
    * ```typescript
-   * // Log all find operations
-   * const findTrigger = new DatabaseTrigger('find', (context) => {
-   *   console.log('Find query:', context.query);
-   *   console.log('Find results:', context.queryResult);
+   * const trigger = new DatabaseTrigger('insert-one', (context) => {
+   *   console.log('New document inserted:', context.queryResult);
    * });
    *
-   * // Track document updates
-   * const updateTrigger = new DatabaseTrigger('update-one', (context) => {
-   *   console.log('Document updated:', context.queryResult);
-   * });
-   * ```
    */
-  constructor(
-    operation: DatabaseOperation,
-    callback: (context: DatabaseTriggerContext) => void = () => {}
-  ) {
+  constructor(operation: DatabaseOperation, callback: DatabaseTriggerCallback = () => {}) {
     this.operation = operation;
     this.callback = callback;
   }

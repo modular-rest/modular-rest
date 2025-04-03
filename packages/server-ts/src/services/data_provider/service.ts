@@ -37,7 +37,7 @@ export interface MongoOption {
  * @property {CollectionDefinition[]} list - List of collection definitions
  * @property {MongoOption} mongoOption - MongoDB connection options
  */
-interface CollectionDefinitionOption {
+interface CollectionDefinitionListOption {
   list: CollectionDefinition[];
   mongoOption: MongoOption;
 }
@@ -121,7 +121,7 @@ function connectToDatabaseByCollectionDefinitionList(
 /**
  * Adds collection definitions and connects to their respective databases
  * @function addCollectionDefinitionByList
- * @param {CollectionDefinitionOption} options - Collection definition options
+ * @param {CollectionDefinitionListOption} options - Collection definition options
  * @returns {Promise<void>} A promise that resolves when all collections are set up
  * @example
  * ```typescript
@@ -144,7 +144,7 @@ function connectToDatabaseByCollectionDefinitionList(
 export async function addCollectionDefinitionByList({
   list,
   mongoOption,
-}: CollectionDefinitionOption): Promise<void> {
+}: CollectionDefinitionListOption): Promise<void> {
   // Group collection definitions by database
   const dbGroups: Record<string, CollectionDefinition[]> = {};
   list.forEach(collectionDefinition => {

@@ -14,12 +14,22 @@ export interface PaginationResult {
  * @param perPage - The number of items to display per page.
  * @param page - The current page number.
  * @returns An object containing pagination information.
+ *
+ * @example
+ * ```typescript
+ * import { paginator } from '@modular-rest/server';
+ *
+ * const pagination = paginator.create(100, 10, 1);
+ * // json response will be like this
+ * // {
+ * //   pages: 10,
+ * //   page: 1,
+ * //   from: 0,
+ * //   to: 10,
+ * // }
+ * ```
  */
-export function create(
-  count: number,
-  perPage: number,
-  page: number
-): PaginationResult {
+export function create(count: number, perPage: number, page: number): PaginationResult {
   const totalPages = Math.ceil(count / perPage);
 
   if (page > totalPages) page = 1;

@@ -46,34 +46,28 @@ interface UserRegistrationDetail {
 
 /**
  * User manager class for handling user operations
- * @class UserManager
- * @description
+
  * This service provides functionality for managing users, including:
  * - User registration and authentication
  * - Password management
  * - Token generation and verification
  * - Temporary ID handling for password reset and verification
- *
- * @example
- * ```typescript
- * // Register a new user
- * const token = await main.registerUser({
- *   email: 'user@example.com',
- *   password: 'secure123',
- *   permissionGroup: 'user'
- * });
- *
- * // Login user
- * const loginToken = await main.loginUser('user@example.com', 'email', 'secure123');
- *
- * // Get user by token
- * const user = await main.getUserByToken(loginToken);
- * ```
+ * 
  */
 class UserManager {
+  /**
+   * @hidden
+   */
   private tempIds: Record<string, TemporaryId> = {};
+
+  /**
+   * @hidden
+   */
   private verificationCodeGeneratorMethod?: (id: string, idType: string) => string;
 
+  /**
+   * @hidden
+   */
   constructor() {}
 
   /**
@@ -81,7 +75,9 @@ class UserManager {
    * @param {Function} generatorMethod - Function that generates verification codes
    * @example
    * ```typescript
-   * main.setCustomVerificationCodeGeneratorMethod((id, type) => {
+   * import { userManager } from '@modular-rest/server';
+   *
+   * userManager.setCustomVerificationCodeGeneratorMethod((id, type) => {
    *   return Math.random().toString(36).substring(2, 8).toUpperCase();
    * });
    * ```
@@ -99,7 +95,9 @@ class UserManager {
    * @returns {string} Verification code
    * @example
    * ```typescript
-   * const code = main.generateVerificationCode('user@example.com', 'email');
+   * import { userManager } from '@modular-rest/server';
+   *
+   * const code = userManager.generateVerificationCode('user@example.com', 'email');
    * // Returns: '123' (default) or custom generated code
    * ```
    */
@@ -118,8 +116,10 @@ class UserManager {
    * @throws {Error} If user model is not found or user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const user = await main.getUserById('user123');
+   *   const user = await userManager.getUserById('user123');
    *   console.log('User details:', user);
    * } catch (error) {
    *   console.error('Failed to get user:', error);
@@ -162,11 +162,13 @@ class UserManager {
    * @throws {Error} If user model is not found or user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * // Get user by email
-   * const user = await main.getUserByIdentity('user@example.com', 'email');
+   * const user = await userManager.getUserByIdentity('user@example.com', 'email');
    *
    * // Get user by phone
-   * const user = await main.getUserByIdentity('+1234567890', 'phone');
+   * const user = await userManager.getUserByIdentity('+1234567890', 'phone');
    * ```
    */
   getUserByIdentity(id: string, idType: string): Promise<User> {
@@ -209,8 +211,10 @@ class UserManager {
    * @throws {Error} If token is invalid or user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const user = await main.getUserByToken('jwt.token.here');
+   *   const user = await userManager.getUserByToken('jwt.token.here');
    *   console.log('Authenticated user:', user);
    * } catch (error) {
    *   console.error('Invalid token:', error);
@@ -229,7 +233,9 @@ class UserManager {
    * @returns {boolean} Whether the verification code is valid
    * @example
    * ```typescript
-   * const isValid = main.isCodeValid('user123', '123');
+   * import { userManager } from '@modular-rest/server';
+   *
+   * const isValid = userManager.isCodeValid('user123', '123');
    * if (isValid) {
    *   // Proceed with verification
    * }
@@ -248,12 +254,14 @@ class UserManager {
    * @throws {Error} If user is not found or credentials are invalid
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
    *   // Login with email
-   *   const token = await main.loginUser('user@example.com', 'email', 'password123');
+   *   const token = await userManager.loginUser('user@example.com', 'email', 'password123');
    *
    *   // Login with phone
-   *   const token = await main.loginUser('+1234567890', 'phone', 'password123');
+   *   const token = await userManager.loginUser('+1234567890', 'phone', 'password123');
    * } catch (error) {
    *   console.error('Login failed:', error);
    * }
@@ -315,8 +323,10 @@ class UserManager {
    * @throws {Error} If user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const token = await main.issueTokenForUser('user@example.com');
+   *   const token = await userManager.issueTokenForUser('user@example.com');
    *   console.log('Issued token:', token);
    * } catch (error) {
    *   console.error('Failed to issue token:', error);
@@ -366,7 +376,9 @@ class UserManager {
    * @returns {Promise<string>} Promise resolving to the JWT token
    * @example
    * ```typescript
-   * const token = await main.loginAnonymous();
+   * import { userManager } from '@modular-rest/server';
+   *
+   * const token = await userManager.loginAnonymous();
    * console.log('Anonymous token:', token);
    * ```
    */
@@ -411,7 +423,9 @@ class UserManager {
    * @returns {string} The registered ID
    * @example
    * ```typescript
-   * const tempId = main.registerTemporaryID('user@example.com', 'password_reset', '123456');
+   * import { userManager } from '@modular-rest/server';
+   *
+   * const tempId = userManager.registerTemporaryID('user@example.com', 'password_reset', '123456');
    * ```
    */
   registerTemporaryID(id: string, type: string, code: string): string {
@@ -432,8 +446,10 @@ class UserManager {
    * @throws {Error} If verification code is invalid or user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const token = await main.submitPasswordForTemporaryID(
+   *   const token = await userManager.submitPasswordForTemporaryID(
    *     'user@example.com',
    *     'newpassword123',
    *     '123456'
@@ -503,8 +519,10 @@ class UserManager {
    * @throws {Error} If verification code is invalid or user is not found
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const token = await main.changePasswordForTemporaryID(
+   *   const token = await userManager.changePasswordForTemporaryID(
    *     'user@example.com',
    *     'newpassword123',
    *     '123456'
@@ -572,8 +590,10 @@ class UserManager {
    * @throws {Error} If user model is not found or registration fails
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   const token = await main.registerUser({
+   *   const token = await userManager.registerUser({
    *     email: 'user@example.com',
    *     password: 'secure123',
    *     permissionGroup: 'user',
@@ -627,8 +647,10 @@ class UserManager {
    * @throws {Error} If user is not found or password change fails
    * @example
    * ```typescript
+   * import { userManager } from '@modular-rest/server';
+   *
    * try {
-   *   await main.changePassword(
+   *   await userManager.changePassword(
    *     { email: 'user@example.com' },
    *     'newpassword123'
    *   );
@@ -659,6 +681,7 @@ class UserManager {
   /**
    * Gets the singleton instance of UserManager
    * @returns {UserManager} The UserManager instance
+   * @hidden
    */
   static get instance(): UserManager {
     if (!(this as any)._instance) {

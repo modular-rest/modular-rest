@@ -5,17 +5,17 @@ import { Schema } from 'mongoose';
 // Utilities
 import * as paginator from './class/paginator';
 import * as reply from './class/reply';
-import { main as userManager } from './services/user_manager/service';
 import { validator } from './class/validator';
 import { getCollection } from './services/data_provider/service';
 import { defineFunction } from './services/functions/service';
 import TypeCasters from './services/data_provider/typeCasters';
 
+import { main as userManager } from './services/user_manager/service';
 import { main as fileService } from './services/file/service';
 
 // Base class
-import CollectionDefinition from './class/collection_definition';
-import Schemas from './class/db_schemas';
+import { CollectionDefinition, defineCollection } from './class/collection_definition';
+import { schemas } from './class/db_schemas';
 import DatabaseTrigger from './class/database_trigger';
 import CmsTrigger from './class/cms_trigger';
 import {
@@ -37,17 +37,7 @@ import * as middleware from './middlewares';
  */
 export { createRest };
 
-/**
- * @description Defines collection structure and behavior
- * @example
- * ```typescript
- * const collection = new CollectionDefinition({
- *   db: 'users',
- *   name: 'info'
- * });
- * ```
- */
-export { CollectionDefinition };
+export { CollectionDefinition, defineCollection };
 
 /**
  * @description Provides predefined database schemas
@@ -59,7 +49,7 @@ export { CollectionDefinition };
  * });
  * ```
  */
-export { Schemas };
+export { schemas };
 
 /**
  * @description Mongoose Schema class for defining data models

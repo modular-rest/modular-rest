@@ -49,47 +49,39 @@ interface StoreFileOptions {
 }
 
 /**
- * File service for handling file storage and retrieval
- * @class FileService
- * @description
+ * File service for handling file storage and retrieval.
+ *
  * This service provides functionality for storing, retrieving, and managing files.
  * It handles file storage on disk and maintains file metadata in the database.
  * Files are organized by format and tag in the upload directory.
- *
- * @example
- * ```typescript
- * // Set up upload directory
- * main.setUploadDirectory('/path/to/uploads');
- *
- * // Store a file
- * const file = await main.storeFile({
- *   file: {
- *     path: '/tmp/upload.jpg',
- *     type: 'image/jpeg',
- *     name: 'profile.jpg',
- *     size: 1024
- *   },
- *   ownerId: 'user123',
- *   tag: 'profile'
- * });
- *
- * // Get file link
- * const link = await main.getFileLink(file._id);
- * ```
  */
 class FileService {
+  /**
+   * @hidden
+   */
   private directory: string | null = null;
+
+  /**
+   * @hidden
+   */
   static instance: FileService;
 
+  /**
+   * @hidden
+   */
   constructor() {}
 
   /**
+   * @hidden
+   *
    * Sets the upload directory for file storage
    * @param {string} directory - Directory path for file storage
    * @throws {Error} If directory is invalid or not writable
    * @example
    * ```typescript
-   * main.setUploadDirectory('/path/to/uploads');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * fileService.setUploadDirectory('/path/to/uploads');
    * ```
    */
   setUploadDirectory(directory: string): void {
@@ -100,14 +92,19 @@ class FileService {
   }
 
   /**
+   * @hidden
+   *
    * Creates stored file details with unique filename
    * @param {string} fileType - MIME type of the file
    * @param {string} tag - Tag for file organization
    * @returns {StoredFileDetail} Storage details including filename and path
    * @throws {Error} If upload directory is not set
+   *
    * @example
    * ```typescript
-   * const details = main.createStoredDetail('image/jpeg', 'profile');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * const details = fileService.createStoredDetail('image/jpeg', 'profile');
    * // Returns: { fileName: '1234567890.jpeg', fullPath: '/uploads/jpeg/profile/1234567890.jpeg', fileFormat: 'jpeg' }
    * ```
    */
@@ -128,13 +125,17 @@ class FileService {
   }
 
   /**
+   * @hidden
+   *
    * Stores a file, removes the temporary file, and saves metadata to database
    * @param {StoreFileOptions} options - File storage options
    * @returns {Promise<IFile>} Promise resolving to stored file document
    * @throws {Error} If upload directory is not set or storage fails
    * @example
    * ```typescript
-   * const file = await main.storeFile({
+   * import { fileService } from '@modular-rest/server';
+   *
+   * const file = await fileService.storeFile({
    *   file: {
    *     path: '/tmp/upload.jpg',
    *     type: 'image/jpeg',
@@ -208,13 +209,17 @@ class FileService {
   }
 
   /**
+   * @hidden
+   *
    * Removes a file from the disk
    * @param {string} path - File path to remove
    * @returns {Promise<void>} Promise resolving when file is removed
    * @throws {Error} If file removal fails
    * @example
    * ```typescript
-   * await main.removeFromDisc('/uploads/jpeg/profile/1234567890.jpeg');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * await fileService.removeFromDisc('/uploads/jpeg/profile/1234567890.jpeg');
    * ```
    */
   removeFromDisc(path: string): Promise<void> {
@@ -228,13 +233,16 @@ class FileService {
 
   /**
    * Removes a file from both database and disk
+   *
    * @param {string} fileId - File ID to remove
    * @returns {Promise<void>} Promise resolving when file is removed
    * @throws {Error} If file is not found or removal fails
    * @example
    * ```typescript
+   * import { fileService } from '@modular-rest/server';
+   *
    * try {
-   *   await main.removeFile('file123');
+   *   await fileService.removeFile('file123');
    *   console.log('File removed successfully');
    * } catch (error) {
    *   console.error('Failed to remove file:', error);
@@ -291,12 +299,15 @@ class FileService {
 
   /**
    * Retrieves a file document from the database
+   *
    * @param {string} fileId - File ID to retrieve
    * @returns {Promise<IFile>} Promise resolving to file document
    * @throws {Error} If collection model is not found or file is not found
    * @example
    * ```typescript
-   * const fileDoc = await main.getFile('file123');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * const fileDoc = await fileService.getFile('file123');
    * console.log('File details:', fileDoc);
    * ```
    */
@@ -319,12 +330,15 @@ class FileService {
 
   /**
    * Retrieves the public URL link for a file
+   *
    * @param {string} fileId - File ID to get link for
    * @returns {Promise<string>} Promise resolving to file URL
    * @throws {Error} If static path root is not defined or file is not found
    * @example
    * ```typescript
-   * const link = await main.getFileLink('file123');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * const link = await fileService.getFileLink('file123');
    * // Returns: '/static/jpeg/profile/1234567890.jpeg'
    * ```
    */
@@ -343,12 +357,15 @@ class FileService {
 
   /**
    * Gets the full filesystem path for a file
+   *
    * @param {string} fileId - File ID to get path for
    * @returns {Promise<string>} Promise resolving to full file path
    * @throws {Error} If upload directory is not set or file is not found
    * @example
    * ```typescript
-   * const path = await main.getFilePath('file123');
+   * import { fileService } from '@modular-rest/server';
+   *
+   * const path = await fileService.getFilePath('file123');
    * // Returns: '/uploads/jpeg/profile/1234567890.jpeg'
    * ```
    */

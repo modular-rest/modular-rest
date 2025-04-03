@@ -12,7 +12,7 @@ export default {
   //
   hidePageHeader: true,
   hideBreadcrumbs: true,
-  hidePageTitle: false,
+  hidePageTitle: true,
   hideGroupHeadings: true,
   indexFormat: 'table',
   parametersFormat: 'table',
@@ -22,6 +22,7 @@ export default {
   enumMembersFormat: 'table',
   propertyMembersFormat: 'table',
   typeDeclarationFormat: 'table',
+  blockTagsPreserveOrder: ['@example'],
   //
   // End formatting `typedoc-plugin-markdown`
   //

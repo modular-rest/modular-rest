@@ -4,33 +4,66 @@ import { DatabaseTrigger } from './database_trigger';
 
 /**
  * Configuration options for creating a collection definition.
- *
- * @remarks
  * This interface defines the structure for configuring MongoDB collections with their associated
  * schemas, permissions, and triggers.
  *
- * @param database - The name of the database where the collection resides
- * @param collection - The name of the collection to be configured
- * @param schema - Mongoose schema definition for the collection
- * @param permissions - List of permissions controlling access to the collection
- * @param triggers - Optional database triggers for custom operations
+ * @inline
  *
- * @beta
  */
 interface CollectionDefinitionOptions {
+  /** The name of the database where the collection resides */
   database: string;
+  /** The name of the collection to be configured */
   collection: string;
-  schema: Schema;
+  /** List of permissions controlling access to the collection */
   permissions: Permission[];
+  /** Optional database triggers for custom operations */
   triggers?: DatabaseTrigger[];
+
+  /**
+   * Mongoose schema definition for the collection
+   * @type {Schema}
+   * @see https://mongoosejs.com/docs/5.x/docs/guide.html
+   */
+  schema: Schema;
 }
 
 /**
- * A class that represents a MongoDB collection configuration.
+ * To have define any collection in your database you haveto use below method in your `db.[js|ts]` file and export an array of CollectionDefinition instances.
  *
- * @remarks
- * Provides full support for schema validation, access control through permissions,
+ * @param {CollectionDefinitionOptions} options - The options for the collection
+ * @expandType CollectionDefinitionOptions
+ *
+ * @returns A new instance of CollectionDefinition
+ *
+ * @public
+ *
+ * @example
+ * ```typescript
+ * import { defineCollection } from '@modular-rest/server';
+ *
+ * export default [
+ *   defineCollection({
+ *     database: 'users',
+ *     collection: 'info',
+ *     // schema: Schema,
+ *     // permissions: Permission[]
+ *     // trigger: DatabaseTrigger[]
+ *   })
+ * ]
+ * ```
+ */
+export function defineCollection(options: CollectionDefinitionOptions) {
+  return new CollectionDefinition(options);
+}
+
+/**
+ * A class that represents a MongoDB collection configuration. Provides full support for schema validation, access control through permissions,
  * and custom triggers for various database operations.
+ *
+ * @hideconstructor
+ *
+ * @deprecated Use `defineCollection` instead.
  *
  * @example
  * ```typescript
@@ -59,7 +92,7 @@ interface CollectionDefinitionOptions {
  * });
  * ```
  *
- * @public
+ * @private
  */
 export class CollectionDefinition {
   /** @readonly The name of the database */
@@ -99,5 +132,3 @@ export class CollectionDefinition {
     this.triggers = triggers;
   }
 }
-
-export default CollectionDefinition;

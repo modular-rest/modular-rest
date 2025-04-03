@@ -1,4 +1,4 @@
-import { PermissionType } from '../../class/security';
+import { AccessType } from '../../class/security';
 import { User } from '../../class/user';
 
 /**
@@ -35,9 +35,9 @@ export interface DefinedFunction {
   name: string;
   /**
    * List of permission types required to run the function
-   * @type {PermissionType[]}
+   * @type {AccessType[]}
    */
-  permissionTypes: PermissionType[];
+  permissionTypes: AccessType[];
 
   /**
    * The actual function implementation
@@ -153,7 +153,7 @@ export function runFunction(name: string, args: any, user: User): Promise<any> {
       const userBrief = user.getBrief();
       const userPermissions =
         typeof userBrief.permissionGroup === 'object' && userBrief.permissionGroup
-          ? userBrief.permissionGroup.validPermissionTypes
+          ? userBrief.permissionGroup.allowedAccessTypes
           : 'none';
 
       reject(
