@@ -1,7 +1,7 @@
 import { BaseResponseType } from "../types/base-response.type";
 import { OnProgressCallback } from "../types/types";
 import GlobalOptions from "./global_options";
-import axios from "axios";
+import axios, { AxiosProgressEvent } from "axios";
 
 interface Headers {
   [index: string]: string;
@@ -145,9 +145,7 @@ class HTTPClient {
         "content-type": "multipart/form-data",
       },
       data: form,
-      onUploadProgress: (progressEvent: ProgressEvent) => {
-        if (onProgress) onProgress(progressEvent);
-      },
+      onUploadProgress: onProgress,
     })
       .then((body) => body.data)
       .catch((error) => {
