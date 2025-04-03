@@ -2,9 +2,9 @@
 
 TypeScript version of a Node.js module based on Koa.js for developing REST APIs in a modular solution.
 
-## Version 2.0 Breaking Changes
+## Version 1.12 Breaking Changes
 
-The 2.0 release includes several breaking changes:
+The 1.12 release includes several breaking changes:
 
 - Complete rewrite in TypeScript with full type safety and improved IDE support
 - Auto-generated API documentation using TypeDoc
