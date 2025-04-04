@@ -97,5 +97,3 @@ const app = createRest({
 ```
 
 This guide should give you a clear understanding of how to configure `@modular-rest/server` for your project, along with some examples to get you started.
-
----

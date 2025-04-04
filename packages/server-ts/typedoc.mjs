@@ -3,8 +3,8 @@ export default {
 
   disableSources: true,
   excludeProtected: true,
-  excludeInternal: true,
-  excludePrivate: true,
+  excludeInternal: false,
+  excludePrivate: false,
   excludeExternals: true,
 
   //

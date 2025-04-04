@@ -29,7 +29,7 @@ defineCollection({
 ### File Schema
 Modular-rest has a predefined file schema that you it is necessary to use this schema if your collection needs to store files.
 
-**Note**: Modular-rest does not store the file directly in the database. Instead, it places the file in the [upload directory](../quick-start.md#modules-and-upload-directory) specified in the [config object](../quick-start.md#configuration-summary-table). The file information is then recorded in the database.
+**Note**: Modular-rest does not store the file directly in the database. Instead, it places the file in the [upload directory](/server-client-ts/quick-start.md#modules-and-upload-directory) specified in the [config object](/server-client-ts/quick-start.md#configuration-summary-table). The file information is then recorded in the database.
 
 ```typescript
 import { schemas } from '@modular-rest/server';
@@ -45,7 +45,7 @@ const userSchema = new Schema({
 
 
 ## Permissions
-The permission system in this framework provides a robust way to control access to your application's resources. It works by matching permission types that users have against those required by different parts of the system. [Read more](./../advanced/permission-and-user-access.md)
+The permission system in this framework provides a robust way to control access to your application's resources. It works by matching permission types that users have against those required by different parts of the system. [Read more](/server-client-ts/advanced/permission-and-user-access.md)
 
 <!-- @include: @/server-client-ts/generative/classes/permission.md#example -->
 

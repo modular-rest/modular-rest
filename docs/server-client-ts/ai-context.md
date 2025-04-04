@@ -1,5 +1,5 @@
 ---
-layout: raw
+layout: false
 ---
 
 <!-- @include: @/server-client-ts/key-concepts.md -->
