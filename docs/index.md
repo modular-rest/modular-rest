@@ -17,6 +17,9 @@ hero:
       text: Install
       link: /server-client/install.md
     - theme: alt
+      text: AI Prompt
+      link: /ai-integration.md
+    - theme: alt
       text: GitHub
       link: https://github.com/modular-rest/modular-rest
 

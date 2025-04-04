@@ -81,6 +81,10 @@ export default defineConfig({
               },
             ],
           },
+          {
+            text: "AI Prompt",
+            link: "/server-client-ts/ai-context.md",
+          },
         ],
       },
       {
