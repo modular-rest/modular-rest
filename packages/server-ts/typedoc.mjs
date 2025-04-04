@@ -2,10 +2,10 @@ export default {
   plugin: ['typedoc-plugin-missing-exports', 'typedoc-plugin-markdown'],
 
   disableSources: true,
-  excludeProtected: false,
-  excludeInternal: false,
-  excludePrivate: false,
-  excludeExternals: false,
+  excludeProtected: true,
+  excludeInternal: true,
+  excludePrivate: true,
+  excludeExternals: true,
 
   //
   // Formatting `typedoc-plugin-markdown`

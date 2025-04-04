@@ -36,21 +36,31 @@ jobs:
           fetch-depth: 0 # Not needed if lastUpdated is not enabled
       # - uses: pnpm/action-setup@v2 # Uncomment this if you're using pnpm
       # - uses: oven-sh/setup-bun@v1 # Uncomment this if you're using Bun
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: npm # or pnpm / yarn
           cache-dependency-path: ./docs
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      - name: Install dependencies
+
+      - name: Install dependencies and build server-ts docs
+        working-directory: ./packages/server-ts
+        run: |
+          yarn install
+          yarn docs
+
+      - name: Install vitepress dependencies
         working-directory: ./docs
         run: yarn install
+
       - name: Build with VitePress
         working-directory: ./docs
         run: |
-          yarn docs:build # or pnpm docs:build / yarn docs:build / bun run docs:build
+          yarn docs:build
           cp assets/* .vitepress/dist/assets
           touch .vitepress/dist/.nojekyll
       - name: Upload artifact
