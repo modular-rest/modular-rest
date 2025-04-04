@@ -40,8 +40,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-          cache: npm # or pnpm / yarn
+          node-version: 21.5.0
+          cache: yarn
           cache-dependency-path: ./docs
 
       - name: Setup Pages
