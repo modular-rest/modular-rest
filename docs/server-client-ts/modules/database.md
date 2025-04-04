@@ -29,7 +29,7 @@ defineCollection({
 ### File Schema
 Modular-rest has a predefined file schema that you it is necessary to use this schema if your collection needs to store files.
 
-**Note**: Modular-rest does not store the file directly in the database. Instead, it places the file in the [upload directory](../configuration.md#modules-and-upload-directory) specified in the [config object](../configuration.md#configuration-summary-table). The file information is then recorded in the database.
+**Note**: Modular-rest does not store the file directly in the database. Instead, it places the file in the [upload directory](../quick-start.md#modules-and-upload-directory) specified in the [config object](../quick-start.md#configuration-summary-table). The file information is then recorded in the database.
 
 ```typescript
 import { schemas } from '@modular-rest/server';
