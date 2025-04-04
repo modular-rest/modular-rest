@@ -37,12 +37,12 @@ jobs:
       # - uses: pnpm/action-setup@v2 # Uncomment this if you're using pnpm
       # - uses: oven-sh/setup-bun@v1 # Uncomment this if you're using Bun
 
-      - name: Setup Node
+      - name: Setup Node Server and Client
         uses: actions/setup-node@v3
         with:
-          node-version: 20.0.0
+          node-version: 21.5.0
           cache: yarn
-          cache-dependency-path: ./docs
+          cache-dependency-path: ./packages/server-ts
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -52,6 +52,13 @@ jobs:
         run: |
           yarn install
           yarn docs
+
+      - name: Setup Node for docs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.0.0
+          cache: yarn
+          cache-dependency-path: ./docs
 
       - name: Install vitepress dependencies
         working-directory: ./docs
