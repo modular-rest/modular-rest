@@ -1,8 +1,8 @@
 # Key Concepts
-Modular-rest is all about minimizing the amount of code you have to write to create a RESTful backend. then it can be don just by calling `createRest` function, and then you will have a fully functional RESTful backend. but to make it more flexible and customizable, modular-rest has some key concepts that you should know about them to be able to implement your own logic on top of modular-rest.
+Modular-rest is designed to minimize the amount of code needed to create a RESTful backend. With just a single call to the `createRest` function, you can have a fully functional RESTful backend up and running. To make it flexible and customizable, modular-rest introduces several key concepts that you should understand to effectively build your own logic on top of it.
 
 ## Configuration
-The most important part of modular-rest is the configuration object that you pass to `createRest` function. this object contains all the information that modular-rest needs to setup the server. you can read more about the configuration object in the [Quick start](./quick-start.md) section.
+The configuration object passed to the `createRest` function is the foundation of modular-rest. This object contains all the necessary information for modular-rest to set up the server. You can learn more about configuring your server in the [Quick Start](./quick-start.md) section.
 
 ## Modules
-Modules are the building blocks your logics on top of modular-rest. each module has a specific directory and all relevant files and data structure are placed in that directory. hence you can add unlimited modules to your project and scale it as much as you want. you can read more about modules in the [Modules](./modules/intro.md) section.
+Modules are the building blocks for implementing your business logic on top of modular-rest. Each module has its own dedicated directory where all relevant files and data structures are organized. This modular approach allows you to add unlimited modules to your project and scale it according to your needs. Learn more about working with modules in the [Modules](./modules/intro.md) section.
