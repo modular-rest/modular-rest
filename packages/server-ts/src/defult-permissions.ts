@@ -1,4 +1,4 @@
-import { PermissionGroup } from './index';
+import { PermissionGroup } from './class/security';
 
 export const permissionGroups = [
   new PermissionGroup({

@@ -146,7 +146,7 @@ export class User {
   static loadFromModel(model: any): Promise<User> {
     return new Promise((done, reject) => {
       // check required fields
-      const isValidData = validateObject(model, 'fullname email password permission');
+      const isValidData = validateObject(model, '_id permissionGroup');
 
       if (!isValidData.isValid) {
         return reject(User.notValid(model));

@@ -10,7 +10,7 @@ import { Options as KoaStaticOptionsBase } from 'koa-static';
 /**
  * The options for the static file server, it's a combination of modular-rest and [koa-static options](https://github.com/koajs/static?tab=readme-ov-file#options)
  */
-export interface StaticPathOptions extends KoaStaticOptionsBase {
+export type StaticPathOptions = KoaStaticOptionsBase & {
   /**
    * The actual path of the static files on your server
    */
@@ -19,7 +19,7 @@ export interface StaticPathOptions extends KoaStaticOptionsBase {
    * The path you want to serve the static files from
    */
   path: string;
-}
+};
 
 /**
  * JWT keypair configuration
@@ -37,12 +37,10 @@ interface KeyPair {
  * @interface MongoOptions
  * @property {string} dbPrefix - Prefix for database names
  * @property {string} mongoBaseAddress - MongoDB connection URL
- * @property {string} [addressMap] - Optional address mapping configuration
  */
 interface MongoOptions {
   dbPrefix: string;
   mongoBaseAddress: string;
-  addressMap?: string;
 }
 
 /**
