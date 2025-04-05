@@ -17,7 +17,7 @@ hero:
       text: Install
       link: /server-client/install.md
     - theme: alt
-      text: AI Prompt
+      text: AI Context
       link: /ai-integration.md
     - theme: alt
       text: GitHub

@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 21.5.0
           cache: yarn
-          cache-dependency-path: ./packages/server-ts
+          # cache-dependency-path: ./packages/server-ts
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -58,7 +58,7 @@ jobs:
         with:
           node-version: 20.0.0
           cache: yarn
-          cache-dependency-path: ./docs
+          # cache-dependency-path: ./docs
 
       - name: Install vitepress dependencies
         working-directory: ./docs
