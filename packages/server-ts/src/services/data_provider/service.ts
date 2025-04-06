@@ -1,5 +1,5 @@
 import mongoose, { Connection, Model, PopulateOptions, Query } from 'mongoose';
-import { AccessTypes, AccessDefinition } from '../../class/security';
+import { AccessTypes, AccessDefinition, Permission } from '../../class/security';
 import triggerOperator from '../../class/trigger_operator';
 import TypeCasters from './typeCasters';
 import { config } from '../../config';
@@ -191,7 +191,7 @@ export function getCollection<T>(db: string, collection: string): Model<T> {
  * @returns {any[]} List of permissions
  * @private
  */
-function _getPermissionList(db: string, collection: string, operationType: string): any[] {
+function _getPermissionList(db: string, collection: string, operationType: string): Permission[] {
   if (!permissionDefinitions[db] || !permissionDefinitions[db][collection]) {
     return [];
   }
@@ -224,9 +224,9 @@ export function checkAccess(
 ): boolean {
   const permissionList = _getPermissionList(db, collection, operationType);
   return permissionList.some(permission => {
-    if (permission.type === 'god_access') return true;
-    if (permission.type === 'anonymous_access' && user.type === 'anonymous') return true;
-    if (permission.type === 'user_access' && user.type === 'user') return true;
+    if (permission.accessType === 'god_access') return true;
+    if (permission.accessType === 'anonymous_access' && user.type === 'anonymous') return true;
+    if (permission.accessType === 'user_access' && user.type === 'user') return true;
     return false;
   });
 }
