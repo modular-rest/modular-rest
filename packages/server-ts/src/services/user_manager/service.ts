@@ -391,17 +391,22 @@ class UserManager {
       }
 
       try {
-        // Create anonymous user document
-        const anonymousUserDoc = await userModel.create({
-          type: 'anonymous',
-          permissionGroup: getDefaultAnonymousPermissionGroup().title,
-          phone: '',
-          email: '',
-          password: '',
-        });
+        // Check if anonymous user already exists
+        let anonymousUser = await userModel.findOne({ type: 'anonymous' }).exec();
+
+        if (!anonymousUser) {
+          // Create anonymous user document
+          anonymousUser = await userModel.create({
+            type: 'anonymous',
+            permissionGroup: getDefaultAnonymousPermissionGroup().title,
+            phone: '',
+            email: 'anonymous',
+            password: '',
+          });
+        }
 
         // Load user from document
-        const user = await User.loadFromModel(anonymousUserDoc);
+        const user = await User.loadFromModel(anonymousUser);
 
         // Get token payload
         const payload = user.getBrief();
