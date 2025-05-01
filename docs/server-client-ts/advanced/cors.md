@@ -23,7 +23,7 @@ Below is a detailed explanation of the CORS configuration options provided by `k
 Here's an example of how to configure CORS in your `@modular-rest/server` application:
 
 ```javascript
-const { createRest } = require('@modular-rest/server');
+import { createRest } from '@modular-rest/server';
 
 const corsOptions = {
     origin: 'https://www.example.com',

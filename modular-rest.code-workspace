@@ -1,12 +1,10 @@
 {
-  "folders": [{
+  "folders": [
+    {
       "path": "."
     },
     {
       "path": "packages/client"
-    },
-    {
-      "path": "packages/server"
     },
     {
       "path": "packages/server-ts"

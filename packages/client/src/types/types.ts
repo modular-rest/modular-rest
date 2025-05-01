@@ -1,3 +1,5 @@
+import { AxiosProgressEvent } from "axios";
+
 export interface RequestError {
   hasError: boolean;
   error: any;
@@ -11,7 +13,7 @@ export interface FileDocument {
   size: Number;
 }
 
-export type OnProgressCallback = (progressEvent: ProgressEvent) => void;
+export type OnProgressCallback = (progressEvent: AxiosProgressEvent) => void;
 
 export * from "./data-provider.type";
 export * from "./auth.type";

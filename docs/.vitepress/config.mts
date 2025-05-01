@@ -15,7 +15,7 @@ export default defineConfig({
   },
 
   // https://vitepress.dev/guide/mpa-mode#mpa-mode
-  mpa: false,
+  mpa: true,
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       {
-        text: "Server TS",
+        text: "Server",
         items: [
           { text: "Install", link: "/server-client-ts/install" },
           { text: "Quick Start", link: "/server-client-ts/quick-start" },
@@ -81,44 +81,48 @@ export default defineConfig({
               },
             ],
           },
-        ],
-      },
-      {
-        text: "Server",
-        items: [
-          { text: "Install", link: "/server-client/install" },
-          { text: "Key Concepts", link: "/server-client/key-concepts" },
-          { text: "Configuration", link: "/server-client/configuration" },
           {
-            text: "Modules",
-            items: [
-              { text: "Intro", link: "/server-client/modules/intro" },
-              { text: "Database", link: "/server-client/modules/database" },
-              { text: "Functions", link: "/server-client/modules/functions" },
-              {
-                text: "Custom Route",
-                link: "/server-client/modules/custom-route",
-              },
-            ],
-          },
-          {
-            text: "Utility",
-            items: [
-              { text: "Database", link: "/server-client/utility/database" },
-              { text: "Router", link: "/server-client/utility/router" },
-              { text: "File", link: "/server-client/utility/file" },
-              {
-                text: "UserManager",
-                link: "/server-client/utility/user-manager",
-              },
-            ],
-          },
-          {
-            text: "Advanced Topics",
-            items: [{ text: "Cors", link: "/server-client/advanced/cors" }],
+            text: "AI Prompt",
+            link: "/server-client-ts/ai-context.md",
           },
         ],
       },
+      // {
+      //   text: "Server",
+      //   items: [
+      //     { text: "Install", link: "/server-client/install" },
+      //     { text: "Key Concepts", link: "/server-client/key-concepts" },
+      //     { text: "Configuration", link: "/server-client/configuration" },
+      //     {
+      //       text: "Modules",
+      //       items: [
+      //         { text: "Intro", link: "/server-client/modules/intro" },
+      //         { text: "Database", link: "/server-client/modules/database" },
+      //         { text: "Functions", link: "/server-client/modules/functions" },
+      //         {
+      //           text: "Custom Route",
+      //           link: "/server-client/modules/custom-route",
+      //         },
+      //       ],
+      //     },
+      //     {
+      //       text: "Utility",
+      //       items: [
+      //         { text: "Database", link: "/server-client/utility/database" },
+      //         { text: "Router", link: "/server-client/utility/router" },
+      //         { text: "File", link: "/server-client/utility/file" },
+      //         {
+      //           text: "UserManager",
+      //           link: "/server-client/utility/user-manager",
+      //         },
+      //       ],
+      //     },
+      //     {
+      //       text: "Advanced Topics",
+      //       items: [{ text: "Cors", link: "/server-client/advanced/cors" }],
+      //     },
+      //   ],
+      // },
       {
         text: "Client",
         items: [

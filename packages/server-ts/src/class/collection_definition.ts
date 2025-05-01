@@ -25,7 +25,7 @@ interface CollectionDefinitionOptions {
    * @type {Schema}
    * @see https://mongoosejs.com/docs/5.x/docs/guide.html
    */
-  schema: Schema;
+  schema: Schema<any>;
 }
 
 /**
@@ -102,7 +102,7 @@ export class CollectionDefinition {
   collection: string;
 
   /** @readonly Mongoose schema definition */
-  schema: Schema;
+  schema: Schema<any>;
 
   /** @readonly List of permissions for the collection */
   permissions: Permission[];

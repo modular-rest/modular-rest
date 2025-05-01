@@ -1,0 +1,21 @@
+{
+	"name": "modular-rest",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"build": "yarn workspaces run build",
+		"test": "yarn workspaces run test",
+		"release": "semantic-release"
+	},
+	"devDependencies": {
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^11.0.1",
+		"@semantic-release/npm": "^12.0.1",
+		"@semantic-release/release-notes-generator": "^14.0.3",
+		"semantic-release": "^24.2.3",
+		"semantic-release-monorepo": "8.0.2"
+	}
+}

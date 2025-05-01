@@ -2,7 +2,7 @@
 Modules are the building blocks your logics on top of modular-rest. each module has a specific directory and all relevant files and data structure are placed in that directory. hence you can add unlimited modules to your project and scale it as much as you want.
 
 ## Structure
-All modules should be placed in the `modules` directory that you define and [introduce in the configuration object](./../configuration.md#modules-path). Each module should have its own directory with the following structure, and all files should be placed in that directory but none of theme are required.
+All modules should be placed in the `modules` directory that you define and [introduce in the configuration object](/server-client-ts/quick-start.md#modules-path). Each module should have its own directory with the following structure, and all files should be placed in that directory but none of theme are required.
 
 - `db.js`: to define the database models and their relationships.
 - `functions`: to define functions that you want to be invoked by client library.

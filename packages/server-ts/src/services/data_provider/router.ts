@@ -6,6 +6,7 @@ import nestedProperty from 'nested-property';
 import * as service from './service';
 import * as middleware from '../../middlewares';
 import { Context, Next } from 'koa';
+import mongoose from 'mongoose';
 
 const name = 'data-provider';
 
@@ -91,6 +92,12 @@ dataProvider.post('/find', async (ctx: Context) => {
   await queryRequest
     .exec()
     .then(async docs => {
+      // Call trigger
+      service.triggers.call('find', body.database, body.collection, {
+        query: body.query,
+        queryResult: docs,
+      });
+
       ctx.body = { data: docs };
     })
     .catch(err => {
@@ -144,6 +151,12 @@ dataProvider.post('/find-one', async (ctx: Context) => {
   await queryRequest
     .exec()
     .then(async doc => {
+      // Call trigger
+      service.triggers.call('find-one', body.database, body.collection, {
+        query: body.query,
+        queryResult: doc,
+      });
+
       ctx.body = { data: doc };
     })
     .catch(err => {
@@ -179,13 +192,292 @@ dataProvider.post('/count', async (ctx: Context) => {
 
   await collection
     .countDocuments(body.query)
+    .exec()
     .then(count => {
+      // Call trigger
+      service.triggers.call('count', body.database, body.collection, {
+        query: body.query,
+        queryResult: count,
+      });
+
       ctx.body = { data: count };
     })
     .catch(err => {
       ctx.status = err.status || 500;
       ctx.body = err.message;
     });
+});
+
+dataProvider.post('/update-one', async (ctx: Context) => {
+  const body = ctx.request.body;
+  const bodyValidate = validateObject(body, 'database collection query update');
+
+  // fields validation
+  if (!bodyValidate.isValid) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidate.requires })));
+  }
+
+  // access validation
+  const hasAccess = service.checkAccess(
+    body.database,
+    body.collection,
+    AccessTypes.write,
+    body.query,
+    ctx.state.user
+  );
+  if (!hasAccess) ctx.throw(403, 'access denied');
+
+  // collection validation
+  const collection = service.getCollection(body.database, body.collection);
+  if (collection == null) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
+  }
+
+  // get removing doc as output for triggers
+  const output: any = await collection.findOne(body.query).exec().then();
+
+  // operate on db
+  await collection
+    .updateOne(body.query, body.update, body.options)
+    .exec()
+    .then(writeOpResult => {
+      // Call trigger
+      service.triggers.call('update-one', body.database, body.collection, {
+        query: body.query,
+        queryResult: writeOpResult,
+      });
+
+      ctx.body = { data: writeOpResult };
+    })
+    .catch(err => {
+      ctx.status = err.status || 500;
+      ctx.body = err.message;
+    });
+});
+
+dataProvider.post('/insert-one', async (ctx: Context) => {
+  const body = ctx.request.body;
+  const bodyValidate = validateObject(body, 'database collection doc');
+
+  // fields validation
+  if (!bodyValidate.isValid) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidate.requires })));
+  }
+
+  // access validation
+  const hasAccess = service.checkAccess(
+    body.database,
+    body.collection,
+    AccessTypes.write,
+    body.doc,
+    ctx.state.user
+  );
+  if (!hasAccess) {
+    console.log(body);
+    console.log(ctx.state.user.permission);
+    ctx.throw(403, 'access denied');
+  }
+
+  // collection validation
+  const collection = service.getCollection(body.database, body.collection);
+  if (collection == null) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
+  }
+
+  // operate on db
+  await new collection(body.doc)
+    .save()
+    .then(async newDoc => {
+      // Call trigger
+      service.triggers.call('insert-one', body.database, body.collection, {
+        query: body.query,
+        queryResult: newDoc,
+      });
+
+      ctx.body = { data: newDoc };
+    })
+    .catch(err => {
+      ctx.status = err.status || 500;
+      ctx.body = err.message;
+    });
+});
+
+dataProvider.post('/remove-one', async (ctx: Context) => {
+  const body = ctx.request.body;
+  const bodyValidate = validateObject(body, 'database collection query');
+
+  // fields validation
+  if (!bodyValidate.isValid) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidate.requires })));
+  }
+
+  // access validation
+  const hasAccess = service.checkAccess(
+    body.database,
+    body.collection,
+    AccessTypes.write,
+    body.query,
+    ctx.state.user
+  );
+  if (!hasAccess) ctx.throw(403, 'access denied');
+
+  // collection validation
+  const collection = service.getCollection(body.database, body.collection);
+  if (collection == null) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
+  }
+
+  // get removing doc as output for triggers
+  const output: any = await collection.findOne(body.query).exec().then();
+
+  // operate on db
+  await collection
+    .deleteOne(body.query)
+    .exec()
+    .then(async (result: any) => {
+      // Call trigger
+      service.triggers.call('remove-one', body.database, body.collection, {
+        query: body.query,
+        queryResult: result,
+      });
+
+      ctx.body = { data: result };
+    })
+    .catch((err: Error) => {
+      ctx.status = (err as any).status || 500;
+      ctx.body = err.message;
+    });
+});
+
+dataProvider.post('/aggregate', async (ctx: Context) => {
+  const body = ctx.request.body;
+  const bodyValidate = validateObject(body, 'database collection accessQuery');
+
+  // fields validation
+  if (!bodyValidate.isValid) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidate.requires })));
+  }
+
+  // access validation
+  const hasAccess = service.checkAccess(
+    body.database,
+    body.collection,
+    AccessTypes.read,
+    body.accessQuery,
+    ctx.state.user
+  );
+  if (!hasAccess) ctx.throw(403, 'access denied');
+
+  // collection validation
+  const collection = service.getCollection(body.database, body.collection);
+  if (collection == null) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
+  }
+
+  // operate on db
+  await collection
+    .aggregate(body.pipelines)
+    .exec()
+    .then(async (result: any) => {
+      // Call trigger
+      service.triggers.call('aggregate', body.database, body.collection, {
+        query: body.query,
+        queryResult: result,
+      });
+
+      ctx.body = { data: result };
+    })
+    .catch((err: any) => {
+      ctx.status = err.status || 500;
+      ctx.body = err.message;
+    });
+});
+
+dataProvider.post('/findByIds', async (ctx: Context, next: Next) => {
+  const body = ctx.request.body;
+  const bodyValidate = validateObject(body, 'database collection ids');
+
+  // fields validation
+  if (!bodyValidate.isValid) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidate.requires })));
+  }
+
+  // access validation
+  const hasAccess = service.checkAccess(
+    body.database,
+    body.collection,
+    AccessTypes.read,
+    body.accessQuery || {},
+    ctx.state.user
+  );
+  if (!hasAccess) ctx.throw(403, 'access denied');
+
+  // collection validation
+  const collection = service.getCollection(body.database, body.collection);
+  if (collection == null) {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
+  }
+
+  const or: Array<{ _id: any }> = [];
+
+  try {
+    body.ids.forEach((id: any) => {
+      const castedid = service.getAsID(id);
+      or.push({ _id: castedid });
+    });
+  } catch (e) {
+    console.log('ids.forEach', e);
+  }
+
+  const pipelines = [
+    {
+      $match: { $or: or },
+    },
+    // {
+    //     $sort: body.sort || { _id: 1 }
+    // }
+  ];
+
+  // operate on db
+  await collection
+    .aggregate(pipelines)
+    .exec()
+    .then(async (result: any[]) => {
+      ctx.state = { data: result };
+      await next();
+    })
+    .catch((err: Error) => {
+      ctx.status = (err as any).status || 500;
+      ctx.body = err.message;
+    });
+});
+
+// Final middleware for converting mongoose documents to JSON
+dataProvider.use('/', async (ctx: Context, next: Next) => {
+  // this event is responsible to covert whole mongoose doc to json form
+  // including getters, public properties
+  // each mongoose doc must have a "toJson" method being defined on its own Schema.
+
+  const state = ctx.state;
+  // let result;
+
+  // // array
+  // if(!isNaN(state.length)) {
+  //     result = [];
+
+  //     for (let index = 0; index < state.length; index++) {
+  //         const element = state[index];
+  //         if(element.hasOwnProperty('toJson'))
+  //             result.push(element.toJson());
+  //         else result.push(element);
+  //     }
+  // }
+  // // object
+  // else {
+  //     result = state.toJson();
+  // }
+
+  ctx.body = state;
 });
 
 export { name, dataProvider as main };

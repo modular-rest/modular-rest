@@ -4,10 +4,13 @@ import { CollectionDefinition } from './class/collection_definition';
 import { PermissionGroup } from './class/security';
 import { CmsTrigger } from './class/cms_trigger';
 import { DefinedFunction } from './services/functions/service';
-import cors from '@koa/cors';
+import { Options as KoaCorsOptions } from '@koa/cors';
 import { Options as KoaStaticOptionsBase } from 'koa-static';
 
-export interface StaticPathOptions extends KoaStaticOptionsBase {
+/**
+ * The options for the static file server, it's a combination of modular-rest and [koa-static options](https://github.com/koajs/static?tab=readme-ov-file#options)
+ */
+export type StaticPathOptions = KoaStaticOptionsBase & {
   /**
    * The actual path of the static files on your server
    */
@@ -16,7 +19,7 @@ export interface StaticPathOptions extends KoaStaticOptionsBase {
    * The path you want to serve the static files from
    */
   path: string;
-}
+};
 
 /**
  * JWT keypair configuration
@@ -34,12 +37,10 @@ interface KeyPair {
  * @interface MongoOptions
  * @property {string} dbPrefix - Prefix for database names
  * @property {string} mongoBaseAddress - MongoDB connection URL
- * @property {string} [addressMap] - Optional address mapping configuration
  */
 interface MongoOptions {
   dbPrefix: string;
   mongoBaseAddress: string;
-  addressMap?: string;
 }
 
 /**
@@ -56,7 +57,7 @@ interface AdminUser {
 /**
  * Configuration options for creating a REST API instance
  * @interface RestOptions
- * @property {cors.Options} [cors] - CORS configuration options
+ * @property {KoaCorsOptions} [cors] - CORS configuration [options](https://github.com/koajs/cors?tab=readme-ov-file#corsoptions)
  * @property {string} [modulesPath] - Path to custom modules directory
  * @property {string} [uploadDirectory] - Directory for file uploads
  * @property {any} [koaBodyOptions] - Options for koa-body middleware
@@ -76,7 +77,7 @@ interface AdminUser {
  * @property {DefinedFunction[]} [functions] - Custom API functions
  */
 export interface RestOptions {
-  cors?: cors.Options;
+  cors?: KoaCorsOptions;
   modulesPath?: string;
   uploadDirectory?: string;
   koaBodyOptions?: any;

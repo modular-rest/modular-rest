@@ -5,8 +5,10 @@ name: Deploy VitePress site to Pages
 on:
   # Runs on pushes targeting the `main` branch. Change this to `master` if you're
   # using the `master` branch as the default branch.
-  push:
-    branches: [beta]
+  # push:
+  #   branches: [main]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -29,30 +31,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Not needed if lastUpdated is not enabled
       # - uses: pnpm/action-setup@v2 # Uncomment this if you're using pnpm
       # - uses: oven-sh/setup-bun@v1 # Uncomment this if you're using Bun
-      - name: Setup Node
+
+      - name: Setup Node Server and Client
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-          cache: npm # or pnpm / yarn
-          cache-dependency-path: ./docs
+          node-version: 21.5.0
+          cache: yarn
+          # cache-dependency-path: ./packages/server-ts
+
       - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Install dependencies
+        uses: actions/configure-pages@v4
+
+      - name: Install dependencies and build server-ts docs
+        working-directory: ./packages/server-ts
+        run: |
+          yarn install
+          yarn docs
+
+      - name: Setup Node for docs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.0.0
+          cache: yarn
+          # cache-dependency-path: ./docs
+
+      - name: Install vitepress dependencies
         working-directory: ./docs
         run: yarn install
+
       - name: Build with VitePress
         working-directory: ./docs
         run: |
-          yarn docs:build # or pnpm docs:build / yarn docs:build / bun run docs:build
+          yarn docs:build
           cp assets/* .vitepress/dist/assets
           touch .vitepress/dist/.nojekyll
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/.vitepress/dist
 
@@ -67,4 +86,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
