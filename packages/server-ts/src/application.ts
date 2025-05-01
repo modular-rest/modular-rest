@@ -78,7 +78,7 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
     const defaultStaticPath = config.staticPath.actualPath || '';
     const defaultStaticRootPath = config.staticPath.path || '/assets';
 
-    const staticOptions: Partial<StaticPathOptions> = { ...config.staticPath };
+    const staticOptions: Partial<StaticPathOptions> = { ...config.staticPath, defer: true };
 
     delete staticOptions.actualPath;
     delete staticOptions.path;

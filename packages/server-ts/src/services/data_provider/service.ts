@@ -302,4 +302,5 @@ export function performAdditionalOptionsToQueryObject<T = any>(
   return queryObj;
 }
 
-export { TypeCasters };
+// Instead, export triggerOperator as triggers
+export { triggerOperator as triggers, TypeCasters };
