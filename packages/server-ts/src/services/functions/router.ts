@@ -25,9 +25,10 @@ functionRouter.post('/run', middleware.auth, async (ctx: Context) => {
 
   try {
     const result = await service.runFunction(name, args, ctx.state.user);
-    ctx.body = JSON.stringify(reply('s', { data: result }));
+    ctx.body = reply('s', { data: result });
   } catch (e) {
-    ctx.throw(400, JSON.stringify(reply('e', { error: (e as Error).message })));
+    ctx.status = 400;
+    ctx.body = reply('e', { message: (e as Error).message });
   }
 });
 
