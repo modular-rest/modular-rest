@@ -19,7 +19,7 @@ export type CmsOperation = 'update-one' | 'insert-one' | 'remove-one';
  * ```typescript
  * const trigger = new CmsTrigger('insert-one', (context) => {
  *   console.log('New CMS document inserted:', context.queryResult);
- *   // Perform additional actions after CMS document insertion
+ *   // Perform additional actions after CMS document insertion.
  * });
  *
  * // Use the trigger in RestOptions
