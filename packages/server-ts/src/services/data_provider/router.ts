@@ -244,6 +244,7 @@ dataProvider.post('/update-one', async (ctx: Context) => {
       // Call trigger
       service.triggers.call('update-one', body.database, body.collection, {
         query: body.query,
+        update: body.update,
         queryResult: writeOpResult,
       });
 
@@ -290,7 +291,7 @@ dataProvider.post('/insert-one', async (ctx: Context) => {
     .then(async newDoc => {
       // Call trigger
       service.triggers.call('insert-one', body.database, body.collection, {
-        query: body.query,
+        doc: body.doc,
         queryResult: newDoc,
       });
 
@@ -381,7 +382,7 @@ dataProvider.post('/aggregate', async (ctx: Context) => {
     .then(async (result: any) => {
       // Call trigger
       service.triggers.call('aggregate', body.database, body.collection, {
-        query: body.query,
+        pipelines: body.pipelines,
         queryResult: result,
       });
 
