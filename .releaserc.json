@@ -23,6 +23,10 @@
 						"release": "patch"
 					},
 					{
+						"type": "refactor",
+						"release": "patch"
+					},
+					{
 						"type": "perf",
 						"release": "patch"
 					},

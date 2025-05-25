@@ -13,12 +13,18 @@ export type DatabaseOperation =
 /**
  * Context interface for database trigger callbacks
  * @interface DatabaseTriggerContext
- * @property {Record<string, any>} query - The query parameters used in the database operation
- * @property {any | any[]} queryResult - The result of the database operation
+ * @property {Record<string, any>} doc - The document data for insert/update operations
+ * @property {Record<string, any>} query - The query data for find/find-one operations
+ * @property {Record<string, any>} update - The update data for update operations
+ * @property {Record<string, any>[]} pipelines - The aggregation pipelines for aggregate operations
+ * @property {Record<string, any> } queryResult - The result of the database operation
  */
 export interface DatabaseTriggerContext {
-  query: Record<string, any>;
-  queryResult: any | any[];
+  doc?: Record<string, any>;
+  query?: Record<string, any>;
+  update?: Record<string, any>;
+  pipelines?: Record<string, any>[];
+  queryResult: Record<string, any>;
 }
 
 /**

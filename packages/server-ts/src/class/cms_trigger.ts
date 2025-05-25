@@ -1,3 +1,5 @@
+import { DatabaseTriggerContext } from './database_trigger';
+
 /**
  * Type for CMS operations that can trigger a callback
  * @typedef {('update-one' | 'insert-one' | 'remove-one')} CmsOperation
@@ -7,17 +9,6 @@
  * - 'remove-one': Triggered when removing a document from the CMS
  */
 export type CmsOperation = 'update-one' | 'insert-one' | 'remove-one';
-
-/**
- * Context interface for CMS trigger callbacks
- * @interface CmsTriggerContext
- * @property {Record<string, any>} query - The query parameters used in the CMS operation
- * @property {any} queryResult - The result of the CMS operation
- */
-export interface CmsTriggerContext {
-  query: Record<string, any>;
-  queryResult: any;
-}
 
 /**
  * Defines a callback to be executed on specific CMS operations
@@ -40,7 +31,7 @@ export interface CmsTriggerContext {
  */
 export class CmsTrigger {
   operation: CmsOperation;
-  callback: (context: CmsTriggerContext) => void;
+  callback: (context: DatabaseTriggerContext) => void;
 
   /**
    * Creates a new CmsTrigger instance
@@ -59,7 +50,10 @@ export class CmsTrigger {
    * });
    * ```
    */
-  constructor(operation: CmsOperation, callback: (context: CmsTriggerContext) => void = () => {}) {
+  constructor(
+    operation: CmsOperation,
+    callback: (context: DatabaseTriggerContext) => void = () => {}
+  ) {
     this.operation = operation;
     this.callback = callback;
   }
