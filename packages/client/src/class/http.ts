@@ -87,7 +87,8 @@ class HTTPClient {
         let result;
 
         if (error.response && error.response.data) {
-          result = error.response.data.error || error.message.data;
+          // Return the full response data, not just error.response.data.error
+          result = error.response.data;
         } else {
           result = error.message;
         }
