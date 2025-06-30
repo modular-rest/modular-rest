@@ -43,13 +43,31 @@ class AuthService {
   }
 
   private saveSession() {
+    // If there is not any localstorage
+    if (typeof localStorage === "undefined") {
+      console.log("No local storage to save session of `AuthService`");
+      return;
+    }
+
     if (this.token != null) localStorage.setItem("token", this.token);
-    else localStorage.removeItem("token");
+    else {
+      localStorage.removeItem("token");
+    }
+  }
+
+  private loadSession() {
+    // If there is not any localstorage
+    if (typeof localStorage === "undefined") {
+      console.log("No local storage to load session of `AuthService`");
+      return;
+    }
+
+    this.token = localStorage.getItem("token");
   }
 
   loginWithLastSession() {
     // Load token
-    this.token = localStorage.getItem("token");
+    this.loadSession();
 
     return this.loginWithToken(this.token || "", true);
   }
