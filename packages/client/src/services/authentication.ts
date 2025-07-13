@@ -22,14 +22,26 @@ class AuthService {
    * Check if the user or anonymous user is logged in
    */
   get isLogin() {
-    return !!this.user;
+    const conditions = [
+      () => !!this.user && this.user.type === "user",
+      // This should be removed when in future we verify anonymous user
+      // Currently we don't verify anonymous token
+      () => this.token && !this.user,
+    ];
+    return conditions.some((condition) => condition());
   }
 
   /**
    * Check if the user is anonymous
    */
   get isAnonymousUser() {
-    return this.user?.type === "anonymous";
+    const conditions = [
+      () => this.user?.type === "anonymous",
+      // This should be removed when in future we verify anonymous user
+      // Currently we don't verify anonymous token
+      () => this.token && !this.user,
+    ];
+    return conditions.some((condition) => condition());
   }
 
   get getToken() {
