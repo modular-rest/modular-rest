@@ -33,7 +33,7 @@ class User {
     phone?: string;
     id: string;
     permissionGroup: any;
-    type: string;
+    type: "user" | "anonymous";
   }) {
     if (detail.email) this.email = detail.email;
     if (detail.phone) this.phone = detail.phone;
@@ -52,8 +52,8 @@ class User {
 
     let key = false;
 
-    for (let i = 0; i < this.permissionGroup.validPermissionTypes.length; i++) {
-      const userPermissionType = this.permissionGroup.validPermissionTypes[i];
+    for (let i = 0; i < this.permissionGroup.allowedAccessTypes.length; i++) {
+      const userPermissionType = this.permissionGroup.allowedAccessTypes[i];
 
       if (userPermissionType == permissionField) {
         key = true;
