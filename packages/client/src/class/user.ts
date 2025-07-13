@@ -1,3 +1,14 @@
+export interface PermissionGroup {
+  /** @hidden */
+  title: string;
+  /** @hidden */
+  isDefault: boolean;
+  /** @hidden */
+  isAnonymous: boolean;
+  /** @hidden */
+  allowedAccessTypes: string[];
+}
+
 class User {
   /**
    * Registered email
@@ -14,8 +25,8 @@ class User {
   /**
    * permission type
    */
-  type: string;
-  private permissionGroup: any;
+  type: "user" | "anonymous";
+  private permissionGroup: PermissionGroup;
 
   constructor(detail: {
     email?: string;

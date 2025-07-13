@@ -18,8 +18,18 @@ class AuthService {
 
   user: User | null = null;
 
+  /**
+   * Check if the user or anonymous user is logged in
+   */
   get isLogin() {
-    return !!this.token;
+    return !!this.user;
+  }
+
+  /**
+   * Check if the user is anonymous
+   */
+  get isAnonymousUser() {
+    return this.user?.type === "anonymous";
   }
 
   get getToken() {

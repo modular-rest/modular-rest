@@ -48,7 +48,7 @@ export class User {
     phone: string,
     email: string,
     password: string,
-    type: string,
+    type: 'user' | 'anonymous',
     model: any
   ) {
     this.id = id;
