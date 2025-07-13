@@ -26,6 +26,7 @@ class AuthService {
       () => !!this.user && this.user.type === "user",
       // This should be removed when in future we verify anonymous user
       // Currently we don't verify anonymous token
+      // TODO: Remove this when we verify anonymous token
       () => this.token && !this.user,
     ];
     return conditions.some((condition) => condition());
@@ -39,6 +40,7 @@ class AuthService {
       () => this.user?.type === "anonymous",
       // This should be removed when in future we verify anonymous user
       // Currently we don't verify anonymous token
+      // TODO: Remove this when we verify anonymous token
       () => this.token && !this.user,
     ];
     return conditions.some((condition) => condition());
