@@ -91,7 +91,7 @@ export async function setup({
   JWT.main.setKies(keyPairToUse.private, keyPairToUse.public);
 
   if (!adminUser) {
-    throw new Error('Admin user is not supported in TypeScript version');
+    throw new Error('Admin user configuration is required. Please provide adminUser in your createRest() options.');
   }
   /**
    * Data Insertion

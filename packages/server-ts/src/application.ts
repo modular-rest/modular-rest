@@ -212,7 +212,7 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
 
   // 4. Setting up default services
   try {
-    await require('./helper/presetup_services').setup(options);
+    await require('./helper/presetup_services').setup(config);
   } catch (e) {
     return Promise.reject(e);
   }
