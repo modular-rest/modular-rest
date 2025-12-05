@@ -2,6 +2,9 @@
 import { createRest } from './application';
 import { Schema } from 'mongoose';
 
+// Configuration types
+import { StaticPathOptions, RestOptions } from './config';
+
 // Utilities
 import * as paginator from './class/paginator';
 import * as reply from './class/reply';
@@ -36,6 +39,29 @@ import * as middleware from './middlewares';
  * @returns A new REST API instance
  */
 export { createRest };
+
+/**
+ * @description Configuration types for creating a REST API instance
+ * @example
+ * ```typescript
+ * import { RestOptions, StaticPathOptions } from '@modular-rest/server-ts';
+ *
+ * const config: RestOptions = {
+ *   port: 3000,
+ *   staticPaths: [
+ *     {
+ *       directory: './public',
+ *       urlPath: '/static'
+ *     }
+ *   ],
+ *   uploadDirectoryConfig: {
+ *     directory: './uploads',
+   *     urlPath: '/assets'
+ *   }
+ * };
+ * ```
+ */
+export type { RestOptions, StaticPathOptions };
 
 export { CollectionDefinition, defineCollection };
 
