@@ -24,7 +24,7 @@ const authSchema = new Schema(
 authSchema.index({ email: 1 }, { unique: true });
 authSchema.pre(['save', 'updateOne'], function (this: AuthDocument, next) {
   // Encode the password before saving
-  if (this.isModified && this.isModified('password')) {
+  if (this.isModified && this.isModified('password') && this.password) {
     this.password = Buffer.from(this.password).toString('base64');
   }
   next();
