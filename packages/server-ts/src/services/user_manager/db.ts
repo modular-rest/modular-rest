@@ -12,11 +12,11 @@ interface AuthDocument extends mongoose.Document {
 
 const authSchema = new Schema(
   {
-    permissionGroup: String,
-    email: String,
-    phone: String,
-    password: String,
-    type: { type: String, default: 'user', enum: ['user', 'anonymous'] },
+    permissionGroup: { type: String, required: true },
+    email: { type: String, required: false },
+    phone: { type: String, required: false },
+    password: { type: String, required: true },
+    type: { type: String, required: true, default: 'user', enum: ['user', 'anonymous'] },
   },
   { timestamps: true }
 );
