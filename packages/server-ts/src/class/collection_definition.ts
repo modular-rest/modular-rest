@@ -1,6 +1,9 @@
-import { Schema } from 'mongoose';
+import { Schema, Model } from 'mongoose';
 import { Permission } from './security';
 import { DatabaseTrigger } from './database_trigger';
+import modelRegistry from '../services/data_provider/model_registry';
+import { MongoOption } from '../services/data_provider/service';
+import { config } from '../config';
 
 /**
  * Configuration options for creating a collection definition.
@@ -26,6 +29,12 @@ interface CollectionDefinitionOptions {
    * @see https://mongoosejs.com/docs/5.x/docs/guide.html
    */
   schema: Schema<any>;
+
+  /**
+   * Optional MongoDB connection options. If not provided, will use config.mongo if available.
+   * This is used to pre-create the model before server startup.
+   */
+  mongoOption?: MongoOption;
 }
 
 /**
@@ -34,7 +43,7 @@ interface CollectionDefinitionOptions {
  * @param {CollectionDefinitionOptions} options - The options for the collection
  * @expandType CollectionDefinitionOptions
  *
- * @returns A new instance of CollectionDefinition
+ * @returns A CollectionDefinition instance with a model property that returns the mongoose model
  *
  * @public
  *
@@ -51,10 +60,72 @@ interface CollectionDefinitionOptions {
  *     // trigger: DatabaseTrigger[]
  *   })
  * ]
+ *
+ * // Access the model directly:
+ * const userCollection = defineCollection({...});
+ * const UserModel = userCollection.model;
+ * const users = await UserModel.find();
  * ```
  */
-export function defineCollection(options: CollectionDefinitionOptions) {
-  return new CollectionDefinition(options);
+export function defineCollection(
+  options: CollectionDefinitionOptions
+): CollectionDefinition & { model: Model<any> } {
+  const definition = new CollectionDefinition(options);
+
+  // Try to get mongoOption from options or config
+  let mongoOption: MongoOption | undefined = options.mongoOption;
+  if (!mongoOption && config.mongo) {
+    mongoOption = config.mongo as MongoOption;
+  }
+
+  // If mongoOption is available, register the collection and create the model
+  if (mongoOption) {
+    const model = modelRegistry.registerCollection(definition, mongoOption);
+    definition.setModel(model);
+  }
+
+  // Create a proxy object that includes both CollectionDefinition properties and model
+  const result = definition as CollectionDefinition & { model: Model<any> };
+
+  // Add model property getter
+  Object.defineProperty(result, 'model', {
+    get() {
+      // If model was already set, return it
+      const existingModel = definition.getModel();
+      if (existingModel) {
+        return existingModel;
+      }
+
+      // Otherwise, try to get from registry
+      const registryModel = modelRegistry.getModel(definition.database, definition.collection);
+      if (registryModel) {
+        definition.setModel(registryModel);
+        return registryModel;
+      }
+
+      // If still not found, try to get mongoOption from config and register now
+      let currentMongoOption: MongoOption | undefined = mongoOption;
+      if (!currentMongoOption && config.mongo) {
+        currentMongoOption = config.mongo as MongoOption;
+      }
+
+      if (currentMongoOption) {
+        const newModel = modelRegistry.registerCollection(definition, currentMongoOption);
+        definition.setModel(newModel);
+        return newModel;
+      }
+
+      throw new Error(
+        `Model for ${definition.database}.${definition.collection} is not available. ` +
+          `Ensure mongoOption is provided in defineCollection options, config.mongo is set, ` +
+          `or the collection is registered via addCollectionDefinitionByList before accessing the model.`
+      );
+    },
+    enumerable: true,
+    configurable: true,
+  });
+
+  return result;
 }
 
 /**
@@ -110,6 +181,9 @@ export class CollectionDefinition {
   /** @readonly Optional database triggers */
   triggers?: DatabaseTrigger[];
 
+  /** Optional mongoose model for this collection */
+  private _model: Model<any> | null = null;
+
   /**
    * Creates a new CollectionDefinition instance
    *
@@ -130,5 +204,21 @@ export class CollectionDefinition {
     this.schema = schema;
     this.permissions = permissions;
     this.triggers = triggers;
+  }
+
+  /**
+   * Get the mongoose model for this collection
+   * @returns {Model<any> | null} The mongoose model or null if not set
+   */
+  getModel(): Model<any> | null {
+    return this._model;
+  }
+
+  /**
+   * Set the mongoose model for this collection
+   * @param {Model<any>} model - The mongoose model
+   */
+  setModel(model: Model<any>): void {
+    this._model = model;
   }
 }

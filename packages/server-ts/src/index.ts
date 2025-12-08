@@ -56,7 +56,7 @@ export { createRest };
  *   ],
  *   uploadDirectoryConfig: {
  *     directory: './uploads',
-   *     urlPath: '/assets'
+ *     urlPath: '/assets'
  *   }
  * };
  * ```
@@ -146,6 +146,18 @@ export { paginator };
  * @description Database collection access utilities
  */
 export { getCollection };
+
+/**
+ * @description Model registry for managing mongoose models and connections
+ * @example
+ * ```typescript
+ * import { modelRegistry } from '@modular-rest/server';
+ *
+ * // Get a model directly from registry
+ * const userModel = modelRegistry.getModel('myapp', 'users');
+ * ```
+ */
+export { modelRegistry } from './services/data_provider/model_registry';
 
 /**
  * @description File handling utilities
