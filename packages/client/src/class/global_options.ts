@@ -35,7 +35,8 @@ class GlobalOptions {
 
     if (path.startsWith("http")) return path;
 
-    return join([overrideUrl || this.host, path]);
+    const baseUrl = overrideUrl || this.host;
+    return join([baseUrl, path]);
   }
 }
 
