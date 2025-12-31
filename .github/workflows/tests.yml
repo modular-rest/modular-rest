@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  ci:
-    name: Tests
+  server-test:
+    name: Server Test
     runs-on: ubuntu-latest
 
     services:
@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 21.5.0
+          node-version-file: "packages/server-ts/.nvmrc"
           cache: "yarn"
 
       - name: Install
@@ -31,8 +31,15 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Test
-        run: yarn test:coverage
+      - name: Wait for MongoDB
+        run: |
+          until nc -z localhost 27017; do
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+
+      - name: Test (Server)
+        run: yarn workspace @modular-rest/server test:coverage
         env:
           MONGO_URL: mongodb://localhost:27017
 
