@@ -10,6 +10,7 @@
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:router": "jest tests/router --runInBand",
+		"test:coverage": "jest --coverage --runInBand",
 		"play-test": "tsc -p tsconfig.json && node dist/play-test.js",
 		"docs": "typedoc --router kind src/index.ts"
 	},

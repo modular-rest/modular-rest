@@ -7,6 +7,7 @@
 	"scripts": {
 		"build": "yarn workspaces run build",
 		"test": "yarn workspaces run test",
+		"test:coverage": "yarn workspaces run test:coverage",
 		"release": "semantic-release"
 	},
 	"devDependencies": {
