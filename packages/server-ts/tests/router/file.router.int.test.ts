@@ -4,7 +4,7 @@ import { getCollection } from '../../src/services/data_provider/service';
 import { IFile } from '../../src/class/db_schemas';
 import {
   TestAppContext,
-  createFileRouterTestApp,
+  createIntegrationTestApp,
   createTempFile,
   ensureUploadPath,
 } from '../helpers/test-app';
@@ -15,7 +15,7 @@ describe('file router integration', () => {
   let storedPath: string;
 
   beforeAll(async () => {
-    ctx = await createFileRouterTestApp();
+    ctx = await createIntegrationTestApp();
   });
 
   afterAll(async () => {

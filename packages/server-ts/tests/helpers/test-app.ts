@@ -31,7 +31,7 @@ export interface TestAppContext {
   cleanup: () => Promise<void>;
 }
 
-export async function createFileRouterTestApp(
+export async function createIntegrationTestApp(
   overrides: Partial<RestOptions> = {}
 ): Promise<TestAppContext> {
   const setupStart = Date.now();
