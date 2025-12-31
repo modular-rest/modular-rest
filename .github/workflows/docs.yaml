@@ -43,9 +43,8 @@ jobs:
       - name: Setup Node Server and Client
         uses: actions/setup-node@v3
         with:
-          node-version: 21.5.0
-          cache: yarn
-          # cache-dependency-path: ./packages/server-ts
+          node-version-file: "packages/server-ts/.nvmrc"
+          cache: "yarn"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -59,9 +58,8 @@ jobs:
       - name: Setup Node for docs
         uses: actions/setup-node@v3
         with:
-          node-version: 20.0.0
-          cache: yarn
-          # cache-dependency-path: ./docs
+          node-version-file: "packages/server-ts/.nvmrc"
+          cache: "yarn"
 
       - name: Install vitepress dependencies
         working-directory: ./docs
