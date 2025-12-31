@@ -28,9 +28,12 @@ interface StoredFileDetail {
  * File upload options interface
  * @interface StoreFileOptions
  * @property {Object} file - File details
- * @property {string} file.path - Temporary file path
- * @property {string} file.type - MIME type of the file
- * @property {string} file.name - Original filename
+ * @property {string} [file.path] - Temporary file path (legacy)
+ * @property {string} [file.filepath] - Temporary file path (koa-body v6+)
+ * @property {string} [file.type] - MIME type of the file (legacy)
+ * @property {string} [file.mimetype] - MIME type of the file (koa-body v6+)
+ * @property {string} [file.name] - Original filename (legacy)
+ * @property {string} [file.originalFilename] - Original filename (koa-body v6+)
  * @property {number} file.size - File size in bytes
  * @property {string} ownerId - ID of the file owner
  * @property {string} tag - Tag for file organization
@@ -38,9 +41,12 @@ interface StoredFileDetail {
  */
 interface StoreFileOptions {
   file: {
-    path: string;
-    type: string;
-    name: string;
+    path?: string;
+    filepath?: string;
+    type?: string;
+    mimetype?: string;
+    name?: string;
+    originalFilename?: string;
     size: number;
   };
   ownerId: string;
@@ -49,11 +55,11 @@ interface StoreFileOptions {
 }
 
 /**
- * File service for handling file storage and retrieval.
- *
- * This service provides functionality for storing, retrieving, and managing files.
- * It handles file storage on disk and maintains file metadata in the database.
- * Files are organized by format and tag in the upload directory.
+ * File service class for handling file operations
+ * @class FileService
+ * @description
+ * This class provides methods for managing file uploads, retrieval, and deletion.
+ * It handles physical file storage and database metadata management.
  */
 class FileService {
   /**
@@ -107,43 +113,23 @@ class FileService {
         fs.mkdirSync(directoryOrConfig, { recursive: true });
       }
       this.directory = directoryOrConfig;
-      this.urlPath = null; // No URL path available with legacy format
-      return;
+      this.urlPath = '/assets'; // Default urlPath for legacy
+    } else {
+      const { directory, urlPath } = directoryOrConfig;
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+      }
+      this.directory = directory;
+      this.urlPath = urlPath || '/assets';
     }
-
-    // New format: Extract only necessary properties from StaticPathOptions
-    const directory = directoryOrConfig.directory || '';
-    const urlPath = directoryOrConfig.urlPath || '/assets';
-
-    if (!directory) {
-      throw new Error('directory is required in uploadDirectoryConfig');
-    }
-
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory, { recursive: true });
-    }
-
-    // Store only the necessary properties (ignore koa-static options)
-    this.directory = directory;
-    this.urlPath = urlPath;
   }
 
   /**
-   * @hidden
-   *
-   * Creates stored file details with unique filename
+   * Creates a unique filename and storage details
    * @param {string} fileType - MIME type of the file
-   * @param {string} tag - Tag for file organization
-   * @returns {StoredFileDetail} Storage details including filename and path
-   * @throws {Error} If upload directory is not set
-   *
-   * @example
-   * ```typescript
-   * import { fileService } from '@modular-rest/server';
-   *
-   * const details = fileService.createStoredDetail('image/jpeg', 'profile');
-   * // Returns: { fileName: '1234567890.jpeg', fullPath: '/uploads/jpeg/profile/1234567890.jpeg', fileFormat: 'jpeg' }
-   * ```
+   * @param {string} tag - File tag
+   * @returns {StoredFileDetail} Storage details including unique filename and path
+   * @hidden
    */
   createStoredDetail(fileType: string, tag: string): StoredFileDetail {
     const typeParts = fileType.split('/');
@@ -152,21 +138,23 @@ class FileService {
     const time = new Date().getTime();
     const fileName = `${time}.${fileFormat}`;
 
-    if (!FileService.instance.directory) {
-      throw new Error('Upload directory has not been set');
+    if (!this.directory) {
+      throw new Error('Upload directory not set');
     }
 
-    const fullPath = pathModule.join(FileService.instance.directory, fileFormat, tag, fileName);
+    const fullPath = pathModule.join(this.directory, fileFormat, tag, fileName);
 
-    return { fileName, fullPath, fileFormat };
+    return {
+      fileName,
+      fullPath,
+      fileFormat,
+    };
   }
 
   /**
-   * @hidden
-   *
-   * Stores a file, removes the temporary file, and saves metadata to database
+   * Stores a file on disc and creates metadata in database
    * @param {StoreFileOptions} options - File storage options
-   * @returns {Promise<IFile>} Promise resolving to stored file document
+   * @returns {Promise<IFile>} The created file document
    * @throws {Error} If upload directory is not set or storage fails
    * @example
    * ```typescript
@@ -190,12 +178,20 @@ class FileService {
       throw new Error('Upload directory has not been set');
     }
 
+    const fileType = file.mimetype || file.type || 'unknown/unknown';
+    const filePath = file.filepath || file.path;
+    const fileName = file.originalFilename || file.name || 'unknown';
+
+    if (!filePath) {
+      throw new Error('File path is missing');
+    }
+
     let storedFile: StoredFileDetail;
 
     return new Promise(async (done, reject) => {
-      storedFile = FileService.instance.createStoredDetail(file.type, tag);
+      storedFile = FileService.instance.createStoredDetail(fileType, tag);
 
-      fs.copyFile(file.path, storedFile.fullPath, (err: Error | null) => {
+      fs.copyFile(filePath, storedFile.fullPath, (err: Error | null) => {
         if (err) {
           reject(err);
         } else {
@@ -204,7 +200,13 @@ class FileService {
 
         // remove temp file
         if (removeFileAfterStore) {
-          fs.unlinkSync(file.path);
+          try {
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          } catch (e) {
+            console.warn('Failed to remove temp file:', e);
+          }
         }
       });
     })
@@ -218,174 +220,131 @@ class FileService {
 
         const data = {
           owner: ownerId,
-          fileName: storedFile.fileName,
-          originalName: file.name,
-          format: storedFile.fileFormat,
           tag,
+          originalName: fileName,
+          fileName: storedFile.fileName,
+          format: storedFile.fileFormat,
           size: file.size,
         };
 
-        // Create new document
-        const doc = new CollectionModel(data);
-
-        return doc.save().then(savedDoc => {
-          triggerService.call('insert-one', 'cms', 'file', {
-            query: null,
-            queryResult: savedDoc,
-          });
-
-          return savedDoc;
-        });
+        return CollectionModel.create(data);
       })
-      .catch(err => {
-        // remove stored file
-        fs.unlinkSync(storedFile.fullPath);
-
-        throw err;
+      .then(async (doc: IFile) => {
+        triggerService.call('insert-one', 'cms', 'file', { queryResult: doc });
+        return doc;
       });
   }
 
   /**
-   * @hidden
-   *
-   * Removes a file from the disk
-   * @param {string} path - File path to remove
-   * @returns {Promise<void>} Promise resolving when file is removed
-   * @throws {Error} If file removal fails
+   * Deletes a file from disc and database
+   * @param {string} fileId - ID of the file to delete
+   * @returns {Promise<boolean>} True if deletion was successful
+   * @throws {Error} If file is not found or deletion fails
    * @example
    * ```typescript
    * import { fileService } from '@modular-rest/server';
    *
-   * await fileService.removeFromDisc('/uploads/jpeg/profile/1234567890.jpeg');
+   * await fileService.removeFile('file123');
    * ```
    */
-  removeFromDisc(path: string): Promise<void> {
-    return new Promise((done, reject) => {
-      fs.unlink(path, (err: Error | null) => {
-        if (err) reject(err);
-        else done();
-      });
-    });
-  }
-
-  /**
-   * Removes a file from both database and disk
-   *
-   * @param {string} fileId - File ID to remove
-   * @returns {Promise<void>} Promise resolving when file is removed
-   * @throws {Error} If file is not found or removal fails
-   * @example
-   * ```typescript
-   * import { fileService } from '@modular-rest/server';
-   *
-   * try {
-   *   await fileService.removeFile('file123');
-   *   console.log('File removed successfully');
-   * } catch (error) {
-   *   console.error('Failed to remove file:', error);
-   * }
-   * ```
-   */
-  removeFile(fileId: string): Promise<void> {
+  async removeFile(fileId: string): Promise<boolean> {
     if (!FileService.instance.directory) {
       throw new Error('Upload directory has not been set');
     }
 
-    return new Promise(async (done, reject) => {
-      const CollectionModel = DataProvider.getCollection<IFile>('cms', 'file');
-
-      if (!CollectionModel) {
-        return reject(new Error('Collection model not found'));
-      }
-
-      const fileDoc = await CollectionModel.findOne({ _id: fileId }).exec();
-
-      if (!fileDoc) {
-        return reject(new Error('File not found'));
-      }
-
-      await CollectionModel.deleteOne({ _id: fileId })
-        .exec()
-        .then(() => {
-          // create file path
-          const filePath = pathModule.join(
-            FileService.instance.directory as string,
-            fileDoc.format,
-            fileDoc.tag,
-            fileDoc.fileName
-          );
-
-          // Remove file from disc
-          return FileService.instance.removeFromDisc(filePath).catch(async err => {
-            // Recreate fileDoc if removing file operation has error
-            await new CollectionModel(fileDoc).save();
-
-            throw err;
-          });
-        })
-        .then(() => {
-          triggerService.call('remove-one', 'cms', 'file', {
-            query: { _id: fileId },
-            queryResult: null,
-          });
-        })
-        .then(done)
-        .catch(reject);
-    });
-  }
-
-  /**
-   * Retrieves a file document from the database
-   *
-   * @param {string} fileId - File ID to retrieve
-   * @returns {Promise<IFile>} Promise resolving to file document
-   * @throws {Error} If collection model is not found or file is not found
-   * @example
-   * ```typescript
-   * import { fileService } from '@modular-rest/server';
-   *
-   * const fileDoc = await fileService.getFile('file123');
-   * console.log('File details:', fileDoc);
-   * ```
-   */
-  getFile(fileId: string): Promise<IFile> {
     const CollectionModel = DataProvider.getCollection<IFile>('cms', 'file');
 
     if (!CollectionModel) {
       throw new Error('Collection model not found');
     }
 
-    return CollectionModel.findOne({ _id: fileId })
-      .exec()
-      .then(doc => {
-        if (!doc) {
-          throw new Error('File not found');
+    const doc = await CollectionModel.findById(fileId);
+
+    if (!doc) {
+      throw new Error('File not found');
+    }
+
+    const filePath = pathModule.join(
+      FileService.instance.directory as string,
+      doc.format,
+      doc.tag,
+      doc.fileName
+    );
+
+    if (fs.existsSync(filePath)) {
+      try {
+        await FileService.instance.removeFromDisc(filePath);
+      } catch (err: any) {
+        // If the file is not found on disc, we can still proceed with deleting metadata
+        if (err.code !== 'ENOENT') {
+          throw err;
         }
-        return doc;
-      });
+      }
+    }
+
+    await CollectionModel.findByIdAndDelete(fileId);
+    triggerService.call('remove-one', 'cms', 'file', { queryResult: doc });
+    return true;
   }
 
   /**
-   * Retrieves the public URL link for a file
-   *
-   * @param {string} fileId - File ID to get link for
-   * @returns {Promise<string>} Promise resolving to file URL
-   * @throws {Error} If URL path is not defined or file is not found
+   * Deletes a file from physical storage
+   * @param {string} path - Physical path to the file
+   * @returns {Promise<boolean>} True if deletion was successful
+   * @hidden
+   */
+  removeFromDisc(path: string): Promise<boolean> {
+    return new Promise((done, reject) => {
+      fs.unlink(path, err => {
+        if (err) {
+          reject(err);
+        } else {
+          done(true);
+        }
+      });
+    });
+  }
+
+  /**
+   * Retrieves a file document from database
+   * @param {string} fileId - ID of the file
+   * @returns {Promise<IFile>} The file document
+   * @throws {Error} If file is not found
+   * @hidden
+   */
+  async getFile(fileId: string): Promise<IFile> {
+    const CollectionModel = DataProvider.getCollection<IFile>('cms', 'file');
+
+    if (!CollectionModel) {
+      throw new Error('Collection model not found');
+    }
+
+    const doc = await CollectionModel.findById(fileId);
+
+    if (!doc) {
+      throw new Error('File not found');
+    }
+
+    return doc;
+  }
+
+  /**
+   * Gets the public URL for a file
+   * @param {string} fileId - ID of the file
+   * @returns {Promise<string>} The public URL
    * @example
    * ```typescript
    * import { fileService } from '@modular-rest/server';
    *
-   * const link = await fileService.getFileLink('file123');
-   * // Returns: '/uploads/jpeg/profile/1234567890.jpeg'
+   * const url = await fileService.getFileLink('file123');
+   * // Returns: '/assets/jpeg/profile/1234567890.jpeg'
    * ```
    */
   async getFileLink(fileId: string): Promise<string> {
     const fileDoc = await FileService.instance.getFile(fileId);
 
     if (!FileService.instance.urlPath) {
-      throw new Error(
-        'Upload directory URL path is not defined. Please configure uploadDirectoryConfig with a urlPath property.'
-      );
+      throw new Error('Upload directory config has not been set');
     }
 
     const link = `${FileService.instance.urlPath}/${fileDoc.format}/${fileDoc.tag}/${fileDoc.fileName}`;
@@ -394,11 +353,9 @@ class FileService {
   }
 
   /**
-   * Gets the full filesystem path for a file
-   *
-   * @param {string} fileId - File ID to get path for
-   * @returns {Promise<string>} Promise resolving to full file path
-   * @throws {Error} If upload directory is not set or file is not found
+   * Gets the physical path for a file
+   * @param {string} fileId - ID of the file
+   * @returns {Promise<string>} The physical path
    * @example
    * ```typescript
    * import { fileService } from '@modular-rest/server';
@@ -423,3 +380,4 @@ class FileService {
  * @constant {FileService}
  */
 export const main = new FileService();
+FileService.instance = main;

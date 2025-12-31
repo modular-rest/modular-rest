@@ -73,6 +73,8 @@ class ModelRegistry {
         useUnifiedTopology: true,
         useNewUrlParser: true,
         dbName: fullDbName,
+        serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
+        socketTimeoutMS: 45000, // 45 second timeout for socket operations
       });
 
       this.connections[database] = connection;
@@ -139,6 +141,8 @@ class ModelRegistry {
             useUnifiedTopology: true,
             useNewUrlParser: true,
             dbName: fullDbName,
+            serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
+            socketTimeoutMS: 45000, // 45 second timeout for socket operations
           });
 
           this.connections[dbName] = newConnection;
@@ -207,6 +211,30 @@ class ModelRegistry {
    */
   hasModel(database: string, collection: string): boolean {
     return !!(this.models[database] && this.models[database][collection]);
+  }
+
+  /**
+   * Clear all internal state, including connections and models.
+   * Useful for testing when different database prefixes are used.
+   */
+  async clear(): Promise<void> {
+    // Close all connections first
+    await Promise.all(
+      Object.values(this.connections).map(async connection => {
+        if (connection.readyState !== 0) {
+          try {
+            await connection.close();
+          } catch (err) {
+            // Ignore close errors
+          }
+        }
+      })
+    );
+
+    this.connections = {};
+    this.models = {};
+    this.collectionDefinitions = [];
+    this.mongoOption = null;
   }
 }
 

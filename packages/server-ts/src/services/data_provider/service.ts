@@ -73,6 +73,8 @@ function connectToDatabaseByCollectionDefinitionList(
         useUnifiedTopology: true,
         useNewUrlParser: true,
         dbName: fullDbName,
+        serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
+        socketTimeoutMS: 45000, // 45 second timeout for socket operations
       });
     } else {
       const fullDbName = (mongoOption.dbPrefix || '') + dbName;
@@ -281,6 +283,10 @@ export function checkAccess(
     if (permission.accessType === 'god_access') return true;
     if (permission.accessType === 'anonymous_access' && user.type === 'anonymous') return true;
     if (permission.accessType === 'user_access' && user.type === 'user') return true;
+    if (typeof (user as any).hasPermission === 'function' && user.hasPermission(permission.accessType)) {
+      if (operationType === AccessTypes.read) return permission.read;
+      if (operationType === AccessTypes.write) return permission.write;
+    }
     return false;
   });
 }

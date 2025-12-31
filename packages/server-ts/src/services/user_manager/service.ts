@@ -619,8 +619,8 @@ class UserManager {
       }
 
       try {
-        // Create user document
-        const userDoc = await userModel.create({
+        // Create user document with timeout
+        const createPromise = userModel.create({
           ...detail,
           type: detail.type || 'user',
           permissionGroup: detail.permissionGroup || getDefaultPermissionGroups().title,
@@ -628,6 +628,14 @@ class UserManager {
           email: detail.email || undefined,
           password: detail.password || undefined,
         });
+        
+        // Add timeout wrapper to prevent hanging
+        const userDoc = await Promise.race([
+          createPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('User creation timeout after 10s')), 10000)
+          ),
+        ]);
 
         // Load user from document
         const user = await User.loadFromModel(userDoc);

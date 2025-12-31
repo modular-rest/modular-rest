@@ -7,7 +7,9 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:router": "jest tests/router --runInBand",
 		"play-test": "tsc -p tsconfig.json && node dist/play-test.js",
 		"docs": "typedoc --router kind src/index.ts"
 	},
@@ -44,6 +46,7 @@
 	},
 	"devDependencies": {
 		"@types/bson": "4.2.0",
+		"@types/jest": "30.0.0",
 		"@types/jsonwebtoken": "^9.0.5",
 		"@types/koa": "^2.14.0",
 		"@types/koa-mount": "^4.0.5",
@@ -52,6 +55,10 @@
 		"@types/koa__cors": "^5.0.0",
 		"@types/mongoose": "^5.10.5",
 		"@types/node": "^20.10.0",
+		"jest": "30.2.0",
+		"mongodb-memory-server": "11.0.1",
+		"supertest": "7.1.4",
+		"ts-jest": "29.4.6",
 		"typedoc": "^0.28.1",
 		"typedoc-plugin-markdown": "^4.6.0",
 		"typedoc-plugin-missing-exports": "^4.0.0",

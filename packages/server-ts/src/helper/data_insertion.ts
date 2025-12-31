@@ -45,28 +45,94 @@ interface AdminCredentials {
 export async function createAdminUser({ email, password }: AdminCredentials): Promise<void> {
   const authModel = DataProvider.getCollection('cms', 'auth');
 
+  // Wait for connection to be ready for queries
+  const connection = authModel.db;
+  if (connection) {
+    if (connection.readyState !== 1) {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Database connection timeout - connection not ready after 10s'));
+        }, 10000);
+
+        if (connection.readyState === 1) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          connection.once('connected', () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          connection.once('error', err => {
+            clearTimeout(timeout);
+            reject(err);
+          });
+        }
+      });
+    }
+
+    // Test if database is actually ready by doing a simple operation
+    // This ensures the connection is fully initialized
+    let retries = 5;
+    let lastError: Error | null = null;
+    while (retries > 0) {
+      try {
+        await authModel.findOne({}).limit(1).maxTimeMS(3000).lean().exec();
+        // Additional small delay to ensure write operations will work
+        await new Promise(resolve => setTimeout(resolve, 100));
+        break; // Success, connection is ready
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        retries--;
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    }
+    if (retries === 0 && lastError) {
+      throw new Error(`Database not ready for queries: ${lastError.message}`);
+    }
+  }
+
   try {
-    const isAnonymousExisted = await authModel.countDocuments({ type: 'anonymous' }).exec();
+    // Execute queries with explicit timeout handling
+    const queryOptions = { maxTimeMS: 5000 }; // 5 second timeout
+
+    const isAnonymousExisted = await authModel
+      .countDocuments({ type: 'anonymous' })
+      .maxTimeMS(5000)
+      .exec();
 
     const isAdministratorExisted = await authModel
       .countDocuments({ type: 'user', email: email })
+      .maxTimeMS(5000)
       .exec();
 
     if (isAnonymousExisted === 0) {
-      await userManager.main.registerUser({
-        permissionGroup: getDefaultAnonymousPermissionGroup().title,
-        email: '',
-        phone: '',
-        password: '',
-        type: 'anonymous',
-      });
-      // await new authModel({
-      //   permission: getDefaultAnonymousPermissionGroup().title,
-      //   email: "",
-      //   phone: "",
-      //   password: "",
-      //   type: "anonymous",
-      // }).save();
+      // Wrap registerUser with timeout to prevent hanging
+      try {
+        await Promise.race([
+          userManager.main.registerUser({
+            permissionGroup: getDefaultAnonymousPermissionGroup().title,
+            email: '',
+            phone: '',
+            password: '',
+            type: 'anonymous',
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error('registerUser timeout for anonymous user after 15s')),
+              15000
+            )
+          ),
+        ]);
+      } catch (err) {
+        // If anonymous user creation fails, log but don't fail completely
+        // It might already exist from a previous attempt
+        console.warn(
+          'Failed to create anonymous user:',
+          err instanceof Error ? err.message : String(err)
+        );
+      }
     }
 
     if (isAdministratorExisted === 0) {
@@ -74,19 +140,21 @@ export async function createAdminUser({ email, password }: AdminCredentials): Pr
         return Promise.reject('Invalid email or password for admin user.');
       }
 
-      await userManager.main.registerUser({
-        permissionGroup: getDefaultAdministratorPermissionGroup().title,
-        email: email,
-        password: password,
-        type: 'user',
-      });
-
-      // await new authModel({
-      //   permission: getDefaultAdministratorPermissionGroup().title,
-      //   email: email,
-      //   password: password,
-      //   type: "user",
-      // }).save();
+      // Wrap registerUser with timeout to prevent hanging
+      await Promise.race([
+        userManager.main.registerUser({
+          permissionGroup: getDefaultAdministratorPermissionGroup().title,
+          email: email,
+          password: password,
+          type: 'user',
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('registerUser timeout for admin user after 15s')),
+            15000
+          )
+        ),
+      ]);
     }
   } catch (e) {
     return Promise.reject(e);

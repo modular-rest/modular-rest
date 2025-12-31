@@ -214,6 +214,7 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
   try {
     await require('./helper/presetup_services').setup(config);
   } catch (e) {
+    console.error(`[createRest] Error in setup:`, e);
     return Promise.reject(e);
   }
 

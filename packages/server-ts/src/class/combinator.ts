@@ -25,7 +25,7 @@ class Combinator {
     // find route paths
     const option = {
       name: 'router',
-      filter: ['.js'],
+      filter: ['.js', '.ts'],
     };
 
     let routerPaths: string[] = [];
@@ -34,6 +34,9 @@ class Combinator {
     } catch (e) {
       console.log(e);
     }
+
+    // ignore type declarations
+    routerPaths = routerPaths.filter(routePath => !routePath.endsWith('.d.ts'));
 
     // create and combine routes into the app
     for (let i = 0; i < routerPaths.length; i++) {
@@ -62,7 +65,7 @@ class Combinator {
 
     const option = {
       name: filename.name,
-      filter: [filename.extension],
+      filter: [filename.extension, '.ts'],
     };
 
     let modulesPath: string[] = [];
@@ -71,6 +74,8 @@ class Combinator {
     } catch (e) {
       console.log(e);
     }
+
+    modulesPath = modulesPath.filter(modulePath => !modulePath.endsWith('.d.ts'));
 
     // create and combine routes into the app
     for (let i = 0; i < modulesPath.length; i++) {
@@ -113,7 +118,7 @@ class Combinator {
     // find route paths
     const option = {
       name: filename.name,
-      filter: [filename.extension],
+      filter: [filename.extension, '.ts'],
     };
 
     let functionsPaths: string[] = [];
@@ -122,6 +127,8 @@ class Combinator {
     } catch (e) {
       console.log(e);
     }
+
+    functionsPaths = functionsPaths.filter(functionPath => !functionPath.endsWith('.d.ts'));
 
     // create and combine routes into the app
     for (let i = 0; i < functionsPaths.length; i++) {

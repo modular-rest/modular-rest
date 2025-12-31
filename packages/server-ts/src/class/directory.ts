@@ -6,67 +6,49 @@ interface DirectorySettings {
   filter?: string[];
 }
 
-type WalkCallback = (err: Error | null, results: string[]) => void;
-
 /**
- * Walk through a directory and its subdirectories
+ * Walk through a directory and its subdirectories efficiently
  * @param dir - Directory to walk
  * @param settings - Settings for filtering files
- * @param done - Callback function
  */
-function walk(dir: string, settings: DirectorySettings, done: WalkCallback): void {
+async function walk(dir: string, settings: DirectorySettings): Promise<string[]> {
   let results: string[] = [];
+  const list = await fs.promises.readdir(dir);
 
-  // Read director file and folders
-  fs.readdir(dir, function (err, list) {
-    if (err) return done(err, results);
+  for (const file of list) {
+    const filePath = path.join(dir, file);
+    const stat = await fs.promises.stat(filePath);
 
-    let pending = list.length;
-    if (!pending) return done(null, results);
+    if (stat && stat.isDirectory()) {
+      // Ignore common directories that should not be scanned
+      if (file === 'node_modules' || file === '.git' || file === 'dist') {
+        continue;
+      }
+      const res = await walk(filePath, settings);
+      results = results.concat(res);
+    } else {
+      const extension = path.extname(filePath);
+      const fileName = path.basename(filePath).split('.')[0];
+      let fileNameKey = true;
 
-    list.forEach(function (file) {
-      file = path.join(dir, file);
-      fs.stat(file, function (err, stat) {
-        if (err) {
-          // Handle file stat error but continue with other files
-          console.error(`Error reading file stats for ${file}:`, err);
-          if (!--pending) done(null, results);
-          return;
+      // name filter
+      if (settings.name && settings.name !== fileName) {
+        fileNameKey = false;
+      }
+
+      // extension filter
+      if (settings.filter && fileNameKey) {
+        if (settings.filter.some(ext => ext.toLowerCase() === extension.toLowerCase())) {
+          results.push(filePath);
         }
-
-        // If directory, execute a recursive call
-        if (stat && stat.isDirectory()) {
-          // Add directory to array [comment if you need to remove the directories from the array]
-          // results.push(file);
-          walk(file, settings, function (err, res) {
-            results = results.concat(res);
-            if (!--pending) done(null, results);
-          });
-        } else {
-          // file filter
-          const extension = path.extname(file);
-          const fileName = path.basename(file).split('.')[0];
-          let fileNameKey = true;
-
-          // name filter
-          if (settings.name && settings.name === fileName) fileNameKey = true;
-          else fileNameKey = false;
-
-          // extension filter
-          if (settings.filter && fileNameKey) {
-            settings.filter.forEach(function (element) {
-              if (element.toLowerCase() === extension.toLowerCase()) results.push(file);
-            });
-          }
-
-          // push any file if no option
-          else if (fileNameKey) results.push(file);
-
-          if (!--pending) done(null, results);
-        }
-      });
-    });
-  });
+      }
+      // push any file if no name filter and no extension filter
+      else if (fileNameKey && !settings.filter) {
+        results.push(filePath);
+      }
+    }
+  }
+  return results;
 }
 
 /**
@@ -75,13 +57,13 @@ function walk(dir: string, settings: DirectorySettings, done: WalkCallback): voi
  * @param settings - Settings for filtering files
  * @returns Promise resolving to an array of file paths
  */
-function find(dir: string, settings: DirectorySettings): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    walk(dir, settings, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
+async function find(dir: string, settings: DirectorySettings): Promise<string[]> {
+  try {
+    return await walk(dir, settings);
+  } catch (err) {
+    console.error(`Error in directory.find for ${dir}:`, err);
+    return [];
+  }
 }
 
 export { walk, find };
