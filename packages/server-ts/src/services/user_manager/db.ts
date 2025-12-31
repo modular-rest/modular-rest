@@ -12,11 +12,11 @@ interface AuthDocument extends mongoose.Document {
 
 const authSchema = new Schema(
   {
-    permissionGroup: String,
-    email: String,
-    phone: String,
-    password: String,
-    type: { type: String, default: 'user', enum: ['user', 'anonymous'] },
+    permissionGroup: { type: String, required: true },
+    type: { type: String, required: true, default: 'user', enum: ['user', 'anonymous'] },
+    email: { type: String, required: false },
+    phone: { type: String, required: false },
+    password: { type: String, required: false },
   },
   { timestamps: true }
 );
@@ -24,7 +24,7 @@ const authSchema = new Schema(
 authSchema.index({ email: 1 }, { unique: true });
 authSchema.pre(['save', 'updateOne'], function (this: AuthDocument, next) {
   // Encode the password before saving
-  if (this.isModified && this.isModified('password')) {
+  if (this.isModified && this.isModified('password') && this.password) {
     this.password = Buffer.from(this.password).toString('base64');
   }
   next();

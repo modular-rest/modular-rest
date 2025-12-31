@@ -5,6 +5,7 @@ import TypeCasters from './typeCasters';
 import { config } from '../../config';
 import { CollectionDefinition } from '../../class/collection_definition';
 import { User } from '../../class/user';
+import modelRegistry from './model_registry';
 
 /**
  * Service name constant
@@ -58,17 +59,25 @@ function connectToDatabaseByCollectionDefinitionList(
   mongoOption: MongoOption
 ): Promise<void> {
   return new Promise((done, reject) => {
-    // Create db connection
-    const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-    const connectionString = mongoOption.mongoBaseAddress;
+    // Check if connection already exists in registry
+    let connection = modelRegistry.getConnection(dbName);
 
-    console.info(`- Connecting to database: ${fullDbName}`);
+    // Create db connection if it doesn't exist
+    if (!connection) {
+      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
+      const connectionString = mongoOption.mongoBaseAddress;
 
-    const connection = mongoose.createConnection(connectionString, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      dbName: fullDbName,
-    });
+      console.info(`- Connecting to database: ${fullDbName}`);
+
+      connection = mongoose.createConnection(connectionString, {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+        dbName: fullDbName,
+      });
+    } else {
+      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
+      console.info(`- Using existing connection for database: ${fullDbName}`);
+    }
 
     // Store connection
     connections[dbName] = connection;
@@ -82,10 +91,32 @@ function connectToDatabaseByCollectionDefinitionList(
 
       if (permissionDefinitions[dbName] == undefined) permissionDefinitions[dbName] = {};
 
-      // create model from schema
-      // and store in on global collection object
-      const model = connection.model(collection, schema);
+      // Check if model already exists in registry (pre-created)
+      let model = modelRegistry.getModel(dbName, collection);
+
+      if (!model) {
+        // Model doesn't exist in registry, create it on the connection
+        // This can happen if defineCollection was called without mongoOption
+        model = connection.model(collection, schema);
+      } else {
+        // Model exists in registry, verify it's using the same connection
+        // Mongoose models are bound to their connection, so we should use the registry model
+        // But we need to ensure the connection matches
+        const registryConnection = modelRegistry.getConnection(dbName);
+        if (registryConnection && registryConnection !== connection) {
+          // Connections don't match, but this shouldn't happen in normal flow
+          // Use the model from registry as it's already created
+          model = modelRegistry.getModel(dbName, collection)!;
+        }
+      }
+
+      // Store model in global collections object
       collections[dbName][collection] = model;
+
+      // Also update the CollectionDefinition with the model if it has a setModel method
+      if (collectionDefinition.setModel) {
+        collectionDefinition.setModel(model);
+      }
 
       // define Access Definition from component permissions
       // and store it on global access definition object
@@ -111,10 +142,22 @@ function connectToDatabaseByCollectionDefinitionList(
       }
     });
 
-    connection.on('connected', () => {
+    // If connection is already connected, resolve immediately
+    if (connection.readyState === 1) {
+      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
       console.info(`- ${fullDbName} database has been connected`);
       done();
-    });
+    } else {
+      connection.on('connected', () => {
+        const fullDbName = (mongoOption.dbPrefix || '') + dbName;
+        console.info(`- ${fullDbName} database has been connected`);
+        done();
+      });
+
+      connection.on('error', err => {
+        reject(err);
+      });
+    }
   });
 }
 
@@ -145,6 +188,16 @@ export async function addCollectionDefinitionByList({
   list,
   mongoOption,
 }: CollectionDefinitionListOption): Promise<void> {
+  // First, ensure all collections are registered in the ModelRegistry
+  // This pre-creates models before connections are established
+  list.forEach(collectionDefinition => {
+    // Check if model already exists in registry
+    if (!modelRegistry.hasModel(collectionDefinition.database, collectionDefinition.collection)) {
+      // Register the collection and create its model
+      modelRegistry.registerCollection(collectionDefinition, mongoOption);
+    }
+  });
+
   // Group collection definitions by database
   const dbGroups: Record<string, CollectionDefinition[]> = {};
   list.forEach(collectionDefinition => {
@@ -155,6 +208,7 @@ export async function addCollectionDefinitionByList({
   });
 
   // Connect to each database
+  // Models are already pre-created, so connections will use existing models
   const connectionPromises = Object.entries(dbGroups).map(([dbName, collectionDefinitionList]) =>
     connectToDatabaseByCollectionDefinitionList(dbName, collectionDefinitionList, mongoOption)
   );

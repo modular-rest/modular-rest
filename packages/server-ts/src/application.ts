@@ -74,16 +74,56 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
   /**
    * Plug In KoaStatic
    */
-  if (config.staticPath) {
-    const defaultStaticPath = config.staticPath.actualPath || '';
-    const defaultStaticRootPath = config.staticPath.path || '/assets';
+  // Collect static paths from new property or fallback to old property
+  let staticPathsToMount: StaticPathOptions[] = [];
 
-    const staticOptions: Partial<StaticPathOptions> = { ...config.staticPath, defer: true };
+  if (config.staticPaths && config.staticPaths.length > 0) {
+    // Use new staticPaths property
+    staticPathsToMount = config.staticPaths;
+  } else if (config.staticPath) {
+    // Backward compatibility: use old staticPath property with deprecation warning
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      "Warning: 'staticPath' is deprecated and will be removed in a future version. Please use 'staticPaths' (array) instead."
+    );
+    staticPathsToMount = Array.isArray(config.staticPath) ? config.staticPath : [config.staticPath];
+  }
 
-    delete staticOptions.actualPath;
-    delete staticOptions.path;
+  // Mount all static paths
+  for (const staticPathConfig of staticPathsToMount) {
+    const directory = staticPathConfig.directory || '';
+    const urlPath = staticPathConfig.urlPath || '/assets';
 
-    app.use(mount(defaultStaticRootPath, koaStatic(defaultStaticPath, staticOptions)));
+    const staticOptions: Partial<StaticPathOptions> = { ...staticPathConfig, defer: true };
+
+    delete staticOptions.directory;
+    delete staticOptions.urlPath;
+
+    app.use(mount(urlPath, koaStatic(directory, staticOptions)));
+  }
+
+  // Auto-mount uploadDirectoryConfig if staticPaths (new property) is configured
+  if (config.staticPaths && config.staticPaths.length > 0 && config.uploadDirectoryConfig) {
+    const uploadDirectory = config.uploadDirectoryConfig.directory || '';
+    const uploadUrlPath = config.uploadDirectoryConfig.urlPath || '/assets';
+
+    const uploadStaticOptions: Partial<StaticPathOptions> = {
+      ...config.uploadDirectoryConfig,
+      defer: true,
+    };
+
+    delete uploadStaticOptions.directory;
+    delete uploadStaticOptions.urlPath;
+
+    app.use(mount(uploadUrlPath, koaStatic(uploadDirectory, uploadStaticOptions)));
+  }
+
+  // Show deprecation warning for old uploadDirectory property
+  if (config.uploadDirectory) {
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      "Warning: 'uploadDirectory' is deprecated and will be removed in a future version. Please use 'uploadDirectoryConfig' (StaticPathOptions) instead."
+    );
   }
 
   /**
@@ -172,7 +212,7 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
 
   // 4. Setting up default services
   try {
-    await require('./helper/presetup_services').setup(options);
+    await require('./helper/presetup_services').setup(config);
   } catch (e) {
     return Promise.reject(e);
   }

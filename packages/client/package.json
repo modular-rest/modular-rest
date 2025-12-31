@@ -14,7 +14,11 @@
     "http"
   ],
   "author": "Navid Shad",
-  "license": "GPL-3.0",
+  "license": "MIT",
+	"bugs": {
+		"url": "https://github.com/modular-rest/modular-rest/issues"
+	},
+	"homepage": "https://modular-rest.github.io/modular-rest",
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",

@@ -52,7 +52,7 @@ class FileProvider {
   }
 
   getFileLink(
-    fileDoc: { fileName: string; format: string; tag: String },
+    fileDoc: { fileName: string; format: string; tag: string },
     overrideUrl?: string,
     rootPath: string = "assets"
   ) {
@@ -61,10 +61,8 @@ class FileProvider {
       rootPath = rootPath.slice(0, -1);
     }
 
-    const url = GlobalOptions.getUrl(
-      `/${rootPath}/` + `${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName,
-      overrideUrl
-    );
+    const path = `/${rootPath}/${fileDoc.format}/${fileDoc.tag}/${fileDoc.fileName}`;
+    const url = GlobalOptions.getUrl(path, overrideUrl);
     return url;
   }
 

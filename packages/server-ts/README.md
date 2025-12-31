@@ -58,7 +58,7 @@ createRest({
 - Event system
 - Extensible architecture
 
-## TypeScript Support 
+## TypeScript Support
 
 This package includes full TypeScript type definitions for all API components. The entire codebase is written in TypeScript, providing:
 

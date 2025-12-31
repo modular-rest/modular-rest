@@ -1,3 +1,14 @@
+export interface PermissionGroup {
+  /** @hidden */
+  title: string;
+  /** @hidden */
+  isDefault: boolean;
+  /** @hidden */
+  isAnonymous: boolean;
+  /** @hidden */
+  allowedAccessTypes: string[];
+}
+
 class User {
   /**
    * Registered email
@@ -14,15 +25,15 @@ class User {
   /**
    * permission type
    */
-  type: string;
-  private permissionGroup: any;
+  type: "user" | "anonymous";
+  private permissionGroup: PermissionGroup;
 
   constructor(detail: {
     email?: string;
     phone?: string;
     id: string;
     permissionGroup: any;
-    type: string;
+    type: "user" | "anonymous";
   }) {
     if (detail.email) this.email = detail.email;
     if (detail.phone) this.phone = detail.phone;
@@ -41,8 +52,8 @@ class User {
 
     let key = false;
 
-    for (let i = 0; i < this.permissionGroup.validPermissionTypes.length; i++) {
-      const userPermissionType = this.permissionGroup.validPermissionTypes[i];
+    for (let i = 0; i < this.permissionGroup.allowedAccessTypes.length; i++) {
+      const userPermissionType = this.permissionGroup.allowedAccessTypes[i];
 
       if (userPermissionType == permissionField) {
         key = true;

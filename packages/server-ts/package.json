@@ -1,6 +1,6 @@
 {
 	"name": "@modular-rest/server",
-	"version": "1.11.14",
+	"version": "1.19.0",
 	"description": "TypeScript version of a nodejs module based on KOAJS for developing Rest-APIs in a modular solution.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -27,7 +27,7 @@
 	"bugs": {
 		"url": "https://github.com/modular-rest/modular-rest/issues"
 	},
-	"homepage": "https://github.com/modular-rest/modular-rest#readme",
+	"homepage": "https://modular-rest.github.io/modular-rest",
 	"dependencies": {
 		"@koa/cors": "^3.1.0",
 		"colog": "^1.0.4",

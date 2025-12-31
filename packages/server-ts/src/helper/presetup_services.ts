@@ -1,6 +1,7 @@
 import * as DataInsertion from './data_insertion';
 import * as JWT from '../services/jwt/service';
 import * as FileService from '../services/file/service';
+import { config, StaticPathOptions } from '../config';
 import generateKeypair from 'keypair';
 
 /**
@@ -12,7 +13,8 @@ import generateKeypair from 'keypair';
  * @property {Object} adminUser - Admin user configuration
  * @property {string} adminUser.email - Admin user email address
  * @property {string} adminUser.password - Admin user password
- * @property {string} [uploadDirectory] - Directory for file uploads
+ * @property {StaticPathOptions} [uploadDirectoryConfig] - Upload directory configuration with static path info
+ * @property {string} [uploadDirectory] - @deprecated Use uploadDirectoryConfig instead. Directory for file uploads
  */
 interface SetupOptions {
   keypair?: {
@@ -23,6 +25,10 @@ interface SetupOptions {
     email: string;
     password: string;
   };
+  uploadDirectoryConfig?: StaticPathOptions;
+  /**
+   * @deprecated Use uploadDirectoryConfig instead. This property will be removed in a future version.
+   */
   uploadDirectory?: string;
 }
 
@@ -40,7 +46,7 @@ interface SetupOptions {
  *
  * @example
  * ```typescript
- * // Setup with custom keypair
+ * // Setup with custom keypair and uploadDirectoryConfig
  * await setup({
  *   keypair: {
  *     private: 'your-private-key',
@@ -50,7 +56,10 @@ interface SetupOptions {
  *     email: 'admin@example.com',
  *     password: 'secure-password'
  *   },
- *   uploadDirectory: './uploads'
+ *   uploadDirectoryConfig: {
+ *     directory: './uploads',
+   *     urlPath: '/assets'
+ *   }
  * });
  *
  * // Setup with auto-generated keypair
@@ -62,7 +71,12 @@ interface SetupOptions {
  * });
  * ```
  */
-export async function setup({ keypair, adminUser, uploadDirectory }: SetupOptions): Promise<void> {
+export async function setup({
+  keypair,
+  adminUser,
+  uploadDirectory,
+  uploadDirectoryConfig,
+}: SetupOptions): Promise<void> {
   /**
    * Json web Token
    *
@@ -77,7 +91,7 @@ export async function setup({ keypair, adminUser, uploadDirectory }: SetupOption
   JWT.main.setKies(keyPairToUse.private, keyPairToUse.public);
 
   if (!adminUser) {
-    throw new Error('Admin user is not supported in TypeScript version');
+    throw new Error('Admin user configuration is required. Please provide adminUser in your createRest() options.');
   }
   /**
    * Data Insertion
@@ -90,7 +104,17 @@ export async function setup({ keypair, adminUser, uploadDirectory }: SetupOption
   /**
    * File Service
    */
-  if (uploadDirectory) {
+  // Check for uploadDirectoryConfig from global config first, then from options
+  const uploadConfigToUse = config.uploadDirectoryConfig || uploadDirectoryConfig;
+
+  if (uploadConfigToUse) {
+    FileService.main.setUploadDirectory(uploadConfigToUse);
+  } else if (uploadDirectory) {
+    // Backward compatibility: use old uploadDirectory property with deprecation warning
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      "Warning: 'uploadDirectory' is deprecated and will be removed in a future version. Please use 'uploadDirectoryConfig' (StaticPathOptions) instead."
+    );
     FileService.main.setUploadDirectory(uploadDirectory);
   }
 }

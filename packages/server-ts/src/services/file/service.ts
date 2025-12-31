@@ -2,7 +2,7 @@ import fs from 'fs';
 import pathModule from 'path';
 import * as DataProvider from '../data_provider/service';
 import triggerService from '../../class/trigger_operator';
-import { config } from '../../config';
+import { config, StaticPathOptions } from '../../config';
 import { IFile } from '../../class/db_schemas';
 
 /**
@@ -64,6 +64,11 @@ class FileService {
   /**
    * @hidden
    */
+  private urlPath: string | null = null;
+
+  /**
+   * @hidden
+   */
   static instance: FileService;
 
   /**
@@ -75,20 +80,52 @@ class FileService {
    * @hidden
    *
    * Sets the upload directory for file storage
-   * @param {string} directory - Directory path for file storage
+   * @param {string | StaticPathOptions} directoryOrConfig - Directory path for file storage or StaticPathOptions configuration
    * @throws {Error} If directory is invalid or not writable
    * @example
    * ```typescript
    * import { fileService } from '@modular-rest/server';
    *
+   * // New format with StaticPathOptions
+   * fileService.setUploadDirectory({
+   *   directory: '/path/to/uploads',
+   *   urlPath: '/assets'
+   * });
+   *
+   * // Legacy format (deprecated)
    * fileService.setUploadDirectory('/path/to/uploads');
    * ```
    */
-  setUploadDirectory(directory: string): void {
+  setUploadDirectory(directoryOrConfig: string | StaticPathOptions): void {
+    // Handle backward compatibility with string
+    if (typeof directoryOrConfig === 'string') {
+      console.warn(
+        '\x1b[33m%s\x1b[0m',
+        "Warning: Passing a string to 'setUploadDirectory' is deprecated. Please use StaticPathOptions object instead."
+      );
+      if (!fs.existsSync(directoryOrConfig)) {
+        fs.mkdirSync(directoryOrConfig, { recursive: true });
+      }
+      this.directory = directoryOrConfig;
+      this.urlPath = null; // No URL path available with legacy format
+      return;
+    }
+
+    // New format: Extract only necessary properties from StaticPathOptions
+    const directory = directoryOrConfig.directory || '';
+    const urlPath = directoryOrConfig.urlPath || '/assets';
+
+    if (!directory) {
+      throw new Error('directory is required in uploadDirectoryConfig');
+    }
+
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory, { recursive: true });
     }
+
+    // Store only the necessary properties (ignore koa-static options)
     this.directory = directory;
+    this.urlPath = urlPath;
   }
 
   /**
@@ -333,24 +370,25 @@ class FileService {
    *
    * @param {string} fileId - File ID to get link for
    * @returns {Promise<string>} Promise resolving to file URL
-   * @throws {Error} If static path root is not defined or file is not found
+   * @throws {Error} If URL path is not defined or file is not found
    * @example
    * ```typescript
    * import { fileService } from '@modular-rest/server';
    *
    * const link = await fileService.getFileLink('file123');
-   * // Returns: '/static/jpeg/profile/1234567890.jpeg'
+   * // Returns: '/uploads/jpeg/profile/1234567890.jpeg'
    * ```
    */
   async getFileLink(fileId: string): Promise<string> {
     const fileDoc = await FileService.instance.getFile(fileId);
 
-    if (!config.staticPath?.actualPath) {
-      throw new Error('Static path root is not defined');
+    if (!FileService.instance.urlPath) {
+      throw new Error(
+        'Upload directory URL path is not defined. Please configure uploadDirectoryConfig with a urlPath property.'
+      );
     }
 
-    const link =
-      config.staticPath.actualPath + `/${fileDoc.format}/${fileDoc.tag}/` + fileDoc.fileName;
+    const link = `${FileService.instance.urlPath}/${fileDoc.format}/${fileDoc.tag}/${fileDoc.fileName}`;
 
     return link;
   }

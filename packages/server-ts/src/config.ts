@@ -10,16 +10,17 @@ import { Options as KoaStaticOptionsBase } from 'koa-static';
 /**
  * The options for the static file server, it's a combination of modular-rest and [koa-static options](https://github.com/koajs/static?tab=readme-ov-file#options)
  */
-export type StaticPathOptions = KoaStaticOptionsBase & {
+export interface StaticPathOptions extends KoaStaticOptionsBase {
   /**
-   * The actual path of the static files on your server
+   * The filesystem directory where static files are stored
    */
-  actualPath: string;
+  directory: string;
   /**
-   * The path you want to serve the static files from
+   * The URL path where static files will be served from
+   * @default '/assets'
    */
-  path: string;
-};
+  urlPath?: string;
+}
 
 /**
  * JWT keypair configuration
@@ -59,9 +60,9 @@ interface AdminUser {
  * @interface RestOptions
  * @property {KoaCorsOptions} [cors] - CORS configuration [options](https://github.com/koajs/cors?tab=readme-ov-file#corsoptions)
  * @property {string} [modulesPath] - Path to custom modules directory
- * @property {string} [uploadDirectory] - Directory for file uploads
+ * @property {StaticPathOptions[]} [staticPaths] - Array of static file serving configurations
+ * @property {StaticPathOptions} [uploadDirectoryConfig] - Upload directory configuration with static path info
  * @property {any} [koaBodyOptions] - Options for koa-body middleware
- * @property {StaticPathOptions} [staticPath] - Static file serving options
  * @property {Function} [onBeforeInit] - Hook called before initialization
  * @property {Function} [onAfterInit] - Hook called after initialization
  * @property {number} [port] - Port to listen on
@@ -75,13 +76,15 @@ interface AdminUser {
  * @property {CmsTrigger[]} [authTriggers] - Authentication triggers
  * @property {CmsTrigger[]} [fileTriggers] - File handling triggers
  * @property {DefinedFunction[]} [functions] - Custom API functions
+ * @property {string} [uploadDirectory] - @deprecated Use uploadDirectoryConfig instead. Directory for file uploads
+ * @property {StaticPathOptions | StaticPathOptions[]} [staticPath] - @deprecated Use staticPaths instead. Static file serving options
  */
 export interface RestOptions {
   cors?: KoaCorsOptions;
   modulesPath?: string;
-  uploadDirectory?: string;
+  staticPaths?: StaticPathOptions[];
+  uploadDirectoryConfig?: StaticPathOptions;
   koaBodyOptions?: any;
-  staticPath?: StaticPathOptions;
   onBeforeInit?: (koaApp: Koa) => void;
   onAfterInit?: (koaApp: Koa) => void;
   port?: number;
@@ -95,6 +98,14 @@ export interface RestOptions {
   authTriggers?: CmsTrigger[];
   fileTriggers?: CmsTrigger[];
   functions?: DefinedFunction[];
+  /**
+   * @deprecated Use uploadDirectoryConfig instead. This property will be removed in a future version.
+   */
+  uploadDirectory?: string;
+  /**
+   * @deprecated Use staticPaths instead. This property will be removed in a future version.
+   */
+  staticPath?: StaticPathOptions | StaticPathOptions[];
 }
 
 /**

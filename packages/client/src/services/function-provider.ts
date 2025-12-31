@@ -27,7 +27,16 @@ class FunctionProvider {
   run<T>(options: { name: string; args: any }) {
     return this.http
       .post<FunctionResponseType<T>>("/function/run", options)
-      .then((response) => response.data);
+      .then((response) => response.data)
+      .catch((error) => {
+        // When there's an HTTP error, the error object contains the server response
+        if (error.hasError && error.error) {
+          // Re-throw the actual server response
+          throw error.error;
+        }
+        // For any other errors, re-throw as is
+        throw error;
+      });
   }
 }
 

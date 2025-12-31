@@ -71,5 +71,6 @@
     "experimentalDecorators": true,
     "skipLibCheck": true
   },
+  "include": ["src/**/*"],
   "exclude": ["**/*.spec.ts"]
 }

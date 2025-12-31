@@ -18,8 +18,32 @@ class AuthService {
 
   user: User | null = null;
 
+  /**
+   * Check if the user or anonymous user is logged in
+   */
   get isLogin() {
-    return !!this.token;
+    const conditions = [
+      () => !!this.user && this.user.type === "user",
+      // This should be removed when in future we verify anonymous user
+      // Currently we don't verify anonymous token
+      // TODO: Remove this when we verify anonymous token
+      () => this.token && !this.user,
+    ];
+    return conditions.some((condition) => condition());
+  }
+
+  /**
+   * Check if the user is anonymous
+   */
+  get isAnonymousUser() {
+    const conditions = [
+      () => this.user?.type === "anonymous",
+      // This should be removed when in future we verify anonymous user
+      // Currently we don't verify anonymous token
+      // TODO: Remove this when we verify anonymous token
+      () => this.token && !this.user,
+    ];
+    return conditions.some((condition) => condition());
   }
 
   get getToken() {
@@ -43,13 +67,31 @@ class AuthService {
   }
 
   private saveSession() {
+    // If there is not any localstorage
+    if (typeof localStorage === "undefined") {
+      console.log("No local storage to save session of `AuthService`");
+      return;
+    }
+
     if (this.token != null) localStorage.setItem("token", this.token);
-    else localStorage.removeItem("token");
+    else {
+      localStorage.removeItem("token");
+    }
+  }
+
+  private loadSession() {
+    // If there is not any localstorage
+    if (typeof localStorage === "undefined") {
+      console.log("No local storage to load session of `AuthService`");
+      return;
+    }
+
+    this.token = localStorage.getItem("token");
   }
 
   loginWithLastSession() {
     // Load token
-    this.token = localStorage.getItem("token");
+    this.loadSession();
 
     return this.loginWithToken(this.token || "", true);
   }

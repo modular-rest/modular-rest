@@ -495,7 +495,7 @@ class UserManager {
       const user = await User.loadFromModel(gottenFromDB);
 
       // Update password
-      user.password = Buffer.from(password).toString('base64');
+      user.password = password;
 
       // Save to database
       await user.save();
@@ -568,7 +568,7 @@ class UserManager {
       const user = await User.loadFromModel(gottenFromDB);
 
       // Update password
-      user.password = Buffer.from(password).toString('base64');
+      user.password = password;
 
       // Save to database
       await user.save();
@@ -624,9 +624,9 @@ class UserManager {
           ...detail,
           type: detail.type || 'user',
           permissionGroup: detail.permissionGroup || getDefaultPermissionGroups().title,
-          phone: detail.phone || '',
-          email: detail.email || '',
-          password: detail.password ? Buffer.from(detail.password).toString('base64') : '',
+          phone: detail.phone || undefined,
+          email: detail.email || undefined,
+          password: detail.password || undefined,
         });
 
         // Load user from document
@@ -679,7 +679,7 @@ class UserManager {
     }
 
     const user = await User.loadFromModel(userDoc);
-    user.password = Buffer.from(newPass).toString('base64');
+    user.password = newPass;
     await user.save();
   }
 
