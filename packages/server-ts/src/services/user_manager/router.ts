@@ -3,6 +3,7 @@ import { validateObject } from '../../class/validator';
 import { create as reply } from '../../class/reply';
 import { Context } from 'koa';
 import * as service from './service';
+import * as dataProvider from '../data_provider/service';
 
 const name = 'user';
 const userManager = new Router();
@@ -178,7 +179,6 @@ userManager.post('/getPermission', async (ctx: Context) => {
 
   const query = { _id: body.id };
 
-  const dataProvider = (global as any).services.dataProvider;
   const permission = await dataProvider
     .getCollection('cms', 'permission')
     .findOne(query)

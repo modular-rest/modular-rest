@@ -203,17 +203,18 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
         extension: '.js',
       },
     });
+  }
 
-    // 5. Plug in additional defined functions
-    if (config.functions) {
-      Combination.addFunctionsByArray(config.functions);
-    }
+  // 5. Plug in additional defined functions
+  if (config.functions) {
+    Combination.addFunctionsByArray(config.functions);
   }
 
   // 4. Setting up default services
   try {
     await require('./helper/presetup_services').setup(config);
   } catch (e) {
+    console.error(`[createRest] Error in setup:`, e);
     return Promise.reject(e);
   }
 

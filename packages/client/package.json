@@ -4,7 +4,7 @@
   "description": "This is a browser library for using modular-rest server abilities on client side.",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
-    "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" npm run test",
+    "test:coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" npm run test",
     "start:dev": "nodemon",
     "build": "tsc"
   },
@@ -15,10 +15,10 @@
   ],
   "author": "Navid Shad",
   "license": "MIT",
-	"bugs": {
-		"url": "https://github.com/modular-rest/modular-rest/issues"
-	},
-	"homepage": "https://modular-rest.github.io/modular-rest",
+  "bugs": {
+    "url": "https://github.com/modular-rest/modular-rest/issues"
+  },
+  "homepage": "https://modular-rest.github.io/modular-rest",
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",

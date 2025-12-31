@@ -470,13 +470,21 @@ class UserManager {
       throw new Error('Invalid verification code');
     }
 
+    const tempId = this.tempIds[id];
+    const idType = tempId ? tempId.type : 'email';
+
     const userModel = DataProvider.getCollection('cms', 'auth');
 
     if (!userModel) {
       throw new Error('User model not found');
     }
 
-    const query = { email: id };
+    const query: Record<string, any> = {};
+    if (idType === 'phone') {
+      query.phone = id;
+    } else {
+      query.email = id;
+    }
 
     // Get from database
     let gottenFromDB;
@@ -486,25 +494,30 @@ class UserManager {
       throw error;
     }
 
-    if (!gottenFromDB) {
-      throw new Error('User not found');
-    }
-
     try {
-      // Load user
-      const user = await User.loadFromModel(gottenFromDB);
+      let token: string;
 
-      // Update password
-      user.password = password;
+      if (!gottenFromDB) {
+        // Registration flow: create new user
+        const registrationData: any = {
+          password,
+          type: 'user',
+        };
+        if (idType === 'phone') {
+          registrationData.phone = id;
+        } else {
+          registrationData.email = id;
+        }
+        token = await this.registerUser(registrationData);
+      } else {
+        // Password reset flow: update existing user
+        const user = await User.loadFromModel(gottenFromDB);
+        user.password = password;
+        await user.save();
 
-      // Save to database
-      await user.save();
-
-      // Get token payload
-      const payload = user.getBrief();
-
-      // Generate json web token
-      const token = await JWT.main.sign(payload);
+        const payload = user.getBrief();
+        token = await JWT.main.sign(payload);
+      }
 
       // Remove temporary ID
       delete this.tempIds[id];
@@ -543,13 +556,21 @@ class UserManager {
       throw new Error('Invalid verification code');
     }
 
+    const tempId = this.tempIds[id];
+    const idType = tempId ? tempId.type : 'email';
+
     const userModel = DataProvider.getCollection('cms', 'auth');
 
     if (!userModel) {
       throw new Error('User model not found');
     }
 
-    const query = { email: id };
+    const query: Record<string, any> = {};
+    if (idType === 'phone') {
+      query.phone = id;
+    } else {
+      query.email = id;
+    }
 
     // Get from database
     let gottenFromDB;
@@ -619,8 +640,8 @@ class UserManager {
       }
 
       try {
-        // Create user document
-        const userDoc = await userModel.create({
+        // Create user document with timeout
+        const createPromise = userModel.create({
           ...detail,
           type: detail.type || 'user',
           permissionGroup: detail.permissionGroup || getDefaultPermissionGroups().title,
@@ -628,6 +649,14 @@ class UserManager {
           email: detail.email || undefined,
           password: detail.password || undefined,
         });
+
+        // Add timeout wrapper to prevent hanging
+        const userDoc = await Promise.race([
+          createPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('User creation timeout after 10s')), 10000)
+          ),
+        ]);
 
         // Load user from document
         const user = await User.loadFromModel(userDoc);

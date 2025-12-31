@@ -93,19 +93,19 @@ export interface DefinedFunction {
  */
 export function defineFunction(options: DefinedFunction): DefinedFunction {
   // Check if the function already exists
-  const existingFunction = functions.find(f => f.name === name);
+  const existingFunction = functions.find(f => f.name === options.name);
   if (existingFunction) {
-    throw new Error(`Function with name ${name} already exists`);
+    throw new Error(`Function with name ${options.name} already exists`);
   }
 
   // Check if the permission types provided
   if (!options.permissionTypes || !options.permissionTypes.length) {
-    throw new Error(`Permission types not provided for function ${name}`);
+    throw new Error(`Permission types not provided for function ${options.name}`);
   }
 
   // Check if the callback is a function
   if (typeof options.callback !== 'function') {
-    throw new Error(`Callback is not a function for function ${name}`);
+    throw new Error(`Callback is not a function for function ${options.name}`);
   }
 
   // Add the function to the list of functions
