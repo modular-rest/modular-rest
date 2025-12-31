@@ -203,11 +203,11 @@ export async function createRest(options: RestOptions): Promise<{ app: Koa; serv
         extension: '.js',
       },
     });
+  }
 
-    // 5. Plug in additional defined functions
-    if (config.functions) {
-      Combination.addFunctionsByArray(config.functions);
-    }
+  // 5. Plug in additional defined functions
+  if (config.functions) {
+    Combination.addFunctionsByArray(config.functions);
   }
 
   // 4. Setting up default services

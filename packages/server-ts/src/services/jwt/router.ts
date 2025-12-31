@@ -3,6 +3,7 @@ import { validateObject } from '../../class/validator';
 import { create as reply } from '../../class/reply';
 import { Context } from 'koa';
 import * as service from './service';
+import * as userManager from '../user_manager/service';
 
 const name = 'verify';
 const verify = new Router();
@@ -53,7 +54,7 @@ verify.post('/checkAccess', async (ctx: Context) => {
 
   const userid = payload.id;
 
-  await (global as any).services.userManager.main
+  await userManager.main
     .getUserById(userid)
     .then((user: any) => {
       const key = user.hasPermission(body.permissionField);
