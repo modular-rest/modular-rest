@@ -70,10 +70,22 @@ describe('functions router integration', () => {
   });
 
   it('fails when user lacks permission', async () => {
-    // Create a function that requires a permission admin doesn't have
-    // (though admin has almost everything, let's use a non-existent permission)
-    // We'd need to register this function. But we already registered testAdd.
-    // Let's just test a scenario where we'd need a specific group.
-    // For now, admin has user_access so it passes.
+    // 1. Get anonymous token
+    const loginRes = await ctx.request.get('/user/loginAnonymous');
+    expect(loginRes.status).toBe(200);
+    const anonToken = loginRes.body.token;
+
+    // 2. Try to run testAdd (requires user_access) with anonymous token
+    const res = await ctx.request
+      .post('/function/run')
+      .set('authorization', anonToken)
+      .send({
+        name: 'testAdd',
+        args: { a: 1, b: 2 },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.status).toBe('error');
+    expect(res.body.message).toContain('does not have permission');
   });
 });
