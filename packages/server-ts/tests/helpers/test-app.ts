@@ -63,10 +63,11 @@ export async function createIntegrationTestApp(
   };
 
   // Add timeout wrapper to catch hanging operations
+  let timeoutId: NodeJS.Timeout;
   const createRestWithTimeout = Promise.race([
     createRest(options),
-    new Promise<never>((_, reject) =>
-      setTimeout(
+    new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(
         () =>
           reject(
             new Error(
@@ -74,8 +75,8 @@ export async function createIntegrationTestApp(
             )
           ),
         45000
-      )
-    ),
+      );
+    }),
   ]) as Promise<{ app: any; server?: any }>;
 
   let app: any;
@@ -83,6 +84,7 @@ export async function createIntegrationTestApp(
 
   try {
     const result = await createRestWithTimeout;
+    if (timeoutId!) clearTimeout(timeoutId);
     app = result.app;
     server = result.server;
     console.log(`[test-app] createRest resolved (+${Date.now() - setupStart}ms)`);
@@ -127,6 +129,7 @@ export async function createIntegrationTestApp(
       fs.rmSync(uploadDir, { recursive: true, force: true });
     }
 
+    await modelRegistry.clear();
     await cleanupConnections(dbPrefix);
   };
 

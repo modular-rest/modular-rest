@@ -110,6 +110,7 @@ export async function createAdminUser({ email, password }: AdminCredentials): Pr
     if (isAnonymousExisted === 0) {
       // Wrap registerUser with timeout to prevent hanging
       try {
+        let timeoutId: NodeJS.Timeout;
         await Promise.race([
           userManager.main.registerUser({
             permissionGroup: getDefaultAnonymousPermissionGroup().title,
@@ -118,13 +119,15 @@ export async function createAdminUser({ email, password }: AdminCredentials): Pr
             password: '',
             type: 'anonymous',
           }),
-          new Promise<never>((_, reject) =>
-            setTimeout(
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(
               () => reject(new Error('registerUser timeout for anonymous user after 15s')),
               15000
-            )
-          ),
-        ]);
+            );
+          }),
+        ]).finally(() => {
+          if (timeoutId!) clearTimeout(timeoutId);
+        });
       } catch (err) {
         // If anonymous user creation fails, log but don't fail completely
         // It might already exist from a previous attempt
@@ -141,6 +144,7 @@ export async function createAdminUser({ email, password }: AdminCredentials): Pr
       }
 
       // Wrap registerUser with timeout to prevent hanging
+      let timeoutId: NodeJS.Timeout;
       await Promise.race([
         userManager.main.registerUser({
           permissionGroup: getDefaultAdministratorPermissionGroup().title,
@@ -148,13 +152,15 @@ export async function createAdminUser({ email, password }: AdminCredentials): Pr
           password: password,
           type: 'user',
         }),
-        new Promise<never>((_, reject) =>
-          setTimeout(
+        new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(
             () => reject(new Error('registerUser timeout for admin user after 15s')),
             15000
-          )
-        ),
-      ]);
+          );
+        }),
+      ]).finally(() => {
+        if (timeoutId!) clearTimeout(timeoutId);
+      });
     }
   } catch (e) {
     return Promise.reject(e);
