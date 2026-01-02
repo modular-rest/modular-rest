@@ -191,6 +191,16 @@ class FileService {
     return new Promise(async (done, reject) => {
       storedFile = FileService.instance.createStoredDetail(fileType, tag);
 
+      // Ensure destination directory exists
+      const destDir = pathModule.dirname(storedFile.fullPath);
+      try {
+        if (!fs.existsSync(destDir)) {
+          fs.mkdirSync(destDir, { recursive: true });
+        }
+      } catch (err) {
+        return reject(err);
+      }
+
       fs.copyFile(filePath, storedFile.fullPath, (err: Error | null) => {
         if (err) {
           reject(err);
