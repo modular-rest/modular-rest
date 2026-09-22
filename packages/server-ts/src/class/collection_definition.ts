@@ -26,7 +26,7 @@ interface CollectionDefinitionOptions {
   /**
    * Mongoose schema definition for the collection
    * @type {Schema}
-   * @see https://mongoosejs.com/docs/5.x/docs/guide.html
+   * @see https://mongoosejs.com/docs/guide.html
    */
   schema: Schema<any>;
 

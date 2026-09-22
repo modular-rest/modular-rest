@@ -49,6 +49,26 @@ createRest({
 });
 ```
 
+### One physical database
+
+By default every logical `database` (`cms`, and each one passed to `defineCollection`) is a
+separate MongoDB database named `dbPrefix + database`. Some backends expose exactly one
+database per connection string — e.g. Firestore with MongoDB compatibility. For those, set
+`singleDatabase` and put the database in the URI path:
+
+```typescript
+mongo: {
+  mongoBaseAddress: 'mongodb://user:pass@host:443/my-db?loadBalanced=true&tls=true&retryWrites=false',
+  dbPrefix: '', // ignored in this mode
+  singleDatabase: true,
+}
+```
+
+All logical databases then share one connection and store their collections in `my-db`.
+`getCollection('cms', 'auth')`, permissions and triggers keep using the logical names, and
+references between logical databases populate without an explicit `model`. Collection names
+must be unique across logical databases; a clash throws at startup.
+
 ## Key Features
 
 - Modular REST API development with Koa.js

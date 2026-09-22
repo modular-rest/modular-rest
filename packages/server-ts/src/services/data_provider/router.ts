@@ -10,6 +10,25 @@ import mongoose from 'mongoose';
 
 const name = 'data-provider';
 
+/**
+ * Mongoose 6+ reports writes as `{ acknowledged, matchedCount, modifiedCount | deletedCount }`.
+ * Keep the Mongoose 5 fields (`ok`, `n`, `nModified`) this API has always returned, next to
+ * the new ones, so existing clients keep working.
+ */
+function withLegacyWriteFields(result: any): any {
+  if (!result || typeof result !== 'object') return result;
+
+  const legacy: Record<string, number> = { ok: result.acknowledged === false ? 0 : 1 };
+  if (typeof result.matchedCount === 'number') {
+    legacy.n = result.matchedCount;
+    legacy.nModified = result.modifiedCount;
+  } else if (typeof result.deletedCount === 'number') {
+    legacy.n = result.deletedCount;
+  }
+
+  return { ...legacy, ...result };
+}
+
 const dataProvider = new Router();
 
 dataProvider.use('/', middleware.auth, async (ctx: Context, next: Next) => {
@@ -231,7 +250,7 @@ dataProvider.post('/update-one', async (ctx: Context) => {
     .then(writeOpResult => {
 
 
-      ctx.body = { data: writeOpResult };
+      ctx.body = { data: withLegacyWriteFields(writeOpResult) };
     })
     .catch(err => {
       ctx.status = err.status || 500;
@@ -317,7 +336,7 @@ dataProvider.post('/remove-one', async (ctx: Context) => {
     .then(async (result: any) => {
 
 
-      ctx.body = { data: result };
+      ctx.body = { data: withLegacyWriteFields(result) };
     })
     .catch((err: Error) => {
       ctx.status = (err as any).status || 500;
