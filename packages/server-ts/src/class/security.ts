@@ -89,7 +89,9 @@ export class Permission {
    *
    * @param {boolean} [options.read=false] - Whether read access is granted
    * @param {boolean} [options.write=false] - Whether write access is granted
-   * @param {boolean} [options.onlyOwnData=false] - Whether access is limited to own data
+   * @param {boolean} [options.onlyOwnData=false] - Whether access is limited to own data: the
+   * data provider then pins every query, document, pipeline and populate to documents whose
+   * `ownerIdField` holds the caller's id, and refuses updates that change that field
    * @param {string} [options.ownerIdField='refId'] - Field name for owner identification
    */
   constructor({

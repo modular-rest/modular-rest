@@ -4,13 +4,57 @@ import { validateObject } from '../../class/validator';
 import { create as reply } from '../../class/reply';
 import nestedProperty from 'nested-property';
 import * as service from './service';
+import { AccessGrant } from './service';
+import * as access from './access';
 import * as middleware from '../../middlewares';
 import { Context, Next } from 'koa';
 import mongoose from 'mongoose';
 
 const name = 'data-provider';
 
+/**
+ * Mongoose 6+ reports writes as `{ acknowledged, matchedCount, modifiedCount | deletedCount }`.
+ * Keep the Mongoose 5 fields (`ok`, `n`, `nModified`) this API has always returned, next to
+ * the new ones, so existing clients keep working.
+ */
+function withLegacyWriteFields(result: any): any {
+  if (!result || typeof result !== 'object') return result;
+
+  const legacy: Record<string, number> = { ok: result.acknowledged === false ? 0 : 1 };
+  if (typeof result.matchedCount === 'number') {
+    legacy.n = result.matchedCount;
+    legacy.nModified = result.modifiedCount;
+  } else if (typeof result.deletedCount === 'number') {
+    legacy.n = result.deletedCount;
+  }
+
+  return { ...legacy, ...result };
+}
+
 const dataProvider = new Router();
+
+/**
+ * Resolves what the caller may reach in the requested collection, or answers 403.
+ * The grant limits the request to the caller's own documents when the permission that
+ * opens the collection has `onlyOwnData`.
+ */
+function grantFor(ctx: Context, operationType: string): AccessGrant {
+  const body = ctx.request.body;
+  const grant = service.resolveAccess(body.database, body.collection, operationType, ctx.state.user);
+  if (!grant) ctx.throw(403, 'access denied');
+  return grant as AccessGrant;
+}
+
+/** Runs a request check, answering a refused request with the status it carries. */
+function shape<T>(ctx: Context, check: () => T): T {
+  try {
+    return check();
+  } catch (err: any) {
+    if (err?.status === 412) ctx.throw(412, JSON.stringify(reply('e', { error: err.message })));
+    if (typeof err?.status === 'number') ctx.throw(err.status, err.message);
+    throw err;
+  }
+}
 
 dataProvider.use('/', middleware.auth, async (ctx: Context, next: Next) => {
   const body = ctx.request.body;
@@ -19,6 +63,12 @@ dataProvider.use('/', middleware.auth, async (ctx: Context, next: Next) => {
   // fields validation
   if (!bodyValidated.isValid) {
     ctx.throw(412, JSON.stringify(reply('e', { error: bodyValidated.requires })));
+  }
+
+  // Permissions are looked up with these as object keys, so `["posts"]` would read as
+  // "posts" there while matching nothing anywhere else.
+  if (typeof body.database !== 'string' || typeof body.collection !== 'string') {
+    ctx.throw(412, JSON.stringify(reply('e', { error: 'database and collection must be strings' })));
   }
 
   // type caster
@@ -54,18 +104,7 @@ dataProvider.post('/find', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.read,
-    body.query,
-    ctx.state.user
-  );
-  if (!hasAccess) {
-    console.log(body);
-    console.log(ctx.state.user.permission);
-    ctx.throw(403, 'access denied');
-  }
+  const grant = grantFor(ctx, AccessTypes.read);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -73,16 +112,22 @@ dataProvider.post('/find', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const query = shape(ctx, () => access.ownQuery(body.query, grant));
+  shape(ctx, () => service.assertQueryOptions(body.options));
+  const populates =
+    body.populates &&
+    shape(ctx, () => access.ownPopulates(body.populates, { model: collection, user: ctx.state.user }));
+
   // operate on db
-  let queryRequest = collection.find(body.query, body.projection);
+  let queryRequest = collection.find(query, body.projection);
 
   if (body.options) {
     queryRequest = service.performAdditionalOptionsToQueryObject(queryRequest, body.options);
   }
 
-  if (body.populates) {
+  if (populates) {
     try {
-      queryRequest = service.performPopulateToQueryObject(queryRequest, body.populates);
+      queryRequest = service.performPopulateToQueryObject(queryRequest, populates);
     } catch (err) {
       ctx.status = 412;
       ctx.body = err;
@@ -112,14 +157,7 @@ dataProvider.post('/find-one', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.read,
-    body.query,
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.read);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -127,16 +165,23 @@ dataProvider.post('/find-one', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const query = shape(ctx, () => access.ownQuery(body.query, grant));
+  // Checked before findOne, which also reads them as query options (`populate` among them).
+  shape(ctx, () => service.assertQueryOptions(body.options));
+  const populates =
+    body.populates &&
+    shape(ctx, () => access.ownPopulates(body.populates, { model: collection, user: ctx.state.user }));
+
   // operate on db
-  let queryRequest = collection.findOne(body.query, body.projection, body.options);
+  let queryRequest = collection.findOne(query, body.projection, body.options);
 
   if (body.options) {
     queryRequest = service.performAdditionalOptionsToQueryObject(queryRequest, body.options);
   }
 
-  if (body.populates) {
+  if (populates) {
     try {
-      queryRequest = service.performPopulateToQueryObject(queryRequest, body.populates);
+      queryRequest = service.performPopulateToQueryObject(queryRequest, populates);
     } catch (err) {
       ctx.status = 412;
       ctx.body = err;
@@ -167,14 +212,7 @@ dataProvider.post('/count', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.read,
-    body.query,
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.read);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -182,8 +220,10 @@ dataProvider.post('/count', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const query = shape(ctx, () => access.ownQuery(body.query, grant));
+
   await collection
-    .countDocuments(body.query)
+    .countDocuments(query)
     .exec()
     .then(count => {
 
@@ -206,14 +246,7 @@ dataProvider.post('/update-one', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.write,
-    body.query,
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.write);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -221,17 +254,21 @@ dataProvider.post('/update-one', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  shape(ctx, () => access.assertOwnUpdate(body.update, grant));
+  shape(ctx, () => access.assertOwnUpdateOptions(body.options, grant));
+  const query = shape(ctx, () => access.ownQuery(body.query, grant));
+
   // get removing doc as output for triggers
-  const output: any = await collection.findOne(body.query).exec().then();
+  const output: any = await collection.findOne(query).exec().then();
 
   // operate on db
   await collection
-    .updateOne(body.query, body.update, body.options)
+    .updateOne(query, body.update, body.options)
     .exec()
     .then(writeOpResult => {
 
 
-      ctx.body = { data: writeOpResult };
+      ctx.body = { data: withLegacyWriteFields(writeOpResult) };
     })
     .catch(err => {
       ctx.status = err.status || 500;
@@ -249,18 +286,7 @@ dataProvider.post('/insert-one', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.write,
-    body.doc,
-    ctx.state.user
-  );
-  if (!hasAccess) {
-    console.log(body);
-    console.log(ctx.state.user.permission);
-    ctx.throw(403, 'access denied');
-  }
+  const grant = grantFor(ctx, AccessTypes.write);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -268,8 +294,10 @@ dataProvider.post('/insert-one', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const doc = shape(ctx, () => access.ownDoc(body.doc, grant));
+
   // operate on db
-  await new collection(body.doc)
+  await new collection(doc)
     .save()
     .then(async newDoc => {
 
@@ -292,14 +320,7 @@ dataProvider.post('/remove-one', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.write,
-    body.query,
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.write);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -307,17 +328,19 @@ dataProvider.post('/remove-one', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const query = shape(ctx, () => access.ownQuery(body.query, grant));
+
   // get removing doc as output for triggers
-  const output: any = await collection.findOne(body.query).exec().then();
+  const output: any = await collection.findOne(query).exec().then();
 
   // operate on db
   await collection
-    .deleteOne(body.query)
+    .deleteOne(query)
     .exec()
     .then(async (result: any) => {
 
 
-      ctx.body = { data: result };
+      ctx.body = { data: withLegacyWriteFields(result) };
     })
     .catch((err: Error) => {
       ctx.status = (err as any).status || 500;
@@ -335,14 +358,7 @@ dataProvider.post('/aggregate', async (ctx: Context) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.read,
-    body.accessQuery,
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.read);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -350,9 +366,13 @@ dataProvider.post('/aggregate', async (ctx: Context) => {
     ctx.throw(412, JSON.stringify(reply('e', { error: 'wrong database or collection' })));
   }
 
+  const pipelines = shape(ctx, () =>
+    access.ownPipeline(body.pipelines, { database: body.database, model: collection, grant, user: ctx.state.user })
+  );
+
   // operate on db
   await collection
-    .aggregate(body.pipelines)
+    .aggregate(pipelines)
     .exec()
     .then(async (result: any) => {
 
@@ -375,14 +395,7 @@ dataProvider.post('/findByIds', async (ctx: Context, next: Next) => {
   }
 
   // access validation
-  const hasAccess = service.checkAccess(
-    body.database,
-    body.collection,
-    AccessTypes.read,
-    body.accessQuery || {},
-    ctx.state.user
-  );
-  if (!hasAccess) ctx.throw(403, 'access denied');
+  const grant = grantFor(ctx, AccessTypes.read);
 
   // collection validation
   const collection = service.getCollection(body.database, body.collection);
@@ -403,7 +416,7 @@ dataProvider.post('/findByIds', async (ctx: Context, next: Next) => {
 
   const pipelines = [
     {
-      $match: { $or: or },
+      $match: { $or: or, ...shape(ctx, () => access.ownMatch(collection, grant)) },
     },
     // {
     //     $sort: body.sort || { _id: 1 }

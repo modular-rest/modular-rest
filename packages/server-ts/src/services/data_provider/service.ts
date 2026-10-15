@@ -13,9 +13,6 @@ import modelRegistry from './model_registry';
  */
 export const name = 'dataProvider';
 
-// Set mongoose options
-mongoose.set('useCreateIndex', true);
-
 // Database connections and collections storage
 const connections: Record<string, Connection> = {};
 const collections: Record<string, Record<string, Model<any>>> = {};
@@ -26,10 +23,22 @@ const permissionDefinitions: Record<string, Record<string, AccessDefinition>> = 
  * @interface MongoOption
  * @property {string} [dbPrefix] - Prefix for database names
  * @property {string} mongoBaseAddress - MongoDB connection URL
+ * @property {boolean} [singleDatabase] - One physical database for all logical ones (see RestOptions.mongo)
  */
 export interface MongoOption {
   dbPrefix?: string;
   mongoBaseAddress: string;
+  singleDatabase?: boolean;
+}
+
+/**
+ * Database name for connection logs: the physical name, or the logical one when every
+ * logical database shares the single physical database.
+ */
+function databaseLabel(dbName: string, mongoOption: MongoOption): string {
+  return mongoOption.singleDatabase
+    ? `${dbName} (single database)`
+    : (mongoOption.dbPrefix || '') + dbName;
 }
 
 /**
@@ -53,101 +62,78 @@ interface CollectionDefinitionListOption {
  * @throws {Error} If triggers are not properly configured
  * @private
  */
-function connectToDatabaseByCollectionDefinitionList(
+async function connectToDatabaseByCollectionDefinitionList(
   dbName: string,
   collectionDefinitionList: CollectionDefinition[] = [],
   mongoOption: MongoOption
 ): Promise<void> {
-  return new Promise((done, reject) => {
-    // Check if connection already exists in registry
-    let connection = modelRegistry.getConnection(dbName);
+  const fullDbName = databaseLabel(dbName, mongoOption);
 
-    // Create db connection if it doesn't exist
-    if (!connection) {
-      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-      const connectionString = mongoOption.mongoBaseAddress;
+  // Check if connection already exists in registry
+  let connection = modelRegistry.getConnection(dbName);
 
-      console.info(`- Connecting to database: ${fullDbName}`);
+  // Create db connection if it doesn't exist
+  if (!connection) {
+    console.info(`- Connecting to database: ${fullDbName}`);
+    connection = modelRegistry.getOrCreateConnection(dbName, mongoOption);
+  } else {
+    console.info(`- Using existing connection for database: ${fullDbName}`);
+  }
 
-      connection = mongoose.createConnection(connectionString, {
-        useUnifiedTopology: true,
-        useNewUrlParser: true,
-        dbName: fullDbName,
-        serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
-        socketTimeoutMS: 45000, // 45 second timeout for socket operations
-      });
+  // Store connection
+  connections[dbName] = connection;
+
+  // add db models from schemas
+  collectionDefinitionList.forEach(collectionDefinition => {
+    const collection = collectionDefinition.collection;
+
+    if (collections[dbName] == undefined) collections[dbName] = {};
+
+    if (permissionDefinitions[dbName] == undefined) permissionDefinitions[dbName] = {};
+
+    // Check if model already exists in registry (pre-created)
+    let model = modelRegistry.getModel(dbName, collection);
+
+    if (!model) {
+      // Model doesn't exist in registry, create it on the connection
+      // This can happen if defineCollection was called without mongoOption
+      model = modelRegistry.registerCollection(collectionDefinition, mongoOption);
     } else {
-      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-      console.info(`- Using existing connection for database: ${fullDbName}`);
+      // Model exists in registry, verify it's using the same connection
+      // Mongoose models are bound to their connection, so we should use the registry model
+      // But we need to ensure the connection matches
+      const registryConnection = modelRegistry.getConnection(dbName);
+      if (registryConnection && registryConnection !== connection) {
+        // Connections don't match, but this shouldn't happen in normal flow
+        // Use the model from registry as it's already created
+        model = modelRegistry.getModel(dbName, collection)!;
+      }
     }
 
-    // Store connection
-    connections[dbName] = connection;
+    // Store model in global collections object
+    collections[dbName][collection] = model;
 
-    // add db models from schemas
-    collectionDefinitionList.forEach(collectionDefinition => {
-      const collection = collectionDefinition.collection;
-      const schema = collectionDefinition.schema;
+    // Also update the CollectionDefinition with the model if it has a setModel method
+    if (collectionDefinition.setModel) {
+      collectionDefinition.setModel(model);
+    }
 
-      if (collections[dbName] == undefined) collections[dbName] = {};
-
-      if (permissionDefinitions[dbName] == undefined) permissionDefinitions[dbName] = {};
-
-      // Check if model already exists in registry (pre-created)
-      let model = modelRegistry.getModel(dbName, collection);
-
-      if (!model) {
-        // Model doesn't exist in registry, create it on the connection
-        // This can happen if defineCollection was called without mongoOption
-        model = connection.model(collection, schema);
-      } else {
-        // Model exists in registry, verify it's using the same connection
-        // Mongoose models are bound to their connection, so we should use the registry model
-        // But we need to ensure the connection matches
-        const registryConnection = modelRegistry.getConnection(dbName);
-        if (registryConnection && registryConnection !== connection) {
-          // Connections don't match, but this shouldn't happen in normal flow
-          // Use the model from registry as it's already created
-          model = modelRegistry.getModel(dbName, collection)!;
-        }
-      }
-
-      // Store model in global collections object
-      collections[dbName][collection] = model;
-
-      // Also update the CollectionDefinition with the model if it has a setModel method
-      if (collectionDefinition.setModel) {
-        collectionDefinition.setModel(model);
-      }
-
-      // define Access Definition from component permissions
-      // and store it on global access definition object
-      permissionDefinitions[dbName][collection] = new AccessDefinition({
-        database: dbName,
-        collection: collection,
-        permissionList: collectionDefinition.permissions,
-      });
-
-
+    // define Access Definition from component permissions
+    // and store it on global access definition object
+    permissionDefinitions[dbName][collection] = new AccessDefinition({
+      database: dbName,
+      collection: collection,
+      permissionList: collectionDefinition.permissions,
     });
 
-    // If connection is already connected, resolve immediately
-    if (connection.readyState === 1) {
-      const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-      console.info(`- ${fullDbName} database has been connected`);
-      done();
-    } else {
-      connection.on('connected', () => {
-        const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-        console.info(`- ${fullDbName} database has been connected`);
-        done();
-      });
 
-      connection.on('error', err => {
-        reject(err);
-      });
-    }
   });
+
+  // Resolves at once if already connected. Unlike listening for 'error', it also rejects
+  // when the initial connection failed before this point: Mongoose 8 only emits 'error'
+  // to listeners that exist at failure time, which would leave startup waiting forever.
+  await connection.asPromise();
+  console.info(`- ${fullDbName} database has been connected`);
 }
 
 /**
@@ -242,12 +228,87 @@ function _getPermissionList(db: string, collection: string, operationType: strin
 }
 
 /**
- * Checks if a user has access to perform an operation on a collection
+ * What a user may reach in a collection for one kind of operation.
+ * @interface AccessGrant
+ * @property {string} [ownerIdField] - Set when the user may only reach documents whose
+ * `ownerIdField` holds their own id (an `onlyOwnData` permission); absent for full access
+ * @property {string} [ownerId] - The user's id, to match against `ownerIdField`
+ */
+export interface AccessGrant {
+  ownerIdField?: string;
+  ownerId?: string;
+}
+
+/**
+ * Whether a permission applies to a user, before its read/write flags are considered.
+ * @private
+ */
+function _permissionAppliesTo(permission: Permission, user: User): boolean {
+  // A god_access permission opens the collection to every caller.
+  if (permission.accessType === 'god_access') return true;
+  if (permission.accessType === 'anonymous_access' && user.type === 'anonymous') return true;
+  if (permission.accessType === 'user_access' && user.type === 'user') return true;
+  return typeof (user as any).hasPermission === 'function' && user.hasPermission(permission.accessType);
+}
+
+/**
+ * Works out what a user may reach in a collection for a read or a write.
+ *
+ * A permission grants an operation when it applies to the user and allows that operation
+ * (`read` / `write`). A permission with `onlyOwnData` grants it on the user's own documents
+ * only: those whose `ownerIdField` holds the user's id. When several permissions grant the
+ * operation, the widest wins: any one without `onlyOwnData` gives full access.
+ *
+ * `god_access` permissions keep their historical meaning and grant every operation to
+ * every caller, whatever their read/write flags.
+ *
+ * @function resolveAccess
+ * @param {string} db - Database name
+ * @param {string} collection - Collection name
+ * @param {string} operationType - Type of operation (read/write)
+ * @param {User} user - User performing the operation
+ * @returns {AccessGrant | null} What the user may reach, or null when access is denied
+ * @example
+ * ```typescript
+ * const grant = resolveAccess('myapp', 'posts', AccessTypes.read, currentUser);
+ * if (grant?.ownerIdField) query[grant.ownerIdField] = grant.ownerId;
+ * ```
+ */
+export function resolveAccess(
+  db: string,
+  collection: string,
+  operationType: string,
+  user: User
+): AccessGrant | null {
+  const permissionList = _getPermissionList(db, collection, operationType);
+  const granting = permissionList.filter(permission => {
+    if (!_permissionAppliesTo(permission, user)) return false;
+    if (permission.accessType === 'god_access') return true;
+    if (operationType === AccessTypes.read) return permission.read;
+    if (operationType === AccessTypes.write) return permission.write;
+    return false;
+  });
+
+  if (granting.length === 0) return null;
+
+  const ownOnly = granting.filter(permission => permission.onlyOwnData && permission.accessType !== 'god_access');
+  if (ownOnly.length < granting.length) return {};
+
+  return { ownerIdField: ownOnly[0].ownerIdField || 'refId', ownerId: String(user.id) };
+}
+
+/**
+ * Checks if a user has access to perform an operation on a collection.
+ *
+ * True when {@link resolveAccess} grants the operation, which includes access limited to the
+ * user's own documents. Callers that act on documents must apply that limit themselves;
+ * use resolveAccess to get it.
+ *
  * @function checkAccess
  * @param {string} db - Database name
  * @param {string} collection - Collection name
  * @param {string} operationType - Type of operation (read/write)
- * @param {Record<string, any>} queryOrDoc - Query or document being accessed
+ * @param {Record<string, any>} queryOrDoc - Query or document being accessed (unused)
  * @param {User} user - User performing the operation
  * @returns {boolean} Whether the user has access
  * @example
@@ -265,17 +326,22 @@ export function checkAccess(
   queryOrDoc: Record<string, any>,
   user: User
 ): boolean {
-  const permissionList = _getPermissionList(db, collection, operationType);
-  return permissionList.some(permission => {
-    if (permission.accessType === 'god_access') return true;
-    if (permission.accessType === 'anonymous_access' && user.type === 'anonymous') return true;
-    if (permission.accessType === 'user_access' && user.type === 'user') return true;
-    if (typeof (user as any).hasPermission === 'function' && user.hasPermission(permission.accessType)) {
-      if (operationType === AccessTypes.read) return permission.read;
-      if (operationType === AccessTypes.write) return permission.write;
+  return resolveAccess(db, collection, operationType, user) !== null;
+}
+
+/**
+ * Finds the database and collection a registered model belongs to.
+ * @function findCollectionOfModel
+ * @param {Model<any>} model - A model returned by getCollection
+ * @returns {{ database: string; collection: string } | undefined} Its names, if registered
+ */
+export function findCollectionOfModel(model: unknown): { database: string; collection: string } | undefined {
+  for (const [database, models] of Object.entries(collections)) {
+    for (const [collection, registered] of Object.entries(models)) {
+      if (registered === model) return { database, collection };
     }
-    return false;
-  });
+  }
+  return undefined;
 }
 
 /**
@@ -293,7 +359,7 @@ export function checkAccess(
  */
 export function getAsID(strId: string): mongoose.Types.ObjectId | undefined {
   try {
-    return mongoose.Types.ObjectId(strId);
+    return new mongoose.Types.ObjectId(strId);
   } catch (e) {
     return undefined;
   }
@@ -324,7 +390,11 @@ export function performPopulateToQueryObject<T = any>(
 }
 
 /**
- * Applies additional options to a Mongoose query
+ * Applies additional options to a Mongoose query.
+ *
+ * Each key is called as a query method, so only the keys in {@link QUERY_OPTION_KEYS} are
+ * accepted: methods like `setQuery`, `merge` or `deleteMany` would replace the filter or
+ * turn a read into a write.
  * @function performAdditionalOptionsToQueryObject
  * @param {Query<T, any>} queryObj - Mongoose query object
  * @param {Record<string, any>} options - Additional query options
@@ -342,11 +412,48 @@ export function performAdditionalOptionsToQueryObject<T = any>(
   queryObj: Query<T, any>,
   options: Record<string, any>
 ): Query<T, any> {
+  assertQueryOptions(options);
   Object.entries(options).forEach(([key, value]) => {
     // @ts-ignore
     queryObj[key](value);
   });
   return queryObj;
+}
+
+/**
+ * Query options a client may send with find and find-one. Each is a Mongoose query method
+ * that only shapes or pages the result.
+ * @constant {string[]}
+ */
+export const QUERY_OPTION_KEYS = [
+  'sort',
+  'limit',
+  'skip',
+  'select',
+  'lean',
+  'collation',
+  'hint',
+  'maxTimeMS',
+  'comment',
+  'batchSize',
+  'allowDiskUse',
+];
+
+/**
+ * Throws when `options` holds a key outside {@link QUERY_OPTION_KEYS}.
+ * @function assertQueryOptions
+ * @param {unknown} options - The options a client sent
+ * @throws {Error} With `status` 403 for a key that isn't allowed, 412 for a non-object
+ */
+export function assertQueryOptions(options: unknown): void {
+  if (options === undefined || options === null) return;
+  if (typeof options !== 'object' || Array.isArray(options)) {
+    throw Object.assign(new Error('options must be an object'), { status: 412 });
+  }
+  const refused = Object.keys(options).filter(key => !QUERY_OPTION_KEYS.includes(key));
+  if (refused.length > 0) {
+    throw Object.assign(new Error(`options not allowed: ${refused.join(', ')}`), { status: 403 });
+  }
 }
 
 // Instead, export TypeCasters

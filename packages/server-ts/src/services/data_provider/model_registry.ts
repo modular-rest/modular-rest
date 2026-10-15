@@ -1,6 +1,29 @@
-import mongoose, { Connection, Model } from 'mongoose';
+import mongoose, { ConnectOptions, Connection, Model } from 'mongoose';
 import { CollectionDefinition } from '../../class/collection_definition';
 import { MongoOption } from './service';
+
+/**
+ * Options for every connection modular-rest opens. `dbName` is added per logical
+ * database, except in `singleDatabase` mode (see getOrCreateConnection).
+ */
+const baseConnectOptions: ConnectOptions = {
+  serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
+  socketTimeoutMS: 45000, // 45 second timeout for socket operations
+};
+
+/**
+ * In `singleDatabase` mode the connection string is the only thing naming the physical
+ * database. Without a path segment the driver silently falls back to `test`, so refuse it.
+ */
+function assertDatabaseInUri(mongoBaseAddress: string): void {
+  const match = /^mongodb(?:\+srv)?:\/\/[^/]+\/([^?]+)/.exec(mongoBaseAddress);
+  if (!match || !decodeURIComponent(match[1]).trim()) {
+    throw new Error(
+      '[modular-rest] mongo.singleDatabase requires the database name in the path of ' +
+        'mongoBaseAddress, e.g. mongodb://host:27017/<database>?...'
+    );
+  }
+}
 
 /**
  * ModelRegistry - Singleton class for managing mongoose models and connections
@@ -12,6 +35,10 @@ class ModelRegistry {
   private models: Record<string, Record<string, Model<any>>> = {};
   private collectionDefinitions: CollectionDefinition[] = [];
   private mongoOption: MongoOption | null = null;
+  /** `singleDatabase` mode: the one connection every logical database resolves to. */
+  private sharedConnection: Connection | null = null;
+  /** `singleDatabase` mode: physical collection name -> `<database>.<collection>` owning it. */
+  private physicalCollectionOwners: Record<string, string> = {};
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -63,21 +90,17 @@ class ModelRegistry {
     }
 
     // Get or create connection for this database
-    let connection = this.connections[database];
-    if (!connection) {
-      const fullDbName = (mongoOption.dbPrefix || '') + database;
-      const connectionString = mongoOption.mongoBaseAddress;
+    const connection = this.getOrCreateConnection(database, mongoOption);
 
-      // Create connection (but don't connect yet)
-      connection = mongoose.createConnection(connectionString, {
-        useUnifiedTopology: true,
-        useNewUrlParser: true,
-        dbName: fullDbName,
-        serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
-        socketTimeoutMS: 45000, // 45 second timeout for socket operations
-      });
-
-      this.connections[database] = connection;
+    // One shared connection means one model namespace: a collection name reused by another
+    // logical database would otherwise surface as Mongoose's opaque OverwriteModelError.
+    if (mongoOption.singleDatabase && connection.models[collection]) {
+      const owner = Object.keys(this.models).find(db => this.models[db][collection]);
+      throw new Error(
+        `[modular-rest] mongo.singleDatabase: collection "${collection}" is defined in both ` +
+          `"${owner}" and "${database}". All logical databases share one physical database ` +
+          `in this mode, so collection names must be unique across them.`
+      );
     }
 
     // Create model on the connection
@@ -85,7 +108,58 @@ class ModelRegistry {
     const model = connection.model(collection, schema);
     this.models[database][collection] = model;
 
+    if (mongoOption.singleDatabase) {
+      // Different model names can still pluralize to the same physical collection.
+      const physicalName = model.collection.collectionName;
+      const owner = this.physicalCollectionOwners[physicalName];
+      if (owner && owner !== `${database}.${collection}`) {
+        throw new Error(
+          `[modular-rest] mongo.singleDatabase: "${database}.${collection}" and "${owner}" ` +
+            `would both store documents in the physical collection "${physicalName}".`
+        );
+      }
+      this.physicalCollectionOwners[physicalName] = `${database}.${collection}`;
+    }
+
     return model;
+  }
+
+  /**
+   * Get the connection serving a logical database, creating it on first use.
+   *
+   * By default each logical database gets its own connection bound to
+   * `dbPrefix + database` through `dbName`. With `mongoOption.singleDatabase`, every
+   * logical database resolves to ONE shared connection opened WITHOUT `dbName`, so the
+   * physical database stays the one named in `mongoBaseAddress`.
+   *
+   * @param {string} database - Logical database name
+   * @param {MongoOption} mongoOption - MongoDB connection options
+   * @returns {Connection} The (possibly still connecting) mongoose connection
+   */
+  getOrCreateConnection(database: string, mongoOption: MongoOption): Connection {
+    const existing = this.connections[database];
+    if (existing) {
+      return existing;
+    }
+
+    if (mongoOption.singleDatabase) {
+      if (!this.sharedConnection) {
+        assertDatabaseInUri(mongoOption.mongoBaseAddress);
+        this.sharedConnection = mongoose.createConnection(
+          mongoOption.mongoBaseAddress,
+          baseConnectOptions
+        );
+      }
+      this.connections[database] = this.sharedConnection;
+    } else {
+      // Create connection (but don't connect yet)
+      this.connections[database] = mongoose.createConnection(mongoOption.mongoBaseAddress, {
+        ...baseConnectOptions,
+        dbName: (mongoOption.dbPrefix || '') + database,
+      });
+    }
+
+    return this.connections[database];
   }
 
   /**
@@ -129,56 +203,28 @@ class ModelRegistry {
     });
 
     // Connect to each database
-    const connectionPromises = Object.entries(dbGroups).map(([dbName]) => {
+    const connectionPromises = Object.entries(dbGroups).map(([dbName, definitions]) => {
       return new Promise<void>((done, reject) => {
-        const connection = this.connections[dbName];
-        if (!connection) {
-          // If connection doesn't exist, create it
-          const fullDbName = (mongoOption.dbPrefix || '') + dbName;
-          const connectionString = mongoOption.mongoBaseAddress;
+        const connection = this.getOrCreateConnection(dbName, mongoOption);
 
-          const newConnection = mongoose.createConnection(connectionString, {
-            useUnifiedTopology: true,
-            useNewUrlParser: true,
-            dbName: fullDbName,
-            serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
-            socketTimeoutMS: 45000, // 45 second timeout for socket operations
-          });
+        // Create models for this database if they don't exist
+        definitions.forEach(def => {
+          if (!this.hasModel(dbName, def.collection)) {
+            this.registerCollection(def, mongoOption);
+          }
+        });
 
-          this.connections[dbName] = newConnection;
-
-          // Create models for this database if they don't exist
-          const definitions = dbGroups[dbName];
-          definitions.forEach(def => {
-            if (!this.models[dbName]) {
-              this.models[dbName] = {};
-            }
-            if (!this.models[dbName][def.collection]) {
-              this.models[dbName][def.collection] = newConnection.model(def.collection, def.schema);
-            }
-          });
-
-          newConnection.on('connected', () => {
-            console.info(`- ${fullDbName} database has been connected`);
+        if (connection.readyState === 1) {
+          // Already connected
+          done();
+        } else {
+          connection.once('connected', () => {
+            console.info(`- ${dbName} database has been connected`);
             done();
           });
-
-          newConnection.on('error', err => {
+          connection.once('error', err => {
             reject(err);
           });
-        } else {
-          // Connection already exists, just wait for it to be ready
-          if (connection.readyState === 1) {
-            // Already connected
-            done();
-          } else {
-            connection.once('connected', () => {
-              done();
-            });
-            connection.once('error', err => {
-              reject(err);
-            });
-          }
         }
       });
     });
@@ -218,9 +264,9 @@ class ModelRegistry {
    * Useful for testing when different database prefixes are used.
    */
   async clear(): Promise<void> {
-    // Close all connections first
+    // Close all connections first (deduplicated: in singleDatabase mode they are one)
     await Promise.all(
-      Object.values(this.connections).map(async connection => {
+      [...new Set(Object.values(this.connections))].map(async connection => {
         if (connection.readyState !== 0) {
           try {
             await connection.close();
@@ -235,6 +281,8 @@ class ModelRegistry {
     this.models = {};
     this.collectionDefinitions = [];
     this.mongoOption = null;
+    this.sharedConnection = null;
+    this.physicalCollectionOwners = {};
   }
 }
 

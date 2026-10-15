@@ -38,10 +38,30 @@ interface KeyPair {
  * @interface MongoOptions
  * @property {string} dbPrefix - Prefix for database names
  * @property {string} mongoBaseAddress - MongoDB connection URL
+ * @property {boolean} [singleDatabase] - Store every logical database in the one physical database named by `mongoBaseAddress`
  */
 interface MongoOptions {
   dbPrefix: string;
   mongoBaseAddress: string;
+  /**
+   * Store every logical database (`cms` and each `database` given to `defineCollection`)
+   * in ONE physical database, over ONE shared connection.
+   *
+   * The physical database is the one named in the path of `mongoBaseAddress`
+   * (`mongodb://host:port/<database>?...`), which is required in this mode. modular-rest
+   * never passes `dbName` here, because `dbName` would override the database in the URI.
+   * `dbPrefix` is ignored.
+   *
+   * Logical database names stay the keys for `getCollection(database, collection)`,
+   * permissions and triggers, so application code does not change. Collection names must
+   * be unique across logical databases; a clash throws at startup.
+   *
+   * Use it for backends that expose one database per connection string, such as Firestore
+   * with MongoDB compatibility (database ID fixed in the URI, no underscores allowed).
+   *
+   * @default false
+   */
+  singleDatabase?: boolean;
 }
 
 /**
