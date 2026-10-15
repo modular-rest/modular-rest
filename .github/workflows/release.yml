@@ -9,6 +9,10 @@ permissions:
   issues: write
   pull-requests: write
   packages: write
+  # npm trusted publishing: npm trades this job's OIDC token for a short-lived publish
+  # credential, so no npm token is stored. Each package names this repository and
+  # release.yml as its trusted publisher on npmjs.com.
+  id-token: write
 
 jobs:
   release:
@@ -21,6 +25,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # No registry-url here: it writes an .npmrc token line that overrides trusted publishing.
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -37,10 +42,7 @@ jobs:
         working-directory: packages/client
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           npx semantic-release --debug
@@ -50,10 +52,7 @@ jobs:
         working-directory: packages/server-ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           npx semantic-release --debug
