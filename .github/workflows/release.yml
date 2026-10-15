@@ -25,12 +25,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # @semantic-release/npm 13 (trusted publishing) needs Node 22.14 or later. No
-      # registry-url here: it writes an .npmrc token line that overrides trusted publishing.
+      # No registry-url here: it writes an .npmrc token line that overrides trusted publishing.
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "22"
+          node-version-file: "packages/server-ts/.nvmrc"
           cache: "yarn"
 
       - name: Install dependencies
